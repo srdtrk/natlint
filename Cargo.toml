@@ -9,3 +9,4 @@ description = "A linter for Solidity natspec comments."
 [dependencies]
 clap = { version = "4.5", default-features = true, features = ["derive"] }
 anyhow = "1.0"
+syn-solidity = "0.8"
