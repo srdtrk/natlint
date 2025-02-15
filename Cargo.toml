@@ -1,7 +1,9 @@
 [package]
 name = "natlint"
-version = "0.1.0"
+version = "0.1.0-alpha"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/srdtrk/natlint"
 
 [dependencies]
 clap = { version = "4.5", default-features = true, features = ["derive"] }
