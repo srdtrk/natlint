@@ -1,4 +1,4 @@
-use quote::quote;
+use quote::{quote, ToTokens};
 use std::{fs, path::Path};
 use syn_solidity::{Expr, File, Item, Lit, Stmt};
 
@@ -60,10 +60,39 @@ fn parse_file() -> anyhow::Result<()> {
     };
     assert_eq!(s.value(), "Hello, World!");
 
-    // Read doc comments
-    // print doc comments
-    println!("contract comments: {:?}", contract.attrs);
-    println!("function comments: {:?}", function.attrs);
+    println!(
+        "contract comments: {:?}",
+        contract
+            .attrs
+            .iter()
+            .map(
+                |attr| match attr.meta.require_name_value().unwrap().value.clone() {
+                    syn::Expr::Lit(lit) => match lit.lit {
+                        syn::Lit::Str(s) => s.value(),
+                        _ => unreachable!(),
+                    },
+                    _ => unreachable!(),
+                }
+            )
+            .collect::<Vec<_>>()
+    );
+
+    println!(
+        "function comments: {:?}",
+        function
+            .attrs
+            .iter()
+            .map(
+                |attr| match attr.meta.require_name_value().unwrap().value.clone() {
+                    syn::Expr::Lit(lit) => match lit.lit {
+                        syn::Lit::Str(s) => s.value(),
+                        _ => unreachable!(),
+                    },
+                    _ => unreachable!(),
+                }
+            )
+            .collect::<Vec<_>>()
+    );
 
     Ok(())
 }
