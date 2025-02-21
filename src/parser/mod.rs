@@ -1,4 +1,6 @@
 //! The parser module.
+//! This code is copied from foundry-rs.
+//! <https://github.com/foundry-rs/foundry/blob/c609884bdb13b9846fe9ddc5f08d99cf30c53695/crates/doc/src/parser/mod.rs#L1>
 
 #![allow(clippy::nursery, clippy::pedantic)]
 
