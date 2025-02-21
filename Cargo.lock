@@ -198,12 +198,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "anyhow"
-version = "1.0.95"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
-
-[[package]]
 name = "ariadne"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2042,16 +2036,12 @@ name = "natlint"
 version = "0.1.0-alpha"
 dependencies = [
  "alloy-primitives 0.8.21",
- "anyhow",
  "clap",
  "derive_more 2.0.1",
  "eyre",
  "forge-fmt",
  "itertools 0.14.0",
- "quote",
  "solang-parser",
- "syn 2.0.98",
- "syn-solidity",
  "thiserror 2.0.11",
  "tracing",
 ]
@@ -3226,18 +3216,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "syn-solidity"
-version = "0.8.21"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c2de690018098e367beeb793991c7d4dc7270f42c9d2ac4ccc876c1368ca430"
-dependencies = [
- "paste",
- "proc-macro2",
- "quote",
- "syn 2.0.98",
 ]
 
 [[package]]
