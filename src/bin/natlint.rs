@@ -1,7 +1,7 @@
 use clap::Parser;
 use natlint::cli::cmd::{Commands, NatlintCli};
 
-fn main() -> anyhow::Result<()> {
+fn main() -> eyre::Result<()> {
     let cli = NatlintCli::parse();
     match cli.command {
         Commands::Run(args) => {
