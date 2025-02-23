@@ -47,7 +47,7 @@ pub struct Parser {
 
 /// [Parser] context.
 #[derive(Debug, Default)]
-pub struct ParserContext {
+struct ParserContext {
     /// Current visited parent.
     parent: Option<ParseItem>,
     /// Current start pointer for parsing doc comments.
