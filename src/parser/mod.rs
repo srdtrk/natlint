@@ -49,7 +49,7 @@ pub struct Parser {
 #[derive(Debug, Default)]
 pub struct ParserContext {
     /// Current visited parent.
-    pub parent: Option<ParseItem>,
+    parent: Option<ParseItem>,
     /// Current start pointer for parsing doc comments.
     doc_start_loc: usize,
 }
@@ -78,11 +78,6 @@ impl Parser {
     /// Return the parsed items as a reference.
     pub fn items_ref(&self) -> &[ParseItem] {
         &self.items
-    }
-
-    /// Return the parser context.
-    pub fn context(&self) -> &ParserContext {
-        &self.context
     }
 
     /// Visit the children elements with parent context.
