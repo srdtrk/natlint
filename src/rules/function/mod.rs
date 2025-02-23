@@ -65,7 +65,7 @@ mod tests {
         rules::Violation,
     };
     use forge_fmt::Visitable;
-    use solang_parser::parse;
+    use solang_parser::{parse, pt::FunctionDefinition};
 
     fn parse_source(src: &str) -> Parser {
         let (mut source, comments) = parse(src, 0).expect("failed to parse source");
@@ -74,47 +74,194 @@ mod tests {
         doc
     }
 
-    #[test]
-    fn test_success_public_inheritdoc() {
-        let src = parse_source(
-            r"
-            contract Test {
-                /// @inheritdoc Base
-                function test() public {}
+    /// Macro to define a test case for `RequireInheritdoc` rule
+    macro_rules! test_require_inheritdoc {
+        ($name:ident, $source:expr, $expected:expr) => {
+            #[test]
+            fn $name() {
+                let src = parse_source($source);
+
+                let parent = src.items_ref().first().unwrap();
+                let child = parent.children.first().unwrap();
+                let func = child.as_function().unwrap();
+                let comments = CommentsRef::from(&child.comments);
+
+                let expected = $expected(func);
+
+                assert_eq!(
+                    RequireInheritdoc::check(Some(parent), func, comments),
+                    expected
+                );
             }
-        ",
-        );
-
-        let parent = src.items_ref().first().unwrap();
-        let child = parent.children.first().unwrap();
-        let func = child.as_function().unwrap();
-        let comments = CommentsRef::from(&child.comments);
-
-        assert_eq!(RequireInheritdoc::check(Some(parent), func, comments), None);
+        };
     }
 
-    #[test]
-    fn test_failure_public_inheritdoc() {
-        let src = parse_source(
-            r"
-            contract Test {
-                function test() public {}
-            }
+    test_require_inheritdoc!(
+        public_no_violation,
+        r"
+        contract Test {
+            /// @inheritdoc Base
+            function test() public {}
+        }
         ",
-        );
+        |_| None
+    );
 
-        let parent = src.items_ref().first().unwrap();
-        let child = parent.children.first().unwrap();
-        let func = child.as_function().unwrap();
-        let comments = CommentsRef::from(&child.comments);
+    test_require_inheritdoc!(
+        external_no_violation,
+        r"
+        contract Test {
+            /// @inheritdoc Base
+            function test() external {}
+        }
+        ",
+        |_| None
+    );
 
-        assert_eq!(
-            RequireInheritdoc::check(Some(parent), func, comments),
-            Some(Violation::new(
-                RequireInheritdoc::NAME,
-                RequireInheritdoc::DESCRIPTION,
-                func.loc
-            ))
-        );
-    }
+    test_require_inheritdoc!(
+        override_no_violation,
+        r"
+        contract Test {
+            /// @inheritdoc Base
+            function test() override {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_inheritdoc!(
+        private_no_violation,
+        r"
+        contract Test {
+            function test() private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_inheritdoc!(
+        internal_no_violation,
+        r"
+        contract Test {
+            function test() internal {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_inheritdoc!(
+        modifier_no_violation,
+        r"
+        contract Test {
+            modifier test() {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_inheritdoc!(
+        constructor_no_violation,
+        r"
+        contract Test {
+            constructor() {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_inheritdoc!(
+        receive_no_violation,
+        r"
+        contract Test {
+            receive() {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_inheritdoc!(
+        fallback_no_violation,
+        r"
+        contract Test {
+            fallback() {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_inheritdoc!(
+        interface_no_violation,
+        r"
+        interface Test {
+            function test() external;
+        }
+        ",
+        |_| None
+    );
+
+    test_require_inheritdoc!(
+        library_no_violation,
+        r"
+        library Test {
+            function test() internal;
+        }
+        ",
+        |_| None
+    );
+
+    test_require_inheritdoc!(
+        public_violation,
+        r"
+        contract Test {
+            function test() public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            RequireInheritdoc::NAME,
+            RequireInheritdoc::DESCRIPTION,
+            func.loc
+        ))
+    );
+
+    test_require_inheritdoc!(
+        external_violation,
+        r"
+        contract Test {
+            function test() external {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            RequireInheritdoc::NAME,
+            RequireInheritdoc::DESCRIPTION,
+            func.loc
+        ))
+    );
+
+    test_require_inheritdoc!(
+        override_violation,
+        r"
+        contract Test {
+            function test() override {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            RequireInheritdoc::NAME,
+            RequireInheritdoc::DESCRIPTION,
+            func.loc
+        ))
+    );
+
+    test_require_inheritdoc!(
+        abstract_public_violation,
+        r"
+        abstract contract Test {
+            function test() public;
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            RequireInheritdoc::NAME,
+            RequireInheritdoc::DESCRIPTION,
+            func.loc
+        ))
+    );
 }
