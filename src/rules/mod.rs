@@ -19,7 +19,7 @@ pub struct Violation {
     /// The rule that was violated.
     pub rule: &'static str,
     /// A message describing the violation.
-    pub description: &'static str,
+    pub description: String,
     /// The location of the violation.
     pub loc: Loc,
 }
@@ -39,7 +39,7 @@ pub trait Rule<T> {
 impl Violation {
     /// Create a new violation.
     #[must_use]
-    pub const fn new(rule: &'static str, description: &'static str, loc: Loc) -> Self {
+    pub const fn new(rule: &'static str, description: String, loc: Loc) -> Self {
         Self {
             rule,
             description,
