@@ -2,7 +2,7 @@
 
 use solang_parser::pt::Loc;
 
-use crate::parser::{CommentsRef, ParserContext};
+use crate::parser::{CommentsRef, ParseItem};
 
 pub mod contract;
 pub mod r#enum;
@@ -14,6 +14,7 @@ pub mod r#type;
 pub mod variable;
 
 /// A lint diagnostic.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Violation {
     /// The rule that was violated.
     pub rule: &'static str,
@@ -32,7 +33,7 @@ pub trait Rule<T> {
     const DESCRIPTION: &'static str;
 
     /// Check the construct for violations of this rule.
-    fn check(&self, ctx: &ParserContext, item: &T, comments: CommentsRef) -> Option<Violation>;
+    fn check(parent: Option<&ParseItem>, item: &T, comments: CommentsRef) -> Option<Violation>;
 }
 
 impl Violation {

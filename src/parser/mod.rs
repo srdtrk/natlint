@@ -75,6 +75,11 @@ impl Parser {
         self.items
     }
 
+    /// Return the parsed items as a reference.
+    pub fn items_ref(&self) -> &[ParseItem] {
+        &self.items
+    }
+
     /// Return the parser context.
     pub fn context(&self) -> &ParserContext {
         &self.context
