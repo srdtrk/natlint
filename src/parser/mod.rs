@@ -47,9 +47,9 @@ pub struct Parser {
 
 /// [Parser] context.
 #[derive(Debug, Default)]
-struct ParserContext {
+pub struct ParserContext {
     /// Current visited parent.
-    parent: Option<ParseItem>,
+    pub parent: Option<ParseItem>,
     /// Current start pointer for parsing doc comments.
     doc_start_loc: usize,
 }
@@ -73,6 +73,11 @@ impl Parser {
     /// Return the parsed items. Consumes the parser.
     pub fn items(self) -> Vec<ParseItem> {
         self.items
+    }
+
+    /// Return the parser context.
+    pub fn context(&self) -> &ParserContext {
+        &self.context
     }
 
     /// Visit the children elements with parent context.
