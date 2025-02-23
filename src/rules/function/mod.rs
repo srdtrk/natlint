@@ -27,7 +27,6 @@ impl Rule<FunctionDefinition> for RequireInheritdoc {
             ContractTy::Contract(_) | ContractTy::Abstract(_) => (),
         };
 
-        println!("debug1");
         // Function must not be a modifier or constructor
         match func.ty {
             FunctionTy::Function => (),
@@ -37,7 +36,6 @@ impl Rule<FunctionDefinition> for RequireInheritdoc {
             | FunctionTy::Modifier => return None,
         }
 
-        println!("debug2");
         // Function must be public, external, or an override
         func.attributes.iter().find(|attr| match attr {
             FunctionAttribute::Visibility(Visibility::Public(_) | Visibility::External(_))
@@ -50,7 +48,6 @@ impl Rule<FunctionDefinition> for RequireInheritdoc {
             | FunctionAttribute::Error(_) => false,
         })?;
 
-        println!("debug3");
         // Function must have an inheritdoc comment
         if comments.find_inheritdoc_base().is_none() {
             return Some(Violation::new(Self::NAME, Self::DESCRIPTION, func.loc));
@@ -88,13 +85,12 @@ mod tests {
         ",
         );
 
-        let item = src.items_ref().first().unwrap();
-        let func = item.children.first().unwrap().as_function().unwrap();
+        let parent = src.items_ref().first().unwrap();
+        let child = parent.children.first().unwrap();
+        let func = child.as_function().unwrap();
+        let comments = CommentsRef::from(&child.comments);
 
-        assert_eq!(
-            RequireInheritdoc::check(Some(item), func, CommentsRef::from(&item.comments)),
-            None
-        );
+        assert_eq!(RequireInheritdoc::check(Some(parent), func, comments), None);
     }
 
     #[test]
@@ -107,11 +103,13 @@ mod tests {
         ",
         );
 
-        let item = src.items_ref().first().unwrap();
-        let func = item.children.first().unwrap().as_function().unwrap();
+        let parent = src.items_ref().first().unwrap();
+        let child = parent.children.first().unwrap();
+        let func = child.as_function().unwrap();
+        let comments = CommentsRef::from(&child.comments);
 
         assert_eq!(
-            RequireInheritdoc::check(Some(item), func, CommentsRef::from(&item.comments)),
+            RequireInheritdoc::check(Some(parent), func, comments),
             Some(Violation::new(
                 RequireInheritdoc::NAME,
                 RequireInheritdoc::DESCRIPTION,
