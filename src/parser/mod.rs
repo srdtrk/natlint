@@ -75,6 +75,11 @@ impl Parser {
         self.items
     }
 
+    /// Return the parsed items as a reference.
+    pub fn items_ref(&self) -> &[ParseItem] {
+        &self.items
+    }
+
     /// Visit the children elements with parent context.
     /// This function memoizes the previous parent, sets the context
     /// to a new one and invokes a visit function. The context will be reset

@@ -210,7 +210,7 @@ impl<'a> CommentsRef<'a> {
     }
 
     /// Find an [CommentTag::Inheritdoc] comment and extract the base.
-    fn find_inheritdoc_base(&self) -> Option<&'a str> {
+    pub fn find_inheritdoc_base(&self) -> Option<&'a str> {
         self.iter()
             .find(|c| matches!(c.tag, CommentTag::Inheritdoc))
             .and_then(|c| c.value.split_whitespace().next())
