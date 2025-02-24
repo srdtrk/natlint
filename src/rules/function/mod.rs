@@ -4,6 +4,5 @@ mod missing_params;
 mod require_inheritdoc;
 
 // The rules are exported here:
-
 pub use missing_params::MissingParams;
 pub use require_inheritdoc::RequireInheritdoc;
