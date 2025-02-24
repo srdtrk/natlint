@@ -14,7 +14,7 @@ impl Rule<FunctionDefinition> for MissingParams {
         "All functions must have their parameters documented or have an inheritdoc comment.";
 
     fn check(
-        _parent: Option<&ParseItem>,
+        _: Option<&ParseItem>,
         func: &FunctionDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
@@ -74,4 +74,182 @@ impl Rule<FunctionDefinition> for MissingParams {
 
         None
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{FunctionDefinition, MissingParams, Rule};
+    use crate::{
+        parser::{CommentsRef, Parser},
+        rules::Violation,
+    };
+    use forge_fmt::Visitable;
+    use solang_parser::parse;
+
+    fn parse_source(src: &str) -> Parser {
+        let (mut source, comments) = parse(src, 0).expect("failed to parse source");
+        let mut doc = Parser::new(comments, src.to_owned());
+        source.visit(&mut doc).expect("failed to visit source");
+        doc
+    }
+
+    /// Macro to define a test case for `MissingParams` rule
+    macro_rules! test_require_missingparams {
+        ($name:ident, $source:expr, $expected:expr) => {
+            #[test]
+            fn $name() {
+                let src = parse_source($source);
+
+                let parent = src.items_ref().first().unwrap();
+                let child = parent.children.first().unwrap();
+                let func = child.as_function().unwrap();
+                let comments = CommentsRef::from(&child.comments);
+
+                let expected = $expected(func);
+
+                assert_eq!(MissingParams::check(Some(parent), func, comments), expected);
+            }
+        };
+    }
+
+    test_require_missingparams!(
+        public_no_violation,
+        r"
+        contract Test {
+            /// @param a A number
+            function test(uint256 a) public {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        private_no_violation,
+        r"
+        contract Test {
+            /// @param a A number
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        dollar_no_violation,
+        r"
+        contract Test {
+            /// @param $ A number
+            function test(uint256 $) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        multiline_no_violation,
+        r"
+        contract Test {
+            /**
+             * @param a A number
+             */
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        inheritdoc_no_violation,
+        r"
+        contract Test {
+            /// @inheritdoc
+            function test(uint256 a) public {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        unnamed_no_violation,
+        r"
+        contract Test {
+            /// @param A number
+            function test(uint256) public {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        multiple_no_violation,
+        r"
+        contract Test {
+            /// @param a A number
+            /// @param lol A string
+            function test(uint256 a, string memory lol) public {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        unnamed_multiple_no_violation,
+        r"
+        contract Test {
+            /// @param a A number
+            /// @param A string
+            function test(uint256 a, string memory) public {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        public_violation,
+        r"
+        contract Test {
+            /// @notice Some function
+            function test(uint256 a) public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            MissingParams::NAME,
+            "Missing param or inheritdoc comment".to_string(),
+            func.loc
+        ))
+    );
+
+    test_require_missingparams!(
+        too_many_comments_violation,
+        r"
+        contract Test {
+            /// @param a A number
+            /// @param b A number
+            function test(uint256 a) public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            MissingParams::NAME,
+            "Too many param comments".to_string(),
+            func.loc
+        ))
+    );
+
+    test_require_missingparams!(
+        multiline_many_comments_violation,
+        r"
+        contract Test {
+            /**
+             * @param a A number
+             * @param b A number
+             */
+            function test(uint256 a) public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            MissingParams::NAME,
+            "Too many param comments".to_string(),
+            func.loc
+        ))
+    );
 }
