@@ -252,4 +252,38 @@ mod tests {
             func.loc
         ))
     );
+
+    test_require_missingparams!(
+        name_not_found_violation,
+        r"
+        contract Test {
+            /// @param a A number
+            /// @param c A number
+            function test(uint256 a, uint256 b) public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            MissingParams::NAME,
+            "Missing param comment for `b`".to_string(),
+            func.params[1].0
+        ))
+    );
+
+    test_require_missingparams!(
+        multiline_name_not_found_violation,
+        r"
+        contract Test {
+            /**
+             * @param a A number
+             * @param c A number
+             */
+            function test(uint256 a, uint256 b) public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            MissingParams::NAME,
+            "Missing param comment for `b`".to_string(),
+            func.params[1].0
+        ))
+    );
 }
