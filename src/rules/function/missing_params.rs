@@ -170,6 +170,19 @@ mod tests {
     );
 
     test_require_missingparams!(
+        multiline_inheritdoc_no_violation,
+        r"
+        contract Test {
+            /**
+             * @inheritdoc something
+             */
+            function test(uint256 a) public {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
         unnamed_no_violation,
         r"
         contract Test {
