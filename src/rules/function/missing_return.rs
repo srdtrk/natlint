@@ -4,24 +4,26 @@ use crate::parser::{CommentTag, CommentsRef, ParseItem};
 
 use super::super::{Rule, Violation};
 
-/// This rule requires that all functions have their parameters documented or have an inheritdoc
-/// comment.
-pub struct MissingParams;
+/// This rule requires that all functions have their return variables documented or have an inheritdoc comment.
+pub struct MissingReturn;
 
-impl Rule<FunctionDefinition> for MissingParams {
-    const NAME: &'static str = "Missing Params";
+impl Rule<FunctionDefinition> for MissingReturn {
+    const NAME: &'static str = "Missing Return";
     const DESCRIPTION: &'static str =
-        "All functions must have their parameters documented or have an inheritdoc comment.";
+        "All functions must have their return variables documented or have an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,
         func: &FunctionDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Function must not be a modifier or constructor
+        // Function type must be a user function
         match func.ty {
-            FunctionTy::Function | FunctionTy::Constructor | FunctionTy::Modifier => (),
-            FunctionTy::Receive | FunctionTy::Fallback => return None,
+            FunctionTy::Function => (),
+            FunctionTy::Receive
+            | FunctionTy::Fallback
+            | FunctionTy::Modifier
+            | FunctionTy::Constructor => return None,
         }
 
         // If the function has an inheritdoc comment, it is exempt from this rule
@@ -29,27 +31,27 @@ impl Rule<FunctionDefinition> for MissingParams {
             return None;
         }
 
-        // Function must have a parameter comment for each parameter
-        let param_comments = comments.include_tag(CommentTag::Param);
-        match func.params.len().cmp(&param_comments.len()) {
+        // Function must have a return comment for each return variable
+        let return_comments = comments.include_tag(CommentTag::Return);
+        match func.returns.len().cmp(&return_comments.len()) {
             std::cmp::Ordering::Less => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Too many param comments".to_string(),
+                    "Too many return comments".to_string(),
                     func.loc,
                 ));
             }
             std::cmp::Ordering::Greater => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Missing param or inheritdoc comment".to_string(),
+                    "Missing return or inheritdoc comment".to_string(),
                     func.loc,
                 ));
             }
             std::cmp::Ordering::Equal => (),
         }
-        for (loc, param) in &func.params {
-            let Some(param_name) = param
+        for (loc, return_var) in &func.returns {
+            let Some(var_name) = return_var
                 .as_ref()
                 .and_then(|p| p.name.as_ref().map(|id| id.name.to_string()))
             else {
@@ -57,16 +59,16 @@ impl Rule<FunctionDefinition> for MissingParams {
                 continue;
             };
 
-            if !param_comments.iter().any(|comment| {
+            if !return_comments.iter().any(|comment| {
                 comment
                     .split_first_word()
                     .map(|(name, _)| name.to_string())
                     .unwrap_or_default()
-                    == param_name
+                    == var_name
             }) {
                 return Some(Violation::new(
                     Self::NAME,
-                    format!("Missing param comment for `{param_name}`"),
+                    format!("Missing return comment for `{var_name}`"),
                     *loc,
                 ));
             }
@@ -78,7 +80,7 @@ impl Rule<FunctionDefinition> for MissingParams {
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, MissingParams, Rule};
+    use super::{FunctionDefinition, MissingReturn, Rule};
     use crate::{
         parser::{CommentsRef, Parser},
         rules::Violation,
@@ -107,38 +109,38 @@ mod tests {
 
                 let expected = $expected(func);
 
-                assert_eq!(MissingParams::check(Some(parent), func, comments), expected);
+                assert_eq!(MissingReturn::check(Some(parent), func, comments), expected);
             }
         };
     }
 
     test_require_missingparams!(
-        no_params_no_violation,
+        no_return_no_violation,
         r"
         contract Test {
-            function test() public {}
+            function test(uint256) public {}
         }
         ",
         |_| None
     );
 
     test_require_missingparams!(
-        public_no_violation,
+        named_no_violation,
         r"
         contract Test {
-            /// @param a A number
-            function test(uint256 a) public {}
+            /// @return b A number
+            function test(uint256) public returns (uint256 b) {}
         }
         ",
         |_| None
     );
 
     test_require_missingparams!(
-        private_no_violation,
+        unnamed_no_violation,
         r"
         contract Test {
-            /// @param a A number
-            function test(uint256 a) private {}
+            /// @return A number
+            function test(uint256) public returns (uint256) {}
         }
         ",
         |_| None
@@ -148,8 +150,19 @@ mod tests {
         dollar_no_violation,
         r"
         contract Test {
-            /// @param $ A number
-            function test(uint256 $) private {}
+            /// @return $ A number
+            function test(uint256) public returns (uint256 $) {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        memory_no_violation,
+        r"
+        contract Test {
+            /// @return b Some bytes
+            function test(uint256) public returns (bytes memory b) {}
         }
         ",
         |_| None
@@ -160,9 +173,9 @@ mod tests {
         r"
         contract Test {
             /**
-             * @param a A number
+             * @return b A number
              */
-            function test(uint256 a) private {}
+            function test(uint256) private returns (uint256 b) {}
         }
         ",
         |_| None
@@ -173,7 +186,7 @@ mod tests {
         r"
         contract Test {
             /// @inheritdoc something
-            function test(uint256 a) public {}
+            function test(uint256) public returns (uint256 b) {}
         }
         ",
         |_| None
@@ -186,18 +199,7 @@ mod tests {
             /**
              * @inheritdoc something
              */
-            function test(uint256 a) public {}
-        }
-        ",
-        |_| None
-    );
-
-    test_require_missingparams!(
-        unnamed_no_violation,
-        r"
-        contract Test {
-            /// @param A number
-            function test(uint256) public {}
+            function test(uint256) public returns (uint256 b) {}
         }
         ",
         |_| None
@@ -207,9 +209,23 @@ mod tests {
         multiple_no_violation,
         r"
         contract Test {
-            /// @param a A number
-            /// @param lol A string
-            function test(uint256 a, string memory lol) public {}
+            /// @return a A number
+            /// @return b Some string
+            function test(uint256) public returns (uint256 a, string memory b) {}
+        }
+        ",
+        |_| None
+    );
+
+    test_require_missingparams!(
+        multiple_multiline_no_violation,
+        r"
+        contract Test {
+            /**
+             * @return a A number
+             * @return b Some string
+             */
+            function test(uint256) public returns (uint256 a, string memory b) {}
         }
         ",
         |_| None
@@ -219,25 +235,40 @@ mod tests {
         unnamed_multiple_no_violation,
         r"
         contract Test {
-            /// @param a A number
-            /// @param A string
-            function test(uint256 a, string memory) public {}
+            /// @return a A number
+            /// @return Some string
+            function test(uint256) public returns (uint256 a, string memory) {}
         }
         ",
         |_| None
     );
 
     test_require_missingparams!(
-        public_violation,
+        named_violation,
         r"
         contract Test {
             /// @notice Some function
-            function test(uint256 a) public {}
+            function test(uint256) public returns (uint256 a) {}
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            MissingParams::NAME,
-            "Missing param or inheritdoc comment".to_string(),
+            MissingReturn::NAME,
+            "Missing return or inheritdoc comment".to_string(),
+            func.loc
+        ))
+    );
+
+    test_require_missingparams!(
+        unnamed_violation,
+        r"
+        contract Test {
+            /// @notice Some function
+            function test(uint256) public returns (uint256) {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            MissingReturn::NAME,
+            "Missing return or inheritdoc comment".to_string(),
             func.loc
         ))
     );
@@ -246,29 +277,14 @@ mod tests {
         too_many_comments_violation,
         r"
         contract Test {
-            /// @param a A number
-            /// @param b A number
-            function test(uint256 a) public {}
+            /// @return a A number
+            /// @return b A number
+            function test(uint256) public returns (uint256 a) {}
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            MissingParams::NAME,
-            "Too many param comments".to_string(),
-            func.loc
-        ))
-    );
-
-    test_require_missingparams!(
-        no_params_violation,
-        r"
-        contract Test {
-            /// @param a A number
-            function test() public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingParams::NAME,
-            "Too many param comments".to_string(),
+            MissingReturn::NAME,
+            "Too many return comments".to_string(),
             func.loc
         ))
     );
@@ -278,15 +294,15 @@ mod tests {
         r"
         contract Test {
             /**
-             * @param a A number
-             * @param b A number
+             * @return a A number
+             * @return b A number
              */
-            function test(uint256 a) public {}
+            function test(uint256) public returns (uint256 a) {}
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            MissingParams::NAME,
-            "Too many param comments".to_string(),
+            MissingReturn::NAME,
+            "Too many return comments".to_string(),
             func.loc
         ))
     );
@@ -295,15 +311,15 @@ mod tests {
         name_not_found_violation,
         r"
         contract Test {
-            /// @param a A number
-            /// @param c A number
-            function test(uint256 a, uint256 b) public {}
+            /// @return a A number
+            /// @return c A number
+            function test(uint256) public returns (uint256 a, uint256 b) {}
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            MissingParams::NAME,
-            "Missing param comment for `b`".to_string(),
-            func.params[1].0
+            MissingReturn::NAME,
+            "Missing return comment for `b`".to_string(),
+            func.returns[1].0
         ))
     );
 
@@ -312,16 +328,16 @@ mod tests {
         r"
         contract Test {
             /**
-             * @param a A number
-             * @param c A number
+             * @return a A number
+             * @return c A number
              */
-            function test(uint256 a, uint256 b) public {}
+            function test(uint256) public returns (uint256 a, uint256 b) {}
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            MissingParams::NAME,
-            "Missing param comment for `b`".to_string(),
-            func.params[1].0
+            MissingReturn::NAME,
+            "Missing return comment for `b`".to_string(),
+            func.returns[1].0
         ))
     );
 }
