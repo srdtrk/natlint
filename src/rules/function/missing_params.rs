@@ -162,7 +162,7 @@ mod tests {
         inheritdoc_no_violation,
         r"
         contract Test {
-            /// @inheritdoc
+            /// @inheritdoc something
             function test(uint256 a) public {}
         }
         ",
