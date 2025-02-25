@@ -50,7 +50,11 @@ impl Rule<FunctionDefinition> for RequireInheritdoc {
 
         // Function must have an inheritdoc comment
         if comments.find_inheritdoc_base().is_none() {
-            return Some(Violation::new(Self::NAME, Self::DESCRIPTION, func.loc));
+            return Some(Violation::new(
+                Self::NAME,
+                Self::DESCRIPTION.to_string(),
+                func.loc,
+            ));
         }
 
         None
@@ -218,7 +222,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             RequireInheritdoc::NAME,
-            RequireInheritdoc::DESCRIPTION,
+            RequireInheritdoc::DESCRIPTION.to_string(),
             func.loc
         ))
     );
@@ -232,7 +236,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             RequireInheritdoc::NAME,
-            RequireInheritdoc::DESCRIPTION,
+            RequireInheritdoc::DESCRIPTION.to_string(),
             func.loc
         ))
     );
@@ -246,7 +250,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             RequireInheritdoc::NAME,
-            RequireInheritdoc::DESCRIPTION,
+            RequireInheritdoc::DESCRIPTION.to_string(),
             func.loc
         ))
     );
@@ -260,7 +264,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             RequireInheritdoc::NAME,
-            RequireInheritdoc::DESCRIPTION,
+            RequireInheritdoc::DESCRIPTION.to_string(),
             func.loc
         ))
     );
