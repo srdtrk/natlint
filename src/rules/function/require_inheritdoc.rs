@@ -1,5 +1,3 @@
-//! This module defines the rules for function items in the natlint linter.
-
 use solang_parser::pt::{
     ContractTy, FunctionAttribute, FunctionDefinition, FunctionTy, Visibility,
 };
