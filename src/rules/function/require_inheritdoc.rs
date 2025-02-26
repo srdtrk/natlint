@@ -4,7 +4,7 @@ use solang_parser::pt::{
     ContractTy, FunctionAttribute, FunctionDefinition, FunctionTy, Visibility,
 };
 
-use crate::parser::{CommentsRef, ParseItem};
+use crate::parser::{CommentTag, CommentsRef, ParseItem};
 
 use super::super::{Rule, Violation};
 
@@ -49,15 +49,19 @@ impl Rule<FunctionDefinition> for RequireInheritdoc {
         })?;
 
         // Function must have an inheritdoc comment
-        if comments.find_inheritdoc_base().is_none() {
-            return Some(Violation::new(
+        match comments.include_tag(CommentTag::Inheritdoc).len() {
+            0 => Some(Violation::new(
                 Self::NAME,
                 Self::DESCRIPTION.to_string(),
                 func.loc,
-            ));
+            )),
+            1 => None,
+            _ => Some(Violation::new(
+                Self::NAME,
+                "Too many inheritdoc comments".to_string(),
+                func.loc,
+            )),
         }
-
-        None
     }
 }
 
@@ -237,6 +241,40 @@ mod tests {
         |func: &FunctionDefinition| Some(Violation::new(
             RequireInheritdoc::NAME,
             RequireInheritdoc::DESCRIPTION.to_string(),
+            func.loc
+        ))
+    );
+
+    test_require_inheritdoc!(
+        too_many_violation,
+        r"
+        contract Test {
+            /// @inheritdoc Base
+            /// @inheritdoc Base2
+            function test() override {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            RequireInheritdoc::NAME,
+            "Too many inheritdoc comments".to_string(),
+            func.loc
+        ))
+    );
+
+    test_require_inheritdoc!(
+        multiline_too_many_violation,
+        r"
+        contract Test {
+            /**
+             * @inheritdoc Base
+             * @inheritdoc Base2
+             */
+            function test() override {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            RequireInheritdoc::NAME,
+            "Too many inheritdoc comments".to_string(),
             func.loc
         ))
     );
