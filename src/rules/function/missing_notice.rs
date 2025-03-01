@@ -98,11 +98,49 @@ mod tests {
     );
 
     test_missingnotice!(
+        no_tag_no_violation,
+        r"
+        contract Test {
+            /// Some function
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_missingnotice!(
         multiline_no_violation,
         r"
         contract Test {
             /**
              * @notice Some function
+             */
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_missingnotice!(
+        multiline_no_tag_no_violation,
+        r"
+        contract Test {
+            /**
+             * Some function
+             */
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_missingnotice!(
+        long_multiline_no_tag_no_violation,
+        r"
+        contract Test {
+            /**
+             * Some function
+             * next line
              */
             function test(uint256 a) private {}
         }
@@ -154,6 +192,22 @@ mod tests {
         contract Test {
             /// @notice Some function
             /// @notice Another function
+            function test(uint256 a) public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            MissingNotice::NAME,
+            "Too many notice comments".to_string(),
+            func.loc
+        ))
+    );
+
+    test_missingnotice!(
+        too_many_comments_tag_no_tag_violation,
+        r"
+        contract Test {
+            /// Another function
+            /// @notice Some function
             function test(uint256 a) public {}
         }
         ",
