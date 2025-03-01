@@ -29,3 +29,63 @@ impl Rule<FunctionDefinition> for NoTitle {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{CommentsRef, FunctionDefinition, NoTitle, Rule, Violation};
+    use crate::parser::Parser;
+    use forge_fmt::Visitable;
+    use solang_parser::parse;
+
+    fn parse_source(src: &str) -> Parser {
+        let (mut source, comments) = parse(src, 0).expect("failed to parse source");
+        let mut doc = Parser::new(comments, src.to_owned());
+        source.visit(&mut doc).expect("failed to visit source");
+        doc
+    }
+
+    /// Macro to define a test case for `RequireInheritdoc` rule
+    macro_rules! test_no_title {
+        ($name:ident, $source:expr, $expected:expr) => {
+            #[test]
+            fn $name() {
+                let src = parse_source($source);
+
+                let parent = src.items_ref().first().unwrap();
+                let child = parent.children.first().unwrap();
+                let func = child.as_function().unwrap();
+                let comments = CommentsRef::from(&child.comments);
+
+                let expected = $expected(func);
+
+                assert_eq!(NoTitle::check(Some(parent), func, comments), expected);
+            }
+        };
+    }
+
+    test_no_title!(
+        no_violation,
+        r"
+        contract Test {
+            /// @inheritdoc Base
+            function test() public {}
+        }
+        ",
+        |_| None
+    );
+
+    test_no_title!(
+        violation,
+        r"
+        contract Test {
+            /// @title Some function
+            function test() public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            NoTitle::NAME,
+            NoTitle::DESCRIPTION.to_string(),
+            func.loc,
+        ))
+    );
+}
