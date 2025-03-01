@@ -22,20 +22,15 @@ impl Rule<StructDefinition> for MissingAuthor {
         item: &StructDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Struct must have a author comment
-        match comments.include_tag(CommentTag::Author).len() {
-            0 => Some(Violation::new(
+        // Struct must have at least one author comment
+        if comments.include_tag(CommentTag::Author).is_empty() {
+            return Some(Violation::new(
                 Self::NAME,
                 ViolationError::MissingComment(CommentTag::Author),
                 item.loc,
-            )),
-            1 => None,
-            _ => Some(Violation::new(
-                Self::NAME,
-                ViolationError::TooManyComments(CommentTag::Author),
-                item.loc,
-            )),
+            ));
         }
+        None
     }
 }
 
@@ -101,12 +96,42 @@ mod tests {
     );
 
     test_missingauthor!(
-        multiline_no_violation,
+        multi_author_no_violation,
+        r"
+        interface Test {
+            /// @author Some author
+            /// @author Some other
+            struct TestStruct {
+                uint256 a;
+            }
+        }
+        ",
+        |_| None
+    );
+
+    test_missingauthor!(
+        multiline_multi_no_violation,
         r"
         interface Test {
             /**
              * @author Some author
              * @param a Some param
+             */
+            struct TestStruct {
+                uint256 a;
+            }
+        }
+        ",
+        |_| None
+    );
+
+    test_missingauthor!(
+        multiline_multi_author_no_violation,
+        r"
+        interface Test {
+            /**
+             * @author Some author
+             * @author Some other
              */
             struct TestStruct {
                 uint256 a;
@@ -150,24 +175,6 @@ mod tests {
     );
 
     test_missingauthor!(
-        multi_violation,
-        r"
-        contract Test {
-            /// @author Some struct
-            /// @author Some struct
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::TooManyComments(CommentTag::Author),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
         multiline_violation,
         r"
         contract Test {
@@ -182,26 +189,6 @@ mod tests {
         |sct: &StructDefinition| Some(Violation::new(
             MissingAuthor::NAME,
             ViolationError::MissingComment(CommentTag::Author),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
-        multiline_multi_violation,
-        r"
-        contract Test {
-            /**
-             * @author a Some struct
-             * @author b Some struct
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::TooManyComments(CommentTag::Author),
             sct.loc
         ))
     );
