@@ -18,7 +18,7 @@ impl Rule<ContractDefinition> for MissingTitle {
 
     fn check(
         _: Option<&ParseItem>,
-        item: &ContractDefinition,
+        contract: &ContractDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
         // Contract must have a title comment
@@ -26,13 +26,13 @@ impl Rule<ContractDefinition> for MissingTitle {
             0 => Some(Violation::new(
                 Self::NAME,
                 ViolationError::MissingComment(CommentTag::Title),
-                item.loc,
+                contract.loc,
             )),
             1 => None,
             _ => Some(Violation::new(
                 Self::NAME,
                 ViolationError::TooManyComments(CommentTag::Title),
-                item.loc,
+                contract.loc,
             )),
         }
     }

@@ -1,5 +1,3 @@
-//! This rule requires that all contacts have a notice comment.
-
 use solang_parser::pt::ContractDefinition;
 
 use crate::{
@@ -9,40 +7,33 @@ use crate::{
 
 use super::super::{Rule, Violation};
 
-/// This rule requires that all contracts have a notice comment.
-pub struct MissingNotice;
+/// This rule requires that contracts do not have a param comment.
+pub struct NoParam;
 
-impl Rule<ContractDefinition> for MissingNotice {
-    const NAME: &'static str = "Missing Notice";
-    const DESCRIPTION: &'static str =
-        "This rule requires that all contracts have a notice comment.";
+impl Rule<ContractDefinition> for NoParam {
+    const NAME: &'static str = "No Param";
+    const DESCRIPTION: &'static str = "Contracts must not have a param comment.";
 
     fn check(
         _: Option<&ParseItem>,
         contract: &ContractDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Contract must have a title comment
-        match comments.include_tag(CommentTag::Notice).len() {
-            0 => Some(Violation::new(
+        if !comments.include_tag(CommentTag::Param).is_empty() {
+            return Some(Violation::new(
                 Self::NAME,
-                ViolationError::MissingComment(CommentTag::Notice),
+                ViolationError::CommentNotAllowed(CommentTag::Param),
                 contract.loc,
-            )),
-            1 => None,
-            _ => Some(Violation::new(
-                Self::NAME,
-                ViolationError::TooManyComments(CommentTag::Notice),
-                contract.loc,
-            )),
+            ));
         }
+        None
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        CommentTag, CommentsRef, ContractDefinition, MissingNotice, Rule, Violation, ViolationError,
+        CommentTag, CommentsRef, ContractDefinition, NoParam, Rule, Violation, ViolationError,
     };
     use crate::parser::Parser;
     use forge_fmt::Visitable;
@@ -56,7 +47,7 @@ mod tests {
     }
 
     /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_missingnotice {
+    macro_rules! test_missingtitle {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -68,37 +59,46 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(MissingNotice::check(None, contract, comments), expected);
+                assert_eq!(NoParam::check(None, contract, comments), expected);
             }
         };
     }
 
-    test_missingnotice!(
-        no_violation,
+    test_missingtitle!(
+        empty_no_violation,
         r"
-        /// @notice Some notice
         interface Test {
         }
         ",
         |_| None
     );
 
-    test_missingnotice!(
+    test_missingtitle!(
+        no_violation,
+        r"
+        /// @custom:test Some comment
+        interface Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_missingtitle!(
         multi_no_violation,
         r"
-        /// @title Some title
-        /// @notice Some notice
+        /// @custom:test Some comment
+        /// @custom:test Some other
         contract Test {
         }
         ",
         |_| None
     );
 
-    test_missingnotice!(
+    test_missingtitle!(
         multiline_no_violation,
         r"
         /**
-         * @notice Some notice
+         * @custom:test Some comment
          */
         abstract contract Test {
         }
@@ -106,12 +106,12 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
+    test_missingtitle!(
         multiline_multi_no_violation,
         r"
         /**
-         * @title Some title
-         * @notice Some notice
+         * @custom:test Some comment
+         * @custom:test Some other
          */
         library Test {
         }
@@ -119,77 +119,64 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
-        empty_violation,
-        r"
-        contract Test {
-        }
-        ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
-    );
-
-    test_missingnotice!(
+    test_missingtitle!(
         violation,
         r"
-        /// @author Some author
+        /// @param Some param
         interface Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
+            NoParam::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
     );
 
-    test_missingnotice!(
+    test_missingtitle!(
         multi_violation,
         r"
-        /// @notice Some notice
-        /// @notice Some notice
+        /// @param Some param
+        /// @param Some param
         abstract contract Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
+            NoParam::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
     );
 
-    test_missingnotice!(
+    test_missingtitle!(
         multiline_violation,
         r"
         /**
-         * @author Some author
+         * @param Some param
          */
         library Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
+            NoParam::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
     );
 
-    test_missingnotice!(
+    test_missingtitle!(
         multiline_multi_violation,
         r"
         /**
-         * @notice Some notice
-         * @notice Some notice
+         * @param Some param
+         * @param Some param
          */
         contract Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
+            NoParam::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
     );

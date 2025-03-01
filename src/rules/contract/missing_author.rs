@@ -20,7 +20,7 @@ impl Rule<ContractDefinition> for MissingAuthor {
 
     fn check(
         _: Option<&ParseItem>,
-        item: &ContractDefinition,
+        contract: &ContractDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
         // Contract must have at least one author comment
@@ -28,7 +28,7 @@ impl Rule<ContractDefinition> for MissingAuthor {
             return Some(Violation::new(
                 Self::NAME,
                 ViolationError::MissingComment(CommentTag::Author),
-                item.loc,
+                contract.loc,
             ));
         }
         None
