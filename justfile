@@ -2,5 +2,6 @@
 build:
 	cargo build --bin natlint --release --locked
 
-test testname:
+test testname="--all":
 	cargo test {{testname}} --locked -- --nocapture
+

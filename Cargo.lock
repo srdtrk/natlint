@@ -2040,6 +2040,8 @@ dependencies = [
  "derive_more 2.0.1",
  "eyre",
  "forge-fmt",
+ "glob",
+ "globset",
  "itertools 0.14.0",
  "solang-parser",
  "thiserror 2.0.11",

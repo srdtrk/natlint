@@ -25,7 +25,19 @@ pub mod run {
     /// The arguments for the run subcommand.
     #[derive(Clone, Debug, Parser)]
     pub struct Args {
-        /// The configuration file for the relayer.
+        /// The root directory for the linter.
+        #[clap(long, default_value = ".")]
+        pub root: String,
+
+        /// The include globs for the linter.
+        #[clap(short = 'i', long)]
+        pub include: Vec<String>,
+
+        /// The exclude globs for the linter.
+        #[clap(short = 'e', long)]
+        pub exclude: Vec<String>,
+
+        /// The configuration file for linter.
         #[clap(short = 'c', long)]
         pub config: String,
     }
