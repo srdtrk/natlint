@@ -3,6 +3,7 @@
 mod missing_notice;
 mod missing_params;
 mod no_inheritdoc;
+mod no_return;
 
 // The rules are exported here:
 pub use missing_notice::MissingNotice;

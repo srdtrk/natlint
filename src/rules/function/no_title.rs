@@ -25,7 +25,6 @@ impl Rule<FunctionDefinition> for NoTitle {
                 func.loc,
             ));
         }
-
         None
     }
 }

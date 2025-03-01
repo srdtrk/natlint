@@ -25,7 +25,6 @@ impl Rule<FunctionDefinition> for NoAuthor {
                 func.loc,
             ));
         }
-
         None
     }
 }

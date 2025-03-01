@@ -1,22 +1,22 @@
 use solang_parser::pt::StructDefinition;
 
-use crate::parser::{CommentsRef, ParseItem};
+use crate::parser::{CommentTag, CommentsRef, ParseItem};
 
 use super::super::{Rule, Violation};
 
-/// This rule requires that all structs must not have an inheritdoc comment.
-pub struct NoInheritdoc;
+/// This rule requires that all structs must not have a return comment.
+pub struct NoReturn;
 
-impl Rule<StructDefinition> for NoInheritdoc {
-    const NAME: &'static str = "No Inheritdoc";
-    const DESCRIPTION: &'static str = "All structs must not have an inheritdoc comment.";
+impl Rule<StructDefinition> for NoReturn {
+    const NAME: &'static str = "No Return";
+    const DESCRIPTION: &'static str = "All structs must not have a return comment.";
 
     fn check(
         _: Option<&ParseItem>,
         item: &StructDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        if comments.find_inheritdoc_base().is_some() {
+        if !comments.include_tag(CommentTag::Return).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
                 Self::DESCRIPTION.to_string(),
@@ -29,7 +29,7 @@ impl Rule<StructDefinition> for NoInheritdoc {
 
 #[cfg(test)]
 mod tests {
-    use super::{NoInheritdoc, Rule, StructDefinition};
+    use super::{NoReturn, Rule, StructDefinition};
     use crate::{
         parser::{CommentsRef, Parser},
         rules::Violation,
@@ -58,7 +58,7 @@ mod tests {
 
                 let expected = $expected(item);
 
-                assert_eq!(NoInheritdoc::check(Some(parent), item, comments), expected);
+                assert_eq!(NoReturn::check(Some(parent), item, comments), expected);
             }
         };
     }
@@ -79,7 +79,7 @@ mod tests {
         no_violation,
         r"
         interface Test {
-            /// @notice Some notice
+            /// @inheritdoc Base
             struct TestStruct {
                 uint256 a;
             }
@@ -103,28 +103,28 @@ mod tests {
     );
 
     test_no_inheritdoc!(
-        inheritdoc_violation,
+        return_violation,
         r"
         interface Test {
-            /// @inheritdoc Base
+            /// @return Some return
             struct TestStruct {
                 uint256 a;
             }
         }
         ",
         |item: &StructDefinition| Some(Violation::new(
-            NoInheritdoc::NAME,
-            NoInheritdoc::DESCRIPTION.to_string(),
+            NoReturn::NAME,
+            NoReturn::DESCRIPTION.to_string(),
             item.loc
         ))
     );
 
     test_no_inheritdoc!(
-        multiline_inheritdoc_violation,
+        multiline_return_violation,
         r"
         interface Test {
             /**
-             * @inheritdoc Base
+             * @return Some return
              */
             struct TestStruct {
                 uint256 a;
@@ -132,8 +132,8 @@ mod tests {
         }
         ",
         |item: &StructDefinition| Some(Violation::new(
-            NoInheritdoc::NAME,
-            NoInheritdoc::DESCRIPTION.to_string(),
+            NoReturn::NAME,
+            NoReturn::DESCRIPTION.to_string(),
             item.loc
         ))
     );
