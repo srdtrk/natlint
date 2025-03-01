@@ -15,7 +15,7 @@ pub fn find_matching_files(
     root: &str,
     includes: Vec<String>,
     excludes: Vec<String>,
-) -> eyre::Result<Vec<PathBuf>> {
+) -> eyre::Result<HashSet<PathBuf>> {
     let root_path = Path::new(root);
 
     // Build a GlobSet for exclude patterns.
@@ -29,23 +29,20 @@ pub fn find_matching_files(
     }
     let exclude_set: GlobSet = builder.build()?;
 
-    // Use a HashSet to avoid duplicates.
-    let mut files_set: HashSet<PathBuf> = HashSet::new();
+    Ok(includes
+        .into_iter()
+        .map(|pattern| -> eyre::Result<_> {
+            let include_path = root_path.join(&pattern);
+            let include_path_str = include_path
+                .to_str()
+                .ok_or_eyre(format!("Invalid include pattern: {root}/{pattern}"))?;
 
-    // Process each include pattern.
-    for pattern in includes {
-        let include_path = root_path.join(&pattern);
-        let include_pattern_str = include_path
-            .to_str()
-            .ok_or_eyre(format!("Invalid include pattern: {root}/{pattern}"))?;
-        let matches = glob(include_pattern_str)?
-            .collect::<Result<Vec<_>, _>>()?
-            .into_iter()
-            .filter(|entry| entry.is_file())
-            .filter(|entry| !exclude_set.is_match(entry));
-        files_set.extend(matches);
-    }
-
-    // Convert the HashSet into a Vec.
-    Ok(files_set.into_iter().collect())
+            Ok(glob(include_path_str)?.collect::<Result<Vec<_>, _>>()?)
+        })
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .flatten()
+        .filter(|entry| entry.is_file())
+        .filter(|entry| !exclude_set.is_match(entry))
+        .collect::<HashSet<_>>())
 }
