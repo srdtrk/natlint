@@ -13,7 +13,7 @@ impl Rule<StructDefinition> for MissingNotice {
 
     fn check(
         _: Option<&ParseItem>,
-        func: &StructDefinition,
+        item: &StructDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
         // Function must have a notice comment
@@ -21,13 +21,13 @@ impl Rule<StructDefinition> for MissingNotice {
             0 => Some(Violation::new(
                 Self::NAME,
                 "Missing a notice comment".to_string(),
-                func.loc,
+                item.loc,
             )),
             1 => None,
             _ => Some(Violation::new(
                 Self::NAME,
                 "Too many notice comments".to_string(),
-                func.loc,
+                item.loc,
             )),
         }
     }

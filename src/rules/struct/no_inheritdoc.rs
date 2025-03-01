@@ -4,7 +4,7 @@ use crate::parser::{CommentsRef, ParseItem};
 
 use super::super::{Rule, Violation};
 
-/// This rule requires that all structs have a notice comment.
+/// This rule requires that all structs must not have an inheritdoc comment.
 pub struct NoInheritdoc;
 
 impl Rule<StructDefinition> for NoInheritdoc {
@@ -13,7 +13,7 @@ impl Rule<StructDefinition> for NoInheritdoc {
 
     fn check(
         _: Option<&ParseItem>,
-        func: &StructDefinition,
+        item: &StructDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
         // Function must not have an inheritdoc comment
@@ -21,7 +21,7 @@ impl Rule<StructDefinition> for NoInheritdoc {
             Some(Violation::new(
                 Self::NAME,
                 Self::DESCRIPTION.to_string(),
-                func.loc,
+                item.loc,
             ))
         } else {
             None
