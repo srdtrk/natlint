@@ -138,11 +138,7 @@ mod tests {
             }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            "Missing a notice comment".to_string(),
-            sct.loc
-        ))
+        |_| None // WARNING: solang parser and the natspec docs interpret no tags as a notice
     );
 
     test_missingnotice!(
@@ -211,11 +207,7 @@ mod tests {
             }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            "Missing a notice comment".to_string(),
-            sct.loc
-        ))
+        |_| None // WARNING: solang parser and the natspec docs interpret no tags as a notice
     );
 
     test_missingnotice!(
