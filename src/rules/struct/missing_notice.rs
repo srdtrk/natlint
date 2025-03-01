@@ -1,6 +1,9 @@
 use solang_parser::pt::StructDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -20,13 +23,13 @@ impl Rule<StructDefinition> for MissingNotice {
         match comments.include_tag(CommentTag::Notice).len() {
             0 => Some(Violation::new(
                 Self::NAME,
-                "Missing a notice comment".to_string(),
+                ViolationError::MissingComment(CommentTag::Notice),
                 item.loc,
             )),
             1 => None,
             _ => Some(Violation::new(
                 Self::NAME,
-                "Too many notice comments".to_string(),
+                ViolationError::TooManyComments(CommentTag::Notice),
                 item.loc,
             )),
         }
@@ -35,11 +38,10 @@ impl Rule<StructDefinition> for MissingNotice {
 
 #[cfg(test)]
 mod tests {
-    use super::{MissingNotice, Rule, StructDefinition};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, MissingNotice, Rule, StructDefinition, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -122,7 +124,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Missing a notice comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Notice),
             sct.loc
         ))
     );
@@ -152,7 +154,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Missing a notice comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Notice),
             sct.loc
         ))
     );
@@ -170,7 +172,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Too many notice comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc
         ))
     );
@@ -189,7 +191,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Missing a notice comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Notice),
             sct.loc
         ))
     );
@@ -224,7 +226,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Too many notice comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc
         ))
     );

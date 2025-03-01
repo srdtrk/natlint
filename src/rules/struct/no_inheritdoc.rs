@@ -1,6 +1,9 @@
 use solang_parser::pt::StructDefinition;
 
-use crate::parser::{CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -19,7 +22,7 @@ impl Rule<StructDefinition> for NoInheritdoc {
         if comments.find_inheritdoc_base().is_some() {
             return Some(Violation::new(
                 Self::NAME,
-                Self::DESCRIPTION.to_string(),
+                ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
                 item.loc,
             ));
         }
@@ -29,11 +32,10 @@ impl Rule<StructDefinition> for NoInheritdoc {
 
 #[cfg(test)]
 mod tests {
-    use super::{NoInheritdoc, Rule, StructDefinition};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, NoInheritdoc, Rule, StructDefinition, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -113,7 +115,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
-            NoInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             item.loc
         ))
     );
@@ -132,7 +134,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
-            NoInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             item.loc
         ))
     );

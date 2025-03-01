@@ -3,7 +3,10 @@
 
 use solang_parser::pt::StructDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -23,13 +26,13 @@ impl Rule<StructDefinition> for MissingAuthor {
         match comments.include_tag(CommentTag::Author).len() {
             0 => Some(Violation::new(
                 Self::NAME,
-                "Missing a author comment".to_string(),
+                ViolationError::MissingComment(CommentTag::Author),
                 item.loc,
             )),
             1 => None,
             _ => Some(Violation::new(
                 Self::NAME,
-                "Too many author comments".to_string(),
+                ViolationError::TooManyComments(CommentTag::Author),
                 item.loc,
             )),
         }
@@ -38,11 +41,10 @@ impl Rule<StructDefinition> for MissingAuthor {
 
 #[cfg(test)]
 mod tests {
-    use super::{MissingAuthor, Rule, StructDefinition};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, MissingAuthor, Rule, StructDefinition, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -125,7 +127,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingAuthor::NAME,
-            "Missing a author comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Author),
             sct.loc
         ))
     );
@@ -142,7 +144,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingAuthor::NAME,
-            "Missing a author comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Author),
             sct.loc
         ))
     );
@@ -160,7 +162,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingAuthor::NAME,
-            "Too many author comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Author),
             sct.loc
         ))
     );
@@ -179,7 +181,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingAuthor::NAME,
-            "Missing a author comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Author),
             sct.loc
         ))
     );
@@ -199,7 +201,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             MissingAuthor::NAME,
-            "Too many author comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Author),
             sct.loc
         ))
     );

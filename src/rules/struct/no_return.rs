@@ -1,6 +1,9 @@
 use solang_parser::pt::StructDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -19,7 +22,7 @@ impl Rule<StructDefinition> for NoReturn {
         if !comments.include_tag(CommentTag::Return).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
-                Self::DESCRIPTION.to_string(),
+                ViolationError::CommentNotAllowed(CommentTag::Return),
                 item.loc,
             ));
         }
@@ -29,11 +32,10 @@ impl Rule<StructDefinition> for NoReturn {
 
 #[cfg(test)]
 mod tests {
-    use super::{NoReturn, Rule, StructDefinition};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, NoReturn, Rule, StructDefinition, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -113,7 +115,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             NoReturn::NAME,
-            NoReturn::DESCRIPTION.to_string(),
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             item.loc
         ))
     );
@@ -132,7 +134,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             NoReturn::NAME,
-            NoReturn::DESCRIPTION.to_string(),
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             item.loc
         ))
     );
