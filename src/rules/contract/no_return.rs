@@ -8,21 +8,21 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that contracts do not have a param comment.
-pub struct NoParam;
+pub struct NoReturn;
 
-impl Rule<ContractDefinition> for NoParam {
-    const NAME: &'static str = "No Param";
-    const DESCRIPTION: &'static str = "Contracts must not have a param comment.";
+impl Rule<ContractDefinition> for NoReturn {
+    const NAME: &'static str = "No Return";
+    const DESCRIPTION: &'static str = "Contracts must not have a return comment.";
 
     fn check(
         _: Option<&ParseItem>,
         contract: &ContractDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        if !comments.include_tag(CommentTag::Param).is_empty() {
+        if !comments.include_tag(CommentTag::Return).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
-                ViolationError::CommentNotAllowed(CommentTag::Param),
+                ViolationError::CommentNotAllowed(CommentTag::Return),
                 contract.loc,
             ));
         }
@@ -33,7 +33,7 @@ impl Rule<ContractDefinition> for NoParam {
 #[cfg(test)]
 mod tests {
     use super::{
-        CommentTag, CommentsRef, ContractDefinition, NoParam, Rule, Violation, ViolationError,
+        CommentTag, CommentsRef, ContractDefinition, NoReturn, Rule, Violation, ViolationError,
     };
     use crate::parser::Parser;
     use forge_fmt::Visitable;
@@ -47,7 +47,7 @@ mod tests {
     }
 
     /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_no_param {
+    macro_rules! test_no_return {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -59,12 +59,12 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(NoParam::check(None, contract, comments), expected);
+                assert_eq!(NoReturn::check(None, contract, comments), expected);
             }
         };
     }
 
-    test_no_param!(
+    test_no_return!(
         empty_no_violation,
         r"
         interface Test {
@@ -73,7 +73,7 @@ mod tests {
         |_| None
     );
 
-    test_no_param!(
+    test_no_return!(
         no_violation,
         r"
         /// @custom:test Some comment
@@ -83,7 +83,7 @@ mod tests {
         |_| None
     );
 
-    test_no_param!(
+    test_no_return!(
         multi_no_violation,
         r"
         /// @custom:test Some comment
@@ -94,7 +94,7 @@ mod tests {
         |_| None
     );
 
-    test_no_param!(
+    test_no_return!(
         multiline_no_violation,
         r"
         /**
@@ -106,7 +106,7 @@ mod tests {
         |_| None
     );
 
-    test_no_param!(
+    test_no_return!(
         multiline_multi_no_violation,
         r"
         /**
@@ -119,64 +119,64 @@ mod tests {
         |_| None
     );
 
-    test_no_param!(
+    test_no_return!(
         violation,
         r"
-        /// @param Some param
+        /// @return Some return
         interface Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            NoParam::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Param),
+            NoReturn::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             sct.loc
         ))
     );
 
-    test_no_param!(
+    test_no_return!(
         multi_violation,
         r"
-        /// @param Some param
-        /// @param Some param
+        /// @return Some return
+        /// @return Some return
         abstract contract Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            NoParam::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Param),
+            NoReturn::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             sct.loc
         ))
     );
 
-    test_no_param!(
+    test_no_return!(
         multiline_violation,
         r"
         /**
-         * @param Some param
+         * @return Some return
          */
         library Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            NoParam::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Param),
+            NoReturn::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             sct.loc
         ))
     );
 
-    test_no_param!(
+    test_no_return!(
         multiline_multi_violation,
         r"
         /**
-         * @param Some param
-         * @param Some param
+         * @return Some return
+         * @return Some return
          */
         contract Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            NoParam::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Param),
+            NoReturn::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             sct.loc
         ))
     );
