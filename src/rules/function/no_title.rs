@@ -43,7 +43,6 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `RequireInheritdoc` rule
     macro_rules! test_no_title {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]

@@ -43,8 +43,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `RequireInheritdoc` rule
-    macro_rules! test_no_title {
+    macro_rules! test_no_author {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -62,7 +61,7 @@ mod tests {
         };
     }
 
-    test_no_title!(
+    test_no_author!(
         no_violation,
         r"
         contract Test {
@@ -73,7 +72,7 @@ mod tests {
         |_| None
     );
 
-    test_no_title!(
+    test_no_author!(
         violation,
         r"
         contract Test {

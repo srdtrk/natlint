@@ -44,8 +44,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_no_inheritdoc {
+    macro_rules! test_no_return {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -63,7 +62,7 @@ mod tests {
         };
     }
 
-    test_no_inheritdoc!(
+    test_no_return!(
         empty_no_violation,
         r"
         interface Test {
@@ -75,7 +74,7 @@ mod tests {
         |_| None
     );
 
-    test_no_inheritdoc!(
+    test_no_return!(
         no_violation,
         r"
         interface Test {
@@ -87,7 +86,7 @@ mod tests {
         ",
         |_| None
     );
-    test_no_inheritdoc!(
+    test_no_return!(
         multiline_no_violation,
         r"
         interface Test {
@@ -102,7 +101,7 @@ mod tests {
         |_| None
     );
 
-    test_no_inheritdoc!(
+    test_no_return!(
         return_violation,
         r"
         interface Test {
@@ -119,7 +118,7 @@ mod tests {
         ))
     );
 
-    test_no_inheritdoc!(
+    test_no_return!(
         multiline_return_violation,
         r"
         interface Test {

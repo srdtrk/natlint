@@ -95,8 +95,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_require_missingparams {
+    macro_rules! test_missingreturn {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -114,7 +113,7 @@ mod tests {
         };
     }
 
-    test_require_missingparams!(
+    test_missingreturn!(
         no_return_no_violation,
         r"
         contract Test {
@@ -124,7 +123,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         named_no_violation,
         r"
         contract Test {
@@ -135,7 +134,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         unnamed_no_violation,
         r"
         contract Test {
@@ -146,7 +145,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         dollar_no_violation,
         r"
         contract Test {
@@ -157,7 +156,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         memory_no_violation,
         r"
         contract Test {
@@ -168,7 +167,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiline_no_violation,
         r"
         contract Test {
@@ -181,7 +180,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         inheritdoc_no_violation,
         r"
         contract Test {
@@ -192,7 +191,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiline_inheritdoc_no_violation,
         r"
         contract Test {
@@ -205,7 +204,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiple_no_violation,
         r"
         contract Test {
@@ -217,7 +216,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiple_multiline_no_violation,
         r"
         contract Test {
@@ -231,7 +230,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         unnamed_multiple_no_violation,
         r"
         contract Test {
@@ -243,7 +242,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         named_violation,
         r"
         contract Test {
@@ -258,7 +257,7 @@ mod tests {
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         unnamed_violation,
         r"
         contract Test {
@@ -273,7 +272,7 @@ mod tests {
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         too_many_comments_violation,
         r"
         contract Test {
@@ -289,7 +288,7 @@ mod tests {
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiline_many_comments_violation,
         r"
         contract Test {
@@ -307,7 +306,7 @@ mod tests {
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         name_not_found_violation,
         r"
         contract Test {
@@ -323,7 +322,7 @@ mod tests {
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiline_name_not_found_violation,
         r"
         contract Test {

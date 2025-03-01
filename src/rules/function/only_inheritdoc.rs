@@ -52,8 +52,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `RequireInheritdoc` rule
-    macro_rules! test_require_inheritdoc {
+    macro_rules! test_only_inheritdoc {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -74,7 +73,7 @@ mod tests {
         };
     }
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         inheritdoc_no_violation,
         r"
         contract Test {
@@ -85,7 +84,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         empty_no_violation,
         r"
         contract Test {
@@ -95,7 +94,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         no_inheritdoc_no_violation,
         r"
         contract Test {
@@ -106,7 +105,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         public_violation,
         r"
         contract Test {
@@ -122,7 +121,7 @@ mod tests {
         ))
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         multiline_violation,
         r"
         contract Test {
@@ -140,7 +139,7 @@ mod tests {
         ))
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         external_violation,
         r"
         contract Test {
@@ -156,7 +155,7 @@ mod tests {
         ))
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         inheritdoc_violation,
         r"
         contract Test {

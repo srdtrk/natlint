@@ -80,8 +80,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `RequireInheritdoc` rule
-    macro_rules! test_require_inheritdoc {
+    macro_rules! test_missinginheritdoc {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -102,7 +101,7 @@ mod tests {
         };
     }
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         public_no_violation,
         r"
         contract Test {
@@ -113,7 +112,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         external_no_violation,
         r"
         contract Test {
@@ -124,7 +123,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         override_no_violation,
         r"
         contract Test {
@@ -135,7 +134,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         private_no_violation,
         r"
         contract Test {
@@ -145,7 +144,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         internal_no_violation,
         r"
         contract Test {
@@ -155,7 +154,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         modifier_no_violation,
         r"
         contract Test {
@@ -165,7 +164,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         constructor_no_violation,
         r"
         contract Test {
@@ -175,7 +174,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         receive_no_violation,
         r"
         contract Test {
@@ -185,7 +184,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         fallback_no_violation,
         r"
         contract Test {
@@ -195,7 +194,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         interface_no_violation,
         r"
         interface Test {
@@ -205,7 +204,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         library_no_violation,
         r"
         library Test {
@@ -215,7 +214,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         public_violation,
         r"
         contract Test {
@@ -229,7 +228,7 @@ mod tests {
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         external_violation,
         r"
         contract Test {
@@ -243,7 +242,7 @@ mod tests {
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         too_many_violation,
         r"
         contract Test {
@@ -259,7 +258,7 @@ mod tests {
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         multiline_too_many_violation,
         r"
         contract Test {
@@ -277,7 +276,7 @@ mod tests {
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         override_violation,
         r"
         contract Test {
@@ -291,7 +290,7 @@ mod tests {
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         abstract_public_violation,
         r"
         abstract contract Test {

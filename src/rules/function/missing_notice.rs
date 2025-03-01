@@ -56,7 +56,6 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `MissingParams` rule
     macro_rules! test_missingnotice {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
