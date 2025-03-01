@@ -19,7 +19,7 @@ impl Rule<StructDefinition> for MissingAuthor {
         item: &StructDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Function must have a author comment
+        // Struct must have a author comment
         match comments.include_tag(CommentTag::Author).len() {
             0 => Some(Violation::new(
                 Self::NAME,

@@ -1,25 +1,24 @@
-//! This rule requires that all structs have a title comment.
-//! This rule will be off by default.
+//! This rule requires that all contacts have a title comment.
 
-use solang_parser::pt::StructDefinition;
+use solang_parser::pt::ContractDefinition;
 
 use crate::parser::{CommentTag, CommentsRef, ParseItem};
 
 use super::super::{Rule, Violation};
 
-/// This rule requires that all structs have a title comment.
+/// This rule requires that all contracts have a title comment.
 pub struct MissingTitle;
 
-impl Rule<StructDefinition> for MissingTitle {
-    const NAME: &'static str = "Missing Title";
-    const DESCRIPTION: &'static str = "This rule requires that all structs have a title comment.";
+impl Rule<ContractDefinition> for MissingTitle {
+    const NAME: &'static str = "Missing Contract";
+    const DESCRIPTION: &'static str = "This rule requires that all contracts have a title comment.";
 
     fn check(
         _: Option<&ParseItem>,
-        item: &StructDefinition,
+        item: &ContractDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Struct must have a title comment
+        // Contract must have a title comment
         match comments.include_tag(CommentTag::Title).len() {
             0 => Some(Violation::new(
                 Self::NAME,
@@ -38,7 +37,7 @@ impl Rule<StructDefinition> for MissingTitle {
 
 #[cfg(test)]
 mod tests {
-    use super::{MissingTitle, Rule, StructDefinition};
+    use super::{ContractDefinition, MissingTitle, Rule};
     use crate::{
         parser::{CommentsRef, Parser},
         rules::Violation,
@@ -60,14 +59,13 @@ mod tests {
             fn $name() {
                 let src = parse_source($source);
 
-                let parent = src.items_ref().first().unwrap();
-                let child = parent.children.first().unwrap();
-                let item = child.as_struct().unwrap();
-                let comments = CommentsRef::from(&child.comments);
+                let contract_item = src.items_ref().first().unwrap();
+                let comments = CommentsRef::from(&contract_item.comments);
+                let contract = contract_item.as_contract().unwrap();
 
-                let expected = $expected(item);
+                let expected = $expected(contract);
 
-                assert_eq!(MissingTitle::check(Some(parent), item, comments), expected);
+                assert_eq!(MissingTitle::check(None, contract, comments), expected);
             }
         };
     }
@@ -75,11 +73,8 @@ mod tests {
     test_missingtitle!(
         no_violation,
         r"
+        /// @title Some title
         interface Test {
-            /// @title Some title
-            struct TestStruct {
-                uint256 a;
-            }
         }
         ",
         |_| None
@@ -88,12 +83,9 @@ mod tests {
     test_missingtitle!(
         multi_no_violation,
         r"
-        interface Test {
-            /// @title Some title
-            /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
+        /// @title Some title
+        /// @author Some author
+        contract Test {
         }
         ",
         |_| None
@@ -102,14 +94,23 @@ mod tests {
     test_missingtitle!(
         multiline_no_violation,
         r"
-        interface Test {
-            /**
-             * @title Some title
-             * @param a Some param
-             */
-            struct TestStruct {
-                uint256 a;
-            }
+        /**
+         * @title Some title
+         */
+        abstract contract Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_missingtitle!(
+        multiline_multi_no_violation,
+        r"
+        /**
+         * @title Some title
+         * @author Some author
+         */
+        library Test {
         }
         ",
         |_| None
@@ -119,12 +120,9 @@ mod tests {
         empty_violation,
         r"
         contract Test {
-            struct TestStruct {
-                uint256 a;
-            }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
             "Missing a title comment".to_string(),
             sct.loc
@@ -134,14 +132,11 @@ mod tests {
     test_missingtitle!(
         violation,
         r"
-        contract Test {
-            /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
+        /// @author Some author
+        interface Test {
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
             "Missing a title comment".to_string(),
             sct.loc
@@ -151,15 +146,12 @@ mod tests {
     test_missingtitle!(
         multi_violation,
         r"
-        contract Test {
-            /// @title Some struct
-            /// @title Some struct
-            struct TestStruct {
-                uint256 a;
-            }
+        /// @title Some title
+        /// @title Some title
+        abstract contract Test {
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
             "Too many title comments".to_string(),
             sct.loc
@@ -169,16 +161,13 @@ mod tests {
     test_missingtitle!(
         multiline_violation,
         r"
-        contract Test {
-            /**
-             * @param a Some param
-             */
-            struct TestStruct {
-                uint256 a;
-            }
+        /**
+         * @author Some author
+         */
+        library Test {
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
             "Missing a title comment".to_string(),
             sct.loc
@@ -188,17 +177,14 @@ mod tests {
     test_missingtitle!(
         multiline_multi_violation,
         r"
+        /**
+         * @title Some title
+         * @title Some title
+         */
         contract Test {
-            /**
-             * @title a Some struct
-             * @title b Some struct
-             */
-            struct TestStruct {
-                uint256 a;
-            }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
             "Too many title comments".to_string(),
             sct.loc

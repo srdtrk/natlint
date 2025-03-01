@@ -16,7 +16,7 @@ impl Rule<StructDefinition> for MissingNotice {
         item: &StructDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Function must have a notice comment
+        // Struct must have a notice comment
         match comments.include_tag(CommentTag::Notice).len() {
             0 => Some(Violation::new(
                 Self::NAME,
