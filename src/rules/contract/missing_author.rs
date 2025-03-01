@@ -3,7 +3,10 @@
 
 use solang_parser::pt::ContractDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -20,30 +23,24 @@ impl Rule<ContractDefinition> for MissingAuthor {
         item: &ContractDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Contract must have an author comment
-        match comments.include_tag(CommentTag::Author).len() {
-            0 => Some(Violation::new(
+        // Contract must have at least one author comment
+        if comments.include_tag(CommentTag::Author).is_empty() {
+            return Some(Violation::new(
                 Self::NAME,
-                "Missing an author comment".to_string(),
+                ViolationError::MissingComment(CommentTag::Author),
                 item.loc,
-            )),
-            1 => None,
-            _ => Some(Violation::new(
-                Self::NAME,
-                "Too many author comments".to_string(),
-                item.loc,
-            )),
+            ));
         }
+        None
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{ContractDefinition, MissingAuthor, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, ContractDefinition, MissingAuthor, Rule, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -94,12 +91,23 @@ mod tests {
     );
 
     test_missingauthor!(
+        multi_author_no_violation,
+        r"
+        /// @author Some author
+        /// @author Some other
+        abstract contract Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_missingauthor!(
         multiline_no_violation,
         r"
         /**
          * @author Some author
          */
-        abstract contract Test {
+        interface Test {
         }
         ",
         |_| None
@@ -119,6 +127,19 @@ mod tests {
     );
 
     test_missingauthor!(
+        multiline_multi_author_no_violation,
+        r"
+        /**
+         * @author Some author
+         * @author Some other
+         */
+        contract Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_missingauthor!(
         empty_violation,
         r"
         contract Test {
@@ -126,7 +147,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingAuthor::NAME,
-            "Missing an author comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Author),
             sct.loc
         ))
     );
@@ -140,22 +161,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingAuthor::NAME,
-            "Missing an author comment".to_string(),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
-        multi_violation,
-        r"
-        /// @author Some author
-        /// @author Some author
-        abstract contract Test {
-        }
-        ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            "Too many author comments".to_string(),
+            ViolationError::MissingComment(CommentTag::Author),
             sct.loc
         ))
     );
@@ -171,24 +177,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingAuthor::NAME,
-            "Missing an author comment".to_string(),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
-        multiline_multi_violation,
-        r"
-        /**
-         * @author Some author
-         * @author Some author
-         */
-        contract Test {
-        }
-        ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            "Too many author comments".to_string(),
+            ViolationError::MissingComment(CommentTag::Author),
             sct.loc
         ))
     );

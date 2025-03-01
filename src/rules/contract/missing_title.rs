@@ -2,7 +2,10 @@
 
 use solang_parser::pt::ContractDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -22,13 +25,13 @@ impl Rule<ContractDefinition> for MissingTitle {
         match comments.include_tag(CommentTag::Title).len() {
             0 => Some(Violation::new(
                 Self::NAME,
-                "Missing a title comment".to_string(),
+                ViolationError::MissingComment(CommentTag::Title),
                 item.loc,
             )),
             1 => None,
             _ => Some(Violation::new(
                 Self::NAME,
-                "Too many title comments".to_string(),
+                ViolationError::TooManyComments(CommentTag::Title),
                 item.loc,
             )),
         }
@@ -37,11 +40,10 @@ impl Rule<ContractDefinition> for MissingTitle {
 
 #[cfg(test)]
 mod tests {
-    use super::{ContractDefinition, MissingTitle, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, ContractDefinition, MissingTitle, Rule, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -124,7 +126,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
-            "Missing a title comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Title),
             sct.loc
         ))
     );
@@ -138,7 +140,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
-            "Missing a title comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Title),
             sct.loc
         ))
     );
@@ -153,7 +155,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
-            "Too many title comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Title),
             sct.loc
         ))
     );
@@ -169,7 +171,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
-            "Missing a title comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Title),
             sct.loc
         ))
     );
@@ -186,7 +188,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
-            "Too many title comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Title),
             sct.loc
         ))
     );
