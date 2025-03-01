@@ -37,7 +37,11 @@ impl Rule<StructDefinition> for MissingParams {
 
         for field in &item.fields {
             let Some(field_id) = field.name.as_ref() else {
-                unreachable!("Field name is missing");
+                return Some(Violation::new(
+                    Self::NAME,
+                    "Cannot parse paramater name".to_string(),
+                    field.loc,
+                ));
             };
 
             if !param_comments.iter().any(|comment| {
