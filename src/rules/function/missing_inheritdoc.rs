@@ -7,10 +7,10 @@ use crate::parser::{CommentTag, CommentsRef, ParseItem};
 use super::super::{Rule, Violation};
 
 /// This rule requires that all public functions have a inheritdoc comment.
-pub struct RequireInheritdoc;
+pub struct MissingInheritdoc;
 
-impl Rule<FunctionDefinition> for RequireInheritdoc {
-    const NAME: &'static str = "Require Inheritdoc";
+impl Rule<FunctionDefinition> for MissingInheritdoc {
+    const NAME: &'static str = "Missing Inheritdoc";
     const DESCRIPTION: &'static str =
         "All public and override functions must have an inheritdoc comment.";
 
@@ -65,7 +65,7 @@ impl Rule<FunctionDefinition> for RequireInheritdoc {
 
 #[cfg(test)]
 mod tests {
-    use super::{RequireInheritdoc, Rule};
+    use super::{MissingInheritdoc, Rule};
     use crate::{
         parser::{CommentsRef, Parser},
         rules::Violation,
@@ -95,7 +95,7 @@ mod tests {
                 let expected = $expected(func);
 
                 assert_eq!(
-                    RequireInheritdoc::check(Some(parent), func, comments),
+                    MissingInheritdoc::check(Some(parent), func, comments),
                     expected
                 );
             }
@@ -223,8 +223,8 @@ mod tests {
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            RequireInheritdoc::NAME,
-            RequireInheritdoc::DESCRIPTION.to_string(),
+            MissingInheritdoc::NAME,
+            MissingInheritdoc::DESCRIPTION.to_string(),
             func.loc
         ))
     );
@@ -237,8 +237,8 @@ mod tests {
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            RequireInheritdoc::NAME,
-            RequireInheritdoc::DESCRIPTION.to_string(),
+            MissingInheritdoc::NAME,
+            MissingInheritdoc::DESCRIPTION.to_string(),
             func.loc
         ))
     );
@@ -253,7 +253,7 @@ mod tests {
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            RequireInheritdoc::NAME,
+            MissingInheritdoc::NAME,
             "Too many inheritdoc comments".to_string(),
             func.loc
         ))
@@ -271,7 +271,7 @@ mod tests {
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            RequireInheritdoc::NAME,
+            MissingInheritdoc::NAME,
             "Too many inheritdoc comments".to_string(),
             func.loc
         ))
@@ -285,8 +285,8 @@ mod tests {
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            RequireInheritdoc::NAME,
-            RequireInheritdoc::DESCRIPTION.to_string(),
+            MissingInheritdoc::NAME,
+            MissingInheritdoc::DESCRIPTION.to_string(),
             func.loc
         ))
     );
@@ -299,8 +299,8 @@ mod tests {
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            RequireInheritdoc::NAME,
-            RequireInheritdoc::DESCRIPTION.to_string(),
+            MissingInheritdoc::NAME,
+            MissingInheritdoc::DESCRIPTION.to_string(),
             func.loc
         ))
     );
