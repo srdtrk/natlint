@@ -56,7 +56,7 @@ impl Rule<StructDefinition> for MissingParams {
             }) {
                 return Some(Violation::new(
                     Self::NAME,
-                    ViolationError::missing_param_comment(CommentTag::Param, &field_id.name),
+                    ViolationError::missing_comment_for(CommentTag::Param, &field_id.name),
                     field_id.loc,
                 ));
             }
@@ -225,7 +225,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
-            ViolationError::missing_param_comment(CommentTag::Param, "b"),
+            ViolationError::missing_comment_for(CommentTag::Param, "b"),
             item.fields[1].name.as_ref().unwrap().loc
         ))
     );
@@ -246,7 +246,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
-            ViolationError::missing_param_comment(CommentTag::Param, "b"),
+            ViolationError::missing_comment_for(CommentTag::Param, "b"),
             item.fields[1].name.as_ref().unwrap().loc
         ))
     );

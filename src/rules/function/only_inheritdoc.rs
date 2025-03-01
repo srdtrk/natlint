@@ -3,7 +3,10 @@
 
 use solang_parser::pt::FunctionDefinition;
 
-use crate::parser::{CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -26,7 +29,7 @@ impl Rule<FunctionDefinition> for OnlyInheritdoc {
                 1 => None,
                 _ => Some(Violation::new(
                     Self::NAME,
-                    Self::DESCRIPTION.to_string(),
+                    ViolationError::OnlyInheritdoc,
                     func.loc,
                 )),
             };
@@ -37,13 +40,10 @@ impl Rule<FunctionDefinition> for OnlyInheritdoc {
 
 #[cfg(test)]
 mod tests {
-    use super::{OnlyInheritdoc, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
-    };
+    use super::{CommentsRef, FunctionDefinition, OnlyInheritdoc, Rule, Violation, ViolationError};
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
-    use solang_parser::{parse, pt::FunctionDefinition};
+    use solang_parser::parse;
 
     fn parse_source(src: &str) -> Parser {
         let (mut source, comments) = parse(src, 0).expect("failed to parse source");
@@ -116,7 +116,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
-            OnlyInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::OnlyInheritdoc,
             func.loc
         ))
     );
@@ -134,7 +134,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
-            OnlyInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::OnlyInheritdoc,
             func.loc
         ))
     );
@@ -150,7 +150,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
-            OnlyInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::OnlyInheritdoc,
             func.loc
         ))
     );
@@ -166,7 +166,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
-            OnlyInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::OnlyInheritdoc,
             func.loc
         ))
     );

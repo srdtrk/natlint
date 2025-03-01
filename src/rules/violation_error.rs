@@ -15,8 +15,8 @@ pub enum ViolationError {
     TooManyComments(CommentTag),
     #[error("{0} comments are not allowed on this construct")]
     CommentNotAllowed(CommentTag),
-    #[error("Missing a {tag} comment for the parameter {param_name}")]
-    MissingParamComment { tag: CommentTag, param_name: String },
+    #[error("Missing a {tag} comment for `{name}`")]
+    MissingCommentFor { tag: CommentTag, name: String },
     #[error("Inheritdoc comment must be the only comment")]
     OnlyInheritdoc,
     #[error("Error while parsing: {0}")]
@@ -26,10 +26,10 @@ pub enum ViolationError {
 impl ViolationError {
     /// Create a new `MissingParamComment` error.
     #[must_use]
-    pub fn missing_param_comment(tag: CommentTag, param_name: impl Into<String>) -> Self {
-        Self::MissingParamComment {
+    pub fn missing_comment_for(tag: CommentTag, name: impl Into<String>) -> Self {
+        Self::MissingCommentFor {
             tag,
-            param_name: param_name.into(),
+            name: name.into(),
         }
     }
 

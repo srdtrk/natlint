@@ -2,7 +2,10 @@
 
 use solang_parser::pt::FunctionDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -21,7 +24,7 @@ impl Rule<FunctionDefinition> for NoTitle {
         if !comments.include_tag(CommentTag::Title).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
-                Self::DESCRIPTION.to_string(),
+                ViolationError::CommentNotAllowed(CommentTag::Title),
                 func.loc,
             ));
         }
@@ -31,7 +34,9 @@ impl Rule<FunctionDefinition> for NoTitle {
 
 #[cfg(test)]
 mod tests {
-    use super::{CommentsRef, FunctionDefinition, NoTitle, Rule, Violation};
+    use super::{
+        CommentTag, CommentsRef, FunctionDefinition, NoTitle, Rule, Violation, ViolationError,
+    };
     use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
@@ -82,7 +87,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             NoTitle::NAME,
-            NoTitle::DESCRIPTION.to_string(),
+            ViolationError::CommentNotAllowed(CommentTag::Title),
             func.loc,
         ))
     );

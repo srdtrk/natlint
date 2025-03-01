@@ -1,6 +1,9 @@
 use solang_parser::pt::{FunctionDefinition, FunctionTy};
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -37,14 +40,14 @@ impl Rule<FunctionDefinition> for MissingReturn {
             std::cmp::Ordering::Less => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Too many return comments".to_string(),
+                    ViolationError::TooManyComments(CommentTag::Return),
                     func.loc,
                 ));
             }
             std::cmp::Ordering::Greater => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Missing return or inheritdoc comment".to_string(),
+                    ViolationError::MissingComment(CommentTag::Return),
                     func.loc,
                 ));
             }
@@ -68,7 +71,7 @@ impl Rule<FunctionDefinition> for MissingReturn {
             }) {
                 return Some(Violation::new(
                     Self::NAME,
-                    format!("Missing return comment for `{var_name}`"),
+                    ViolationError::missing_comment_for(CommentTag::Return, &var_name),
                     *loc,
                 ));
             }
@@ -80,11 +83,10 @@ impl Rule<FunctionDefinition> for MissingReturn {
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, MissingReturn, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, FunctionDefinition, MissingReturn, Rule, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -252,7 +254,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Missing return or inheritdoc comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Return),
             func.loc
         ))
     );
@@ -267,7 +269,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Missing return or inheritdoc comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Return),
             func.loc
         ))
     );
@@ -283,7 +285,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Too many return comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Return),
             func.loc
         ))
     );
@@ -301,7 +303,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Too many return comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Return),
             func.loc
         ))
     );
@@ -317,7 +319,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Missing return comment for `b`".to_string(),
+            ViolationError::missing_comment_for(CommentTag::Return, "b"),
             func.returns[1].0
         ))
     );
@@ -335,7 +337,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Missing return comment for `b`".to_string(),
+            ViolationError::missing_comment_for(CommentTag::Return, "b"),
             func.returns[1].0
         ))
     );

@@ -1,6 +1,9 @@
 use solang_parser::pt::{FunctionDefinition, FunctionTy};
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -35,14 +38,14 @@ impl Rule<FunctionDefinition> for MissingParams {
             std::cmp::Ordering::Less => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Too many param comments".to_string(),
+                    ViolationError::TooManyComments(CommentTag::Param),
                     func.loc,
                 ));
             }
             std::cmp::Ordering::Greater => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Missing param or inheritdoc comment".to_string(),
+                    ViolationError::MissingComment(CommentTag::Param),
                     func.loc,
                 ));
             }
@@ -66,7 +69,7 @@ impl Rule<FunctionDefinition> for MissingParams {
             }) {
                 return Some(Violation::new(
                     Self::NAME,
-                    format!("Missing param comment for `{param_name}`"),
+                    ViolationError::missing_comment_for(CommentTag::Param, &param_name),
                     *loc,
                 ));
             }
@@ -78,11 +81,10 @@ impl Rule<FunctionDefinition> for MissingParams {
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, MissingParams, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, FunctionDefinition, MissingParams, Rule, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -236,7 +238,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Missing param or inheritdoc comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Param),
             func.loc
         ))
     );
@@ -252,7 +254,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Too many param comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Param),
             func.loc
         ))
     );
@@ -267,7 +269,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Too many param comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Param),
             func.loc
         ))
     );
@@ -285,7 +287,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Too many param comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Param),
             func.loc
         ))
     );
@@ -301,7 +303,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Missing param comment for `b`".to_string(),
+            ViolationError::missing_comment_for(CommentTag::Param, "b"),
             func.params[1].0
         ))
     );
@@ -319,7 +321,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Missing param comment for `b`".to_string(),
+            ViolationError::missing_comment_for(CommentTag::Param, "b"),
             func.params[1].0
         ))
     );
