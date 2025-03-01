@@ -1,7 +1,7 @@
 use clap::Parser;
 use natlint::{
     cli::cmd::{Commands, NatlintCli},
-    files::finder::find_matching_files,
+    cli::file_finder::find_matching_files,
 };
 
 fn main() -> eyre::Result<()> {

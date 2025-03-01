@@ -4,4 +4,3 @@ build:
 
 test testname="--all":
 	cargo test {{testname}} --locked -- --nocapture
-

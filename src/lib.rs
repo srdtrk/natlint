@@ -6,6 +6,5 @@
 #![deny(clippy::nursery, clippy::pedantic, warnings, missing_docs)]
 
 pub mod cli;
-pub mod files;
 pub mod parser;
 pub mod rules;

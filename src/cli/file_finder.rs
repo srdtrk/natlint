@@ -1,3 +1,5 @@
+//! Defines file finding utilities for the CLI.
+
 use eyre::OptionExt;
 use glob::glob;
 use globset::{Glob, GlobSet, GlobSetBuilder};
@@ -36,18 +38,12 @@ pub fn find_matching_files(
         let include_pattern_str = include_path
             .to_str()
             .ok_or_eyre(format!("Invalid include pattern: {root}/{pattern}"))?;
-        for entry in glob(include_pattern_str)? {
-            match entry {
-                Ok(path) if path.is_file() => {
-                    // Only add files that do not match any exclude pattern.
-                    if !exclude_set.is_match(&path) {
-                        files_set.insert(path);
-                    }
-                }
-                Ok(_) => continue, // Ignore non-files.
-                Err(e) => return Err(e.into()),
-            }
-        }
+        let matches = glob(include_pattern_str)?
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .filter(|entry| entry.is_file())
+            .filter(|entry| !exclude_set.is_match(entry));
+        files_set.extend(matches);
     }
 
     // Convert the HashSet into a Vec.
