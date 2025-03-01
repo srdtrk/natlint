@@ -24,7 +24,7 @@ pub enum ViolationError {
 }
 
 impl ViolationError {
-    /// Create a new `MissingParamComment` error.
+    /// Create a new [`ViolationError::MissingComment`] error.
     #[must_use]
     pub fn missing_comment_for(tag: CommentTag, name: impl Into<String>) -> Self {
         Self::MissingCommentFor {
@@ -33,6 +33,8 @@ impl ViolationError {
         }
     }
 
+    /// Create a new [`ViolationError::ParseError`] error.
+    #[must_use]
     pub fn parse_error(msg: impl Into<String>) -> Self {
         Self::ParseError(msg.into())
     }
