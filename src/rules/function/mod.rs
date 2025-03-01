@@ -3,6 +3,7 @@
 mod missing_notice;
 mod missing_params;
 mod missing_return;
+mod no_author;
 mod no_title;
 mod only_inheritdoc;
 mod require_inheritdoc;
@@ -11,6 +12,7 @@ mod require_inheritdoc;
 pub use missing_notice::MissingNotice;
 pub use missing_params::MissingParams;
 pub use missing_return::MissingReturn;
+pub use no_author::NoAuthor;
 pub use no_title::NoTitle;
 pub use only_inheritdoc::OnlyInheritdoc;
 pub use require_inheritdoc::RequireInheritdoc;
