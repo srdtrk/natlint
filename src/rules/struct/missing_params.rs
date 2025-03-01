@@ -1,6 +1,9 @@
 use solang_parser::pt::StructDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -21,14 +24,14 @@ impl Rule<StructDefinition> for MissingParams {
             std::cmp::Ordering::Less => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Too many param comments".to_string(),
+                    ViolationError::TooManyComments(CommentTag::Param),
                     item.loc,
                 ))
             }
             std::cmp::Ordering::Greater => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Missing param comment".to_string(),
+                    ViolationError::MissingComment(CommentTag::Param),
                     item.loc,
                 ))
             }
@@ -39,7 +42,7 @@ impl Rule<StructDefinition> for MissingParams {
             let Some(field_id) = field.name.as_ref() else {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Cannot parse paramater name".to_string(),
+                    ViolationError::parse_error("Field name could not be parsed"),
                     field.loc,
                 ));
             };
@@ -53,7 +56,7 @@ impl Rule<StructDefinition> for MissingParams {
             }) {
                 return Some(Violation::new(
                     Self::NAME,
-                    format!("Missing param comment for field `{}`", field_id.name),
+                    ViolationError::missing_comment_for(CommentTag::Param, &field_id.name),
                     field_id.loc,
                 ));
             }
@@ -65,11 +68,10 @@ impl Rule<StructDefinition> for MissingParams {
 
 #[cfg(test)]
 mod tests {
-    use super::{MissingParams, Rule, StructDefinition};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, MissingParams, Rule, StructDefinition, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -80,7 +82,6 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `MissingParams` rule
     macro_rules! test_missingparams {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
@@ -169,7 +170,27 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Too many param comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Param),
+            item.loc
+        ))
+    );
+
+    test_missingparams!(
+        multiline_too_many_comments_violation,
+        r"
+        interface Test {
+            /**
+             * @param a Some param
+             * @param b Some param
+             */
+            struct TestStruct {
+                uint256 a;
+            }
+        }
+        ",
+        |item: &StructDefinition| Some(Violation::new(
+            MissingParams::NAME,
+            ViolationError::TooManyComments(CommentTag::Param),
             item.loc
         ))
     );
@@ -185,7 +206,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Missing param comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Param),
             item.loc
         ))
     );
@@ -204,7 +225,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Missing param comment for field `b`".to_string(),
+            ViolationError::missing_comment_for(CommentTag::Param, "b"),
             item.fields[1].name.as_ref().unwrap().loc
         ))
     );
@@ -225,7 +246,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
-            "Missing param comment for field `b`".to_string(),
+            ViolationError::missing_comment_for(CommentTag::Param, "b"),
             item.fields[1].name.as_ref().unwrap().loc
         ))
     );

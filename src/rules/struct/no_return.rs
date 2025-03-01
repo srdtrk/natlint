@@ -1,6 +1,9 @@
 use solang_parser::pt::StructDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -19,7 +22,7 @@ impl Rule<StructDefinition> for NoReturn {
         if !comments.include_tag(CommentTag::Return).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
-                Self::DESCRIPTION.to_string(),
+                ViolationError::CommentNotAllowed(CommentTag::Return),
                 item.loc,
             ));
         }
@@ -29,11 +32,10 @@ impl Rule<StructDefinition> for NoReturn {
 
 #[cfg(test)]
 mod tests {
-    use super::{NoReturn, Rule, StructDefinition};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, NoReturn, Rule, StructDefinition, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -44,8 +46,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_no_inheritdoc {
+    macro_rules! test_no_return {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -63,7 +64,7 @@ mod tests {
         };
     }
 
-    test_no_inheritdoc!(
+    test_no_return!(
         empty_no_violation,
         r"
         interface Test {
@@ -75,7 +76,7 @@ mod tests {
         |_| None
     );
 
-    test_no_inheritdoc!(
+    test_no_return!(
         no_violation,
         r"
         interface Test {
@@ -87,7 +88,7 @@ mod tests {
         ",
         |_| None
     );
-    test_no_inheritdoc!(
+    test_no_return!(
         multiline_no_violation,
         r"
         interface Test {
@@ -102,7 +103,7 @@ mod tests {
         |_| None
     );
 
-    test_no_inheritdoc!(
+    test_no_return!(
         return_violation,
         r"
         interface Test {
@@ -114,12 +115,12 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             NoReturn::NAME,
-            NoReturn::DESCRIPTION.to_string(),
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             item.loc
         ))
     );
 
-    test_no_inheritdoc!(
+    test_no_return!(
         multiline_return_violation,
         r"
         interface Test {
@@ -133,7 +134,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             NoReturn::NAME,
-            NoReturn::DESCRIPTION.to_string(),
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             item.loc
         ))
     );

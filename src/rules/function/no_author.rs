@@ -2,7 +2,10 @@
 
 use solang_parser::pt::FunctionDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -21,7 +24,7 @@ impl Rule<FunctionDefinition> for NoAuthor {
         if !comments.include_tag(CommentTag::Author).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
-                Self::DESCRIPTION.to_string(),
+                ViolationError::CommentNotAllowed(CommentTag::Author),
                 func.loc,
             ));
         }
@@ -31,7 +34,9 @@ impl Rule<FunctionDefinition> for NoAuthor {
 
 #[cfg(test)]
 mod tests {
-    use super::{CommentsRef, FunctionDefinition, NoAuthor, Rule, Violation};
+    use super::{
+        CommentTag, CommentsRef, FunctionDefinition, NoAuthor, Rule, Violation, ViolationError,
+    };
     use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
@@ -43,8 +48,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `RequireInheritdoc` rule
-    macro_rules! test_no_title {
+    macro_rules! test_no_author {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -62,18 +66,41 @@ mod tests {
         };
     }
 
-    test_no_title!(
-        no_violation,
+    test_no_author!(
+        empty_no_violation,
         r"
         contract Test {
-            /// @title Some function
             function test() public {}
         }
         ",
         |_| None
     );
 
-    test_no_title!(
+    test_no_author!(
+        no_violation,
+        r"
+        contract Test {
+            /// @custom:test Some function
+            function test() public {}
+        }
+        ",
+        |_| None
+    );
+
+    test_no_author!(
+        multiline_no_violation,
+        r"
+        contract Test {
+            /**
+             * @custom:test Some function
+             */
+            function test() public {}
+        }
+        ",
+        |_| None
+    );
+
+    test_no_author!(
         violation,
         r"
         contract Test {
@@ -83,7 +110,24 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             NoAuthor::NAME,
-            NoAuthor::DESCRIPTION.to_string(),
+            ViolationError::CommentNotAllowed(CommentTag::Author),
+            func.loc,
+        ))
+    );
+
+    test_no_author!(
+        multiline_violation,
+        r"
+        contract Test {
+            /**
+             * @author Some author
+             */
+            function test() public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            NoAuthor::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Author),
             func.loc,
         ))
     );

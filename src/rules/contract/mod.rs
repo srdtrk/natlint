@@ -1,3 +1,8 @@
 //! This module defines the rules for contract items in the natlint linter.
 
-//use solang_parser::pt::ContractDefinition;
+mod missing_author;
+mod missing_title;
+
+// The rules are exported here:
+pub use missing_author::MissingAuthor;
+pub use missing_title::MissingTitle;

@@ -1,6 +1,9 @@
 use solang_parser::pt::FunctionDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -26,13 +29,13 @@ impl Rule<FunctionDefinition> for MissingNotice {
         match comments.include_tag(CommentTag::Notice).len() {
             0 => Some(Violation::new(
                 Self::NAME,
-                "Missing notice or inheritdoc comment".to_string(),
+                ViolationError::MissingComment(CommentTag::Notice),
                 func.loc,
             )),
             1 => None,
             _ => Some(Violation::new(
                 Self::NAME,
-                "Too many notice comments".to_string(),
+                ViolationError::TooManyComments(CommentTag::Notice),
                 func.loc,
             )),
         }
@@ -41,11 +44,10 @@ impl Rule<FunctionDefinition> for MissingNotice {
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, MissingNotice, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, FunctionDefinition, MissingNotice, Rule, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -56,7 +58,6 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `MissingParams` rule
     macro_rules! test_missingnotice {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
@@ -181,7 +182,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Missing notice or inheritdoc comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Notice),
             func.loc
         ))
     );
@@ -197,7 +198,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Too many notice comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Notice),
             func.loc
         ))
     );
@@ -213,7 +214,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Too many notice comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Notice),
             func.loc
         ))
     );
@@ -231,7 +232,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Too many notice comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Notice),
             func.loc
         ))
     );

@@ -2,7 +2,10 @@ use solang_parser::pt::{
     ContractTy, FunctionAttribute, FunctionDefinition, FunctionTy, Visibility,
 };
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -50,13 +53,13 @@ impl Rule<FunctionDefinition> for MissingInheritdoc {
         match comments.include_tag(CommentTag::Inheritdoc).len() {
             0 => Some(Violation::new(
                 Self::NAME,
-                Self::DESCRIPTION.to_string(),
+                ViolationError::MissingComment(CommentTag::Inheritdoc),
                 func.loc,
             )),
             1 => None,
             _ => Some(Violation::new(
                 Self::NAME,
-                "Too many inheritdoc comments".to_string(),
+                ViolationError::TooManyComments(CommentTag::Inheritdoc),
                 func.loc,
             )),
         }
@@ -65,13 +68,13 @@ impl Rule<FunctionDefinition> for MissingInheritdoc {
 
 #[cfg(test)]
 mod tests {
-    use super::{MissingInheritdoc, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, FunctionDefinition, MissingInheritdoc, Rule, Violation,
+        ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
-    use solang_parser::{parse, pt::FunctionDefinition};
+    use solang_parser::parse;
 
     fn parse_source(src: &str) -> Parser {
         let (mut source, comments) = parse(src, 0).expect("failed to parse source");
@@ -80,8 +83,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `RequireInheritdoc` rule
-    macro_rules! test_require_inheritdoc {
+    macro_rules! test_missinginheritdoc {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -102,7 +104,7 @@ mod tests {
         };
     }
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         public_no_violation,
         r"
         contract Test {
@@ -113,7 +115,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         external_no_violation,
         r"
         contract Test {
@@ -124,7 +126,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         override_no_violation,
         r"
         contract Test {
@@ -135,7 +137,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         private_no_violation,
         r"
         contract Test {
@@ -145,7 +147,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         internal_no_violation,
         r"
         contract Test {
@@ -155,7 +157,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         modifier_no_violation,
         r"
         contract Test {
@@ -165,7 +167,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         constructor_no_violation,
         r"
         contract Test {
@@ -175,7 +177,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         receive_no_violation,
         r"
         contract Test {
@@ -185,7 +187,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         fallback_no_violation,
         r"
         contract Test {
@@ -195,7 +197,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         interface_no_violation,
         r"
         interface Test {
@@ -205,7 +207,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         library_no_violation,
         r"
         library Test {
@@ -215,7 +217,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         public_violation,
         r"
         contract Test {
@@ -224,12 +226,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingInheritdoc::NAME,
-            MissingInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::MissingComment(CommentTag::Inheritdoc),
             func.loc
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         external_violation,
         r"
         contract Test {
@@ -238,12 +240,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingInheritdoc::NAME,
-            MissingInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::MissingComment(CommentTag::Inheritdoc),
             func.loc
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         too_many_violation,
         r"
         contract Test {
@@ -254,12 +256,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingInheritdoc::NAME,
-            "Too many inheritdoc comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Inheritdoc),
             func.loc
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         multiline_too_many_violation,
         r"
         contract Test {
@@ -272,12 +274,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingInheritdoc::NAME,
-            "Too many inheritdoc comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Inheritdoc),
             func.loc
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         override_violation,
         r"
         contract Test {
@@ -286,12 +288,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingInheritdoc::NAME,
-            MissingInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::MissingComment(CommentTag::Inheritdoc),
             func.loc
         ))
     );
 
-    test_require_inheritdoc!(
+    test_missinginheritdoc!(
         abstract_public_violation,
         r"
         abstract contract Test {
@@ -300,7 +302,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingInheritdoc::NAME,
-            MissingInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::MissingComment(CommentTag::Inheritdoc),
             func.loc
         ))
     );
