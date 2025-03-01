@@ -1,4 +1,5 @@
-//! This rule requires that all contacts have a title comment.
+//! This rule requires that all contacts have an author comment.
+//! This rule is off by default.
 
 use solang_parser::pt::ContractDefinition;
 
@@ -6,29 +7,30 @@ use crate::parser::{CommentTag, CommentsRef, ParseItem};
 
 use super::super::{Rule, Violation};
 
-/// This rule requires that all contracts have a title comment.
-pub struct MissingTitle;
+/// This rule requires that all contracts have a author comment.
+pub struct MissingAuthor;
 
-impl Rule<ContractDefinition> for MissingTitle {
-    const NAME: &'static str = "Missing Title";
-    const DESCRIPTION: &'static str = "This rule requires that all contracts have a title comment.";
+impl Rule<ContractDefinition> for MissingAuthor {
+    const NAME: &'static str = "Missing Author";
+    const DESCRIPTION: &'static str =
+        "This rule requires that all contracts have an author comment.";
 
     fn check(
         _: Option<&ParseItem>,
         item: &ContractDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Contract must have a title comment
-        match comments.include_tag(CommentTag::Title).len() {
+        // Contract must have an author comment
+        match comments.include_tag(CommentTag::Author).len() {
             0 => Some(Violation::new(
                 Self::NAME,
-                "Missing a title comment".to_string(),
+                "Missing an author comment".to_string(),
                 item.loc,
             )),
             1 => None,
             _ => Some(Violation::new(
                 Self::NAME,
-                "Too many title comments".to_string(),
+                "Too many author comments".to_string(),
                 item.loc,
             )),
         }
@@ -37,7 +39,7 @@ impl Rule<ContractDefinition> for MissingTitle {
 
 #[cfg(test)]
 mod tests {
-    use super::{ContractDefinition, MissingTitle, Rule};
+    use super::{ContractDefinition, MissingAuthor, Rule};
     use crate::{
         parser::{CommentsRef, Parser},
         rules::Violation,
@@ -53,7 +55,7 @@ mod tests {
     }
 
     /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_missingtitle {
+    macro_rules! test_missingauthor {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -65,22 +67,22 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(MissingTitle::check(None, contract, comments), expected);
+                assert_eq!(MissingAuthor::check(None, contract, comments), expected);
             }
         };
     }
 
-    test_missingtitle!(
+    test_missingauthor!(
         no_violation,
         r"
-        /// @title Some title
+        /// @author Some author
         interface Test {
         }
         ",
         |_| None
     );
 
-    test_missingtitle!(
+    test_missingauthor!(
         multi_no_violation,
         r"
         /// @title Some title
@@ -91,11 +93,11 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_missingauthor!(
         multiline_no_violation,
         r"
         /**
-         * @title Some title
+         * @author Some author
          */
         abstract contract Test {
         }
@@ -103,7 +105,7 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_missingauthor!(
         multiline_multi_no_violation,
         r"
         /**
@@ -116,77 +118,77 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_missingauthor!(
         empty_violation,
         r"
         contract Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            "Missing a title comment".to_string(),
+            MissingAuthor::NAME,
+            "Missing an author comment".to_string(),
             sct.loc
         ))
     );
 
-    test_missingtitle!(
+    test_missingauthor!(
         violation,
         r"
-        /// @author Some author
+        /// @title Some title
         interface Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            "Missing a title comment".to_string(),
+            MissingAuthor::NAME,
+            "Missing an author comment".to_string(),
             sct.loc
         ))
     );
 
-    test_missingtitle!(
+    test_missingauthor!(
         multi_violation,
         r"
-        /// @title Some title
-        /// @title Some title
+        /// @author Some author
+        /// @author Some author
         abstract contract Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            "Too many title comments".to_string(),
+            MissingAuthor::NAME,
+            "Too many author comments".to_string(),
             sct.loc
         ))
     );
 
-    test_missingtitle!(
+    test_missingauthor!(
         multiline_violation,
         r"
         /**
-         * @author Some author
+         * @title Some title
          */
         library Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            "Missing a title comment".to_string(),
+            MissingAuthor::NAME,
+            "Missing an author comment".to_string(),
             sct.loc
         ))
     );
 
-    test_missingtitle!(
+    test_missingauthor!(
         multiline_multi_violation,
         r"
         /**
-         * @title Some title
-         * @title Some title
+         * @author Some author
+         * @author Some author
          */
         contract Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            "Too many title comments".to_string(),
+            MissingAuthor::NAME,
+            "Too many author comments".to_string(),
             sct.loc
         ))
     );
