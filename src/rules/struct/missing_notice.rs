@@ -59,12 +59,12 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let func = child.as_struct().unwrap();
+                let item = child.as_struct().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
-                let expected = $expected(func);
+                let expected = $expected(item);
 
-                assert_eq!(MissingNotice::check(Some(parent), func, comments), expected);
+                assert_eq!(MissingNotice::check(Some(parent), item, comments), expected);
             }
         };
     }
