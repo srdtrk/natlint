@@ -57,7 +57,7 @@ mod tests {
     }
 
     /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_require_missingparams {
+    macro_rules! test_missingnotice {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -75,7 +75,7 @@ mod tests {
         };
     }
 
-    test_require_missingparams!(
+    test_missingnotice!(
         public_no_violation,
         r"
         contract Test {
@@ -86,7 +86,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
         private_no_violation,
         r"
         contract Test {
@@ -97,7 +97,18 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
+        no_tag_no_violation,
+        r"
+        contract Test {
+            /// Some function
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_missingnotice!(
         multiline_no_violation,
         r"
         contract Test {
@@ -110,7 +121,34 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
+        multiline_no_tag_no_violation,
+        r"
+        contract Test {
+            /**
+             * Some function
+             */
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_missingnotice!(
+        long_multiline_no_tag_no_violation,
+        r"
+        contract Test {
+            /**
+             * Some function
+             * next line
+             */
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_missingnotice!(
         inheritdoc_no_violation,
         r"
         contract Test {
@@ -121,7 +159,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
         multiline_inheritdoc_no_violation,
         r"
         contract Test {
@@ -134,7 +172,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
         public_violation,
         r"
         contract Test {
@@ -148,7 +186,7 @@ mod tests {
         ))
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
         too_many_comments_violation,
         r"
         contract Test {
@@ -164,7 +202,23 @@ mod tests {
         ))
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
+        too_many_comments_tag_no_tag_violation,
+        r"
+        contract Test {
+            /// Another function
+            /// @notice Some function
+            function test(uint256 a) public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            MissingNotice::NAME,
+            "Too many notice comments".to_string(),
+            func.loc
+        ))
+    );
+
+    test_missingnotice!(
         multiline_many_comments_violation,
         r"
         contract Test {

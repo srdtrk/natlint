@@ -21,7 +21,7 @@ impl Rule<FunctionDefinition> for OnlyInheritdoc {
         comments: CommentsRef,
     ) -> Option<Violation> {
         if comments.find_inheritdoc_base().is_some() {
-            match comments.len() {
+            return match comments.len() {
                 0 => unreachable!("Inheritdoc comment should have been found"),
                 1 => None,
                 _ => Some(Violation::new(
@@ -29,10 +29,9 @@ impl Rule<FunctionDefinition> for OnlyInheritdoc {
                     Self::DESCRIPTION.to_string(),
                     func.loc,
                 )),
-            }
-        } else {
-            None
+            };
         }
+        None
     }
 }
 
