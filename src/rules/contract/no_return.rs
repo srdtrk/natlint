@@ -1,6 +1,3 @@
-//! This rule requires that all contacts have an author comment.
-//! This rule is off by default.
-
 use solang_parser::pt::ContractDefinition;
 
 use crate::{
@@ -10,24 +7,22 @@ use crate::{
 
 use super::super::{Rule, Violation};
 
-/// This rule requires that all contracts have a author comment.
-pub struct MissingAuthor;
+/// This rule requires that contracts do not have a param comment.
+pub struct NoReturn;
 
-impl Rule<ContractDefinition> for MissingAuthor {
-    const NAME: &'static str = "Missing Author";
-    const DESCRIPTION: &'static str =
-        "This rule requires that all contracts have an author comment.";
+impl Rule<ContractDefinition> for NoReturn {
+    const NAME: &'static str = "No Return";
+    const DESCRIPTION: &'static str = "Contracts must not have a return comment.";
 
     fn check(
         _: Option<&ParseItem>,
         contract: &ContractDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Contract must have at least one author comment
-        if comments.include_tag(CommentTag::Author).is_empty() {
+        if !comments.include_tag(CommentTag::Return).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
-                ViolationError::MissingComment(CommentTag::Author),
+                ViolationError::CommentNotAllowed(CommentTag::Return),
                 contract.loc,
             ));
         }
@@ -38,7 +33,7 @@ impl Rule<ContractDefinition> for MissingAuthor {
 #[cfg(test)]
 mod tests {
     use super::{
-        CommentTag, CommentsRef, ContractDefinition, MissingAuthor, Rule, Violation, ViolationError,
+        CommentTag, CommentsRef, ContractDefinition, NoReturn, Rule, Violation, ViolationError,
     };
     use crate::parser::Parser;
     use forge_fmt::Visitable;
@@ -52,7 +47,7 @@ mod tests {
     }
 
     /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_missingauthor {
+    macro_rules! test_no_return {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -64,61 +59,59 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(MissingAuthor::check(None, contract, comments), expected);
+                assert_eq!(NoReturn::check(None, contract, comments), expected);
             }
         };
     }
 
-    test_missingauthor!(
-        no_violation,
+    test_no_return!(
+        empty_no_violation,
         r"
-        /// @author Some author
         interface Test {
         }
         ",
         |_| None
     );
 
-    test_missingauthor!(
+    test_no_return!(
+        no_violation,
+        r"
+        /// @custom:test Some comment
+        interface Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_no_return!(
         multi_no_violation,
         r"
-        /// @title Some title
-        /// @author Some author
+        /// @custom:test Some comment
+        /// @custom:test Some other
         contract Test {
         }
         ",
         |_| None
     );
 
-    test_missingauthor!(
-        multi_author_no_violation,
+    test_no_return!(
+        multiline_no_violation,
         r"
-        /// @author Some author
-        /// @author Some other
+        /**
+         * @custom:test Some comment
+         */
         abstract contract Test {
         }
         ",
         |_| None
     );
 
-    test_missingauthor!(
-        multiline_no_violation,
-        r"
-        /**
-         * @author Some author
-         */
-        interface Test {
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
+    test_no_return!(
         multiline_multi_no_violation,
         r"
         /**
-         * @title Some title
-         * @author Some author
+         * @custom:test Some comment
+         * @custom:test Some other
          */
         library Test {
         }
@@ -126,58 +119,64 @@ mod tests {
         |_| None
     );
 
-    test_missingauthor!(
-        multiline_multi_author_no_violation,
-        r"
-        /**
-         * @author Some author
-         * @author Some other
-         */
-        contract Test {
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        empty_violation,
-        r"
-        contract Test {
-        }
-        ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
+    test_no_return!(
         violation,
         r"
-        /// @title Some title
+        /// @return Some return
         interface Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
+            NoReturn::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             sct.loc
         ))
     );
 
-    test_missingauthor!(
+    test_no_return!(
+        multi_violation,
+        r"
+        /// @return Some return
+        /// @return Some return
+        abstract contract Test {
+        }
+        ",
+        |sct: &ContractDefinition| Some(Violation::new(
+            NoReturn::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Return),
+            sct.loc
+        ))
+    );
+
+    test_no_return!(
         multiline_violation,
         r"
         /**
-         * @title Some title
+         * @return Some return
          */
         library Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
+            NoReturn::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Return),
+            sct.loc
+        ))
+    );
+
+    test_no_return!(
+        multiline_multi_violation,
+        r"
+        /**
+         * @return Some return
+         * @return Some return
+         */
+        contract Test {
+        }
+        ",
+        |sct: &ContractDefinition| Some(Violation::new(
+            NoReturn::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Return),
             sct.loc
         ))
     );

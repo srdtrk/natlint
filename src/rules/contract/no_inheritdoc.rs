@@ -1,6 +1,3 @@
-//! This rule requires that all contacts have an author comment.
-//! This rule is off by default.
-
 use solang_parser::pt::ContractDefinition;
 
 use crate::{
@@ -10,24 +7,23 @@ use crate::{
 
 use super::super::{Rule, Violation};
 
-/// This rule requires that all contracts have a author comment.
-pub struct MissingAuthor;
+/// This rule requires that contracts do not have an inheritdoc comment.
+/// This rule may be removed in the future: <https://github.com/ethereum/solidity/issues/14045>
+pub struct NoInheritdoc;
 
-impl Rule<ContractDefinition> for MissingAuthor {
-    const NAME: &'static str = "Missing Author";
-    const DESCRIPTION: &'static str =
-        "This rule requires that all contracts have an author comment.";
+impl Rule<ContractDefinition> for NoInheritdoc {
+    const NAME: &'static str = "No Inheritdoc";
+    const DESCRIPTION: &'static str = "Contracts must not have an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,
         contract: &ContractDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        // Contract must have at least one author comment
-        if comments.include_tag(CommentTag::Author).is_empty() {
+        if !comments.include_tag(CommentTag::Inheritdoc).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
-                ViolationError::MissingComment(CommentTag::Author),
+                ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
                 contract.loc,
             ));
         }
@@ -38,7 +34,7 @@ impl Rule<ContractDefinition> for MissingAuthor {
 #[cfg(test)]
 mod tests {
     use super::{
-        CommentTag, CommentsRef, ContractDefinition, MissingAuthor, Rule, Violation, ViolationError,
+        CommentTag, CommentsRef, ContractDefinition, NoInheritdoc, Rule, Violation, ViolationError,
     };
     use crate::parser::Parser;
     use forge_fmt::Visitable;
@@ -52,7 +48,7 @@ mod tests {
     }
 
     /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_missingauthor {
+    macro_rules! test_no_inheritdoc {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -64,61 +60,59 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(MissingAuthor::check(None, contract, comments), expected);
+                assert_eq!(NoInheritdoc::check(None, contract, comments), expected);
             }
         };
     }
 
-    test_missingauthor!(
-        no_violation,
+    test_no_inheritdoc!(
+        empty_no_violation,
         r"
-        /// @author Some author
         interface Test {
         }
         ",
         |_| None
     );
 
-    test_missingauthor!(
+    test_no_inheritdoc!(
+        no_violation,
+        r"
+        /// @custom:test Some comment
+        interface Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_no_inheritdoc!(
         multi_no_violation,
         r"
-        /// @title Some title
-        /// @author Some author
+        /// @custom:test Some comment
+        /// @custom:test Some other
         contract Test {
         }
         ",
         |_| None
     );
 
-    test_missingauthor!(
-        multi_author_no_violation,
+    test_no_inheritdoc!(
+        multiline_no_violation,
         r"
-        /// @author Some author
-        /// @author Some other
+        /**
+         * @custom:test Some comment
+         */
         abstract contract Test {
         }
         ",
         |_| None
     );
 
-    test_missingauthor!(
-        multiline_no_violation,
-        r"
-        /**
-         * @author Some author
-         */
-        interface Test {
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
+    test_no_inheritdoc!(
         multiline_multi_no_violation,
         r"
         /**
-         * @title Some title
-         * @author Some author
+         * @custom:test Some comment
+         * @custom:test Some other
          */
         library Test {
         }
@@ -126,58 +120,64 @@ mod tests {
         |_| None
     );
 
-    test_missingauthor!(
-        multiline_multi_author_no_violation,
-        r"
-        /**
-         * @author Some author
-         * @author Some other
-         */
-        contract Test {
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        empty_violation,
-        r"
-        contract Test {
-        }
-        ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
+    test_no_inheritdoc!(
         violation,
         r"
-        /// @title Some title
+        /// @inheritdoc Base
         interface Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
+            NoInheritdoc::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))
     );
 
-    test_missingauthor!(
+    test_no_inheritdoc!(
+        multi_violation,
+        r"
+        /// @inheritdoc Base
+        /// @inheritdoc Base
+        abstract contract Test {
+        }
+        ",
+        |sct: &ContractDefinition| Some(Violation::new(
+            NoInheritdoc::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
+            sct.loc
+        ))
+    );
+
+    test_no_inheritdoc!(
         multiline_violation,
         r"
         /**
-         * @title Some title
+         * @inheritdoc Base
          */
         library Test {
         }
         ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
+            NoInheritdoc::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
+            sct.loc
+        ))
+    );
+
+    test_no_inheritdoc!(
+        multiline_multi_violation,
+        r"
+        /**
+         * @inheritdoc Base
+         * @inheritdoc Base
+         */
+        contract Test {
+        }
+        ",
+        |sct: &ContractDefinition| Some(Violation::new(
+            NoInheritdoc::NAME,
+            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))
     );
