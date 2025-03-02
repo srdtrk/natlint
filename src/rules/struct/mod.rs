@@ -6,6 +6,7 @@ mod missing_params;
 mod missing_title;
 mod no_inheritdoc;
 mod no_return;
+mod too_many_notice;
 
 // The rules are exported here:
 pub use missing_author::MissingAuthor;

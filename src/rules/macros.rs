@@ -67,3 +67,38 @@ macro_rules! missing_comment_rule {
         }
     };
 }
+
+/// This macro defines a rule that enforces a maximum of one comment with a specific tag.
+#[macro_export]
+macro_rules! too_many_comments_rule {
+    ($rule_name:ident, $parse_item:ty, $comment_variant:ident, $description:expr) => {
+        #[doc = $description]
+        pub struct $rule_name;
+
+        impl $crate::rules::Rule<$parse_item> for $rule_name {
+            const NAME: &'static str = stringify!($rule_name);
+            const DESCRIPTION: &'static str = $description;
+
+            fn check(
+                _: Option<&$crate::parser::ParseItem>,
+                item: &$parse_item,
+                comments: $crate::parser::CommentsRef,
+            ) -> Option<$crate::rules::Violation> {
+                if comments
+                    .include_tag($crate::parser::CommentTag::$comment_variant)
+                    .len()
+                    > 1
+                {
+                    return Some($crate::rules::Violation::new(
+                        Self::NAME,
+                        $crate::rules::violation_error::ViolationError::TooManyComments(
+                            $crate::parser::CommentTag::$comment_variant,
+                        ),
+                        item.loc,
+                    ));
+                }
+                None
+            }
+        }
+    };
+}
