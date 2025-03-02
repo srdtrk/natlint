@@ -1,41 +1,19 @@
 use solang_parser::pt::StructDefinition;
 
-use crate::{
-    parser::{CommentTag, CommentsRef, ParseItem},
-    rules::violation_error::ViolationError,
-};
-
-use super::super::{Rule, Violation};
-
-/// This rule requires that all structs must not have a return comment.
-pub struct NoReturn;
-
-impl Rule<StructDefinition> for NoReturn {
-    const NAME: &'static str = "No Return";
-    const DESCRIPTION: &'static str = "All structs must not have a return comment.";
-
-    fn check(
-        _: Option<&ParseItem>,
-        item: &StructDefinition,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        if !comments.include_tag(CommentTag::Return).is_empty() {
-            return Some(Violation::new(
-                Self::NAME,
-                ViolationError::CommentNotAllowed(CommentTag::Return),
-                item.loc,
-            ));
-        }
-        None
-    }
-}
+crate::no_comment_rule!(
+    NoReturn,
+    StructDefinition,
+    Return,
+    "Structs must not have a return comment."
+);
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CommentTag, CommentsRef, NoReturn, Rule, StructDefinition, Violation, ViolationError,
+    use super::{NoReturn, StructDefinition};
+    use crate::{
+        parser::{CommentTag, CommentsRef, Parser},
+        rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 

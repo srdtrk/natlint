@@ -1,41 +1,19 @@
 use solang_parser::pt::StructDefinition;
 
-use crate::{
-    parser::{CommentTag, CommentsRef, ParseItem},
-    rules::violation_error::ViolationError,
-};
-
-use super::super::{Rule, Violation};
-
-/// This rule requires that all structs must not have an inheritdoc comment.
-pub struct NoInheritdoc;
-
-impl Rule<StructDefinition> for NoInheritdoc {
-    const NAME: &'static str = "No Inheritdoc";
-    const DESCRIPTION: &'static str = "All structs must not have an inheritdoc comment.";
-
-    fn check(
-        _: Option<&ParseItem>,
-        item: &StructDefinition,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        if comments.find_inheritdoc_base().is_some() {
-            return Some(Violation::new(
-                Self::NAME,
-                ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
-                item.loc,
-            ));
-        }
-        None
-    }
-}
+crate::no_comment_rule!(
+    NoInheritdoc,
+    StructDefinition,
+    Inheritdoc,
+    "Structs must not have an inheritdoc comment."
+);
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CommentTag, CommentsRef, NoInheritdoc, Rule, StructDefinition, Violation, ViolationError,
+    use super::{NoInheritdoc, StructDefinition};
+    use crate::{
+        parser::{CommentTag, CommentsRef, Parser},
+        rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
