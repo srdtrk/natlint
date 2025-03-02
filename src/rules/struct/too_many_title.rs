@@ -27,7 +27,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_missingtitle {
+    macro_rules! test_too_many_title {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -45,7 +45,7 @@ mod tests {
         };
     }
 
-    test_missingtitle!(
+    test_too_many_title!(
         empty_no_violation,
         r"
         interface Test {
@@ -57,7 +57,7 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_too_many_title!(
         no_violation,
         r"
         interface Test {
@@ -70,7 +70,7 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_too_many_title!(
         multi_no_violation,
         r"
         interface Test {
@@ -84,7 +84,7 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_too_many_title!(
         multiline_no_violation,
         r"
         interface Test {
@@ -100,7 +100,7 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_too_many_title!(
         missing_no_violation,
         r"
         contract Test {
@@ -113,7 +113,7 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_too_many_title!(
         multiline_missing_no_violation,
         r"
         contract Test {
@@ -128,7 +128,7 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_too_many_title!(
         multi_violation,
         r"
         contract Test {
@@ -146,7 +146,7 @@ mod tests {
         ))
     );
 
-    test_missingtitle!(
+    test_too_many_title!(
         multiline_multi_violation,
         r"
         contract Test {

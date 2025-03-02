@@ -24,7 +24,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_missingnotice {
+    macro_rules! test_too_many_notice {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -42,7 +42,7 @@ mod tests {
         };
     }
 
-    test_missingnotice!(
+    test_too_many_notice!(
         empty_no_violation,
         r"
         interface Test {
@@ -54,7 +54,7 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
+    test_too_many_notice!(
         no_violation,
         r"
         interface Test {
@@ -67,7 +67,7 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
+    test_too_many_notice!(
         multi_no_violation,
         r"
         interface Test {
@@ -81,7 +81,7 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
+    test_too_many_notice!(
         multiline_no_violation,
         r"
         interface Test {
@@ -97,7 +97,7 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
+    test_too_many_notice!(
         no_tag_violation,
         r"
         contract Test {
@@ -115,7 +115,7 @@ mod tests {
         )) // WARNING: solang parser and the natspec docs interpret no tags as a notice
     );
 
-    test_missingnotice!(
+    test_too_many_notice!(
         multi_violation,
         r"
         contract Test {
@@ -133,7 +133,7 @@ mod tests {
         ))
     );
 
-    test_missingnotice!(
+    test_too_many_notice!(
         multiline_multi_violation,
         r"
         contract Test {
