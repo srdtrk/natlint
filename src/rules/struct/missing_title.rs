@@ -3,48 +3,20 @@
 
 use solang_parser::pt::StructDefinition;
 
-use crate::{
-    parser::{CommentTag, CommentsRef, ParseItem},
-    rules::violation_error::ViolationError,
-};
-
-use super::super::{Rule, Violation};
-
-/// This rule requires that all structs have a title comment.
-pub struct MissingTitle;
-
-impl Rule<StructDefinition> for MissingTitle {
-    const NAME: &'static str = "Missing Title";
-    const DESCRIPTION: &'static str = "This rule requires that all structs have a title comment.";
-
-    fn check(
-        _: Option<&ParseItem>,
-        item: &StructDefinition,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        // Struct must have a title comment
-        match comments.include_tag(CommentTag::Title).len() {
-            0 => Some(Violation::new(
-                Self::NAME,
-                ViolationError::MissingComment(CommentTag::Title),
-                item.loc,
-            )),
-            1 => None,
-            _ => Some(Violation::new(
-                Self::NAME,
-                ViolationError::TooManyComments(CommentTag::Title),
-                item.loc,
-            )),
-        }
-    }
-}
+crate::missing_comment_rule!(
+    MissingTitle,
+    StructDefinition,
+    Title,
+    "Structs must have a title comment."
+);
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CommentTag, CommentsRef, MissingTitle, Rule, StructDefinition, Violation, ViolationError,
+    use super::{MissingTitle, StructDefinition};
+    use crate::{
+        parser::{CommentTag, CommentsRef, Parser},
+        rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -150,24 +122,6 @@ mod tests {
     );
 
     test_missingtitle!(
-        multi_violation,
-        r"
-        contract Test {
-            /// @title Some struct
-            /// @title Some struct
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::TooManyComments(CommentTag::Title),
-            sct.loc
-        ))
-    );
-
-    test_missingtitle!(
         multiline_violation,
         r"
         contract Test {
@@ -182,26 +136,6 @@ mod tests {
         |sct: &StructDefinition| Some(Violation::new(
             MissingTitle::NAME,
             ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
-    );
-
-    test_missingtitle!(
-        multiline_multi_violation,
-        r"
-        contract Test {
-            /**
-             * @title a Some struct
-             * @title b Some struct
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::TooManyComments(CommentTag::Title),
             sct.loc
         ))
     );

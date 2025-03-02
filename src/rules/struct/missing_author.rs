@@ -3,43 +3,20 @@
 
 use solang_parser::pt::StructDefinition;
 
-use crate::{
-    parser::{CommentTag, CommentsRef, ParseItem},
-    rules::violation_error::ViolationError,
-};
-
-use super::super::{Rule, Violation};
-
-/// This rule requires that all structs have an author comment.
-pub struct MissingAuthor;
-
-impl Rule<StructDefinition> for MissingAuthor {
-    const NAME: &'static str = "Missing Author";
-    const DESCRIPTION: &'static str = "This rule requires that all structs have an author comment.";
-
-    fn check(
-        _: Option<&ParseItem>,
-        item: &StructDefinition,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        // Struct must have at least one author comment
-        if comments.include_tag(CommentTag::Author).is_empty() {
-            return Some(Violation::new(
-                Self::NAME,
-                ViolationError::MissingComment(CommentTag::Author),
-                item.loc,
-            ));
-        }
-        None
-    }
-}
+crate::missing_comment_rule!(
+    MissingAuthor,
+    StructDefinition,
+    Author,
+    "Structs must have an author comment."
+);
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CommentTag, CommentsRef, MissingAuthor, Rule, StructDefinition, Violation, ViolationError,
+    use super::{MissingAuthor, StructDefinition};
+    use crate::{
+        parser::{CommentTag, CommentsRef, Parser},
+        rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 

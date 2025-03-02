@@ -2,42 +2,20 @@
 
 use solang_parser::pt::FunctionDefinition;
 
-use crate::{
-    parser::{CommentTag, CommentsRef, ParseItem},
-    rules::violation_error::ViolationError,
-};
-
-use super::super::{Rule, Violation};
-
-/// This rule requires that functions do not have an author comment.
-pub struct NoAuthor;
-
-impl Rule<FunctionDefinition> for NoAuthor {
-    const NAME: &'static str = "No Author";
-    const DESCRIPTION: &'static str = "Functions must not have an author comment.";
-
-    fn check(
-        _: Option<&ParseItem>,
-        func: &FunctionDefinition,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        if !comments.include_tag(CommentTag::Author).is_empty() {
-            return Some(Violation::new(
-                Self::NAME,
-                ViolationError::CommentNotAllowed(CommentTag::Author),
-                func.loc,
-            ));
-        }
-        None
-    }
-}
+crate::no_comment_rule!(
+    NoAuthor,
+    FunctionDefinition,
+    Author,
+    "Functions must not have an author comment."
+);
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CommentTag, CommentsRef, FunctionDefinition, NoAuthor, Rule, Violation, ViolationError,
+    use super::{FunctionDefinition, NoAuthor};
+    use crate::{
+        parser::{CommentTag, CommentsRef, Parser},
+        rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 

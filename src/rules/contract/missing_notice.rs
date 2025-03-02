@@ -2,49 +2,20 @@
 
 use solang_parser::pt::ContractDefinition;
 
-use crate::{
-    parser::{CommentTag, CommentsRef, ParseItem},
-    rules::violation_error::ViolationError,
-};
-
-use super::super::{Rule, Violation};
-
-/// This rule requires that all contracts have a notice comment.
-pub struct MissingNotice;
-
-impl Rule<ContractDefinition> for MissingNotice {
-    const NAME: &'static str = "Missing Notice";
-    const DESCRIPTION: &'static str =
-        "This rule requires that all contracts have a notice comment.";
-
-    fn check(
-        _: Option<&ParseItem>,
-        contract: &ContractDefinition,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        // Contract must have a title comment
-        match comments.include_tag(CommentTag::Notice).len() {
-            0 => Some(Violation::new(
-                Self::NAME,
-                ViolationError::MissingComment(CommentTag::Notice),
-                contract.loc,
-            )),
-            1 => None,
-            _ => Some(Violation::new(
-                Self::NAME,
-                ViolationError::TooManyComments(CommentTag::Notice),
-                contract.loc,
-            )),
-        }
-    }
-}
+crate::missing_comment_rule!(
+    MissingNotice,
+    ContractDefinition,
+    Notice,
+    "Contracts must have a notice comment."
+);
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CommentTag, CommentsRef, ContractDefinition, MissingNotice, Rule, Violation, ViolationError,
+    use super::{ContractDefinition, MissingNotice};
+    use crate::{
+        parser::{CommentTag, CommentsRef, Parser},
+        rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -147,21 +118,6 @@ mod tests {
     );
 
     test_missingnotice!(
-        multi_violation,
-        r"
-        /// @notice Some notice
-        /// @notice Some notice
-        abstract contract Test {
-        }
-        ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            sct.loc
-        ))
-    );
-
-    test_missingnotice!(
         multiline_violation,
         r"
         /**
@@ -173,23 +129,6 @@ mod tests {
         |sct: &ContractDefinition| Some(Violation::new(
             MissingNotice::NAME,
             ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
-    );
-
-    test_missingnotice!(
-        multiline_multi_violation,
-        r"
-        /**
-         * @notice Some notice
-         * @notice Some notice
-         */
-        contract Test {
-        }
-        ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc
         ))
     );

@@ -2,42 +2,20 @@
 
 use solang_parser::pt::FunctionDefinition;
 
-use crate::{
-    parser::{CommentTag, CommentsRef, ParseItem},
-    rules::violation_error::ViolationError,
-};
-
-use super::super::{Rule, Violation};
-
-/// This rule requires that functions do not have a title comment.
-pub struct NoTitle;
-
-impl Rule<FunctionDefinition> for NoTitle {
-    const NAME: &'static str = "No Title";
-    const DESCRIPTION: &'static str = "Functions must not have a title comment.";
-
-    fn check(
-        _: Option<&ParseItem>,
-        func: &FunctionDefinition,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        if !comments.include_tag(CommentTag::Title).is_empty() {
-            return Some(Violation::new(
-                Self::NAME,
-                ViolationError::CommentNotAllowed(CommentTag::Title),
-                func.loc,
-            ));
-        }
-        None
-    }
-}
+crate::no_comment_rule!(
+    NoTitle,
+    FunctionDefinition,
+    Title,
+    "Functions must not have a title comment."
+);
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CommentTag, CommentsRef, FunctionDefinition, NoTitle, Rule, Violation, ViolationError,
+    use super::{FunctionDefinition, NoTitle};
+    use crate::{
+        parser::{CommentTag, CommentsRef, Parser},
+        rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
