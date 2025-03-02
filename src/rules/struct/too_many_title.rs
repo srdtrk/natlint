@@ -3,16 +3,16 @@
 
 use solang_parser::pt::StructDefinition;
 
-crate::missing_comment_rule!(
-    MissingTitle,
+crate::too_many_comments_rule!(
+    TooManyTitle,
     StructDefinition,
     Title,
-    "Structs must have a title comment."
+    "Structs must not have more than one title comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{MissingTitle, StructDefinition};
+    use super::{StructDefinition, TooManyTitle};
     use crate::{
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
@@ -40,10 +40,22 @@ mod tests {
 
                 let expected = $expected(item);
 
-                assert_eq!(MissingTitle::check(Some(parent), item, comments), expected);
+                assert_eq!(TooManyTitle::check(Some(parent), item, comments), expected);
             }
         };
     }
+
+    test_missingtitle!(
+        empty_no_violation,
+        r"
+        interface Test {
+            struct TestStruct {
+                uint256 a;
+            }
+        }
+        ",
+        |_| None
+    );
 
     test_missingtitle!(
         no_violation,
@@ -89,23 +101,7 @@ mod tests {
     );
 
     test_missingtitle!(
-        empty_violation,
-        r"
-        contract Test {
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
-    );
-
-    test_missingtitle!(
-        violation,
+        missing_no_violation,
         r"
         contract Test {
             /// @param a Some param
@@ -114,15 +110,11 @@ mod tests {
             }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
+        |_| None
     );
 
     test_missingtitle!(
-        multiline_violation,
+        multiline_missing_no_violation,
         r"
         contract Test {
             /**
@@ -133,9 +125,43 @@ mod tests {
             }
         }
         ",
+        |_| None
+    );
+
+    test_missingtitle!(
+        multi_violation,
+        r"
+        contract Test {
+            /// @title Some struct
+            /// @title Some struct
+            struct TestStruct {
+                uint256 a;
+            }
+        }
+        ",
         |sct: &StructDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
+            TooManyTitle::NAME,
+            ViolationError::TooManyComments(CommentTag::Title),
+            sct.loc
+        ))
+    );
+
+    test_missingtitle!(
+        multiline_multi_violation,
+        r"
+        contract Test {
+            /**
+             * @title a Some struct
+             * @title b Some struct
+             */
+            struct TestStruct {
+                uint256 a;
+            }
+        }
+        ",
+        |sct: &StructDefinition| Some(Violation::new(
+            TooManyTitle::NAME,
+            ViolationError::TooManyComments(CommentTag::Title),
             sct.loc
         ))
     );
