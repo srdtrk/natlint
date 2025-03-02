@@ -1,6 +1,9 @@
 use solang_parser::pt::{FunctionDefinition, FunctionTy};
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -37,14 +40,14 @@ impl Rule<FunctionDefinition> for MissingReturn {
             std::cmp::Ordering::Less => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Too many return comments".to_string(),
+                    ViolationError::TooManyComments(CommentTag::Return),
                     func.loc,
                 ));
             }
             std::cmp::Ordering::Greater => {
                 return Some(Violation::new(
                     Self::NAME,
-                    "Missing return or inheritdoc comment".to_string(),
+                    ViolationError::MissingComment(CommentTag::Return),
                     func.loc,
                 ));
             }
@@ -68,7 +71,7 @@ impl Rule<FunctionDefinition> for MissingReturn {
             }) {
                 return Some(Violation::new(
                     Self::NAME,
-                    format!("Missing return comment for `{var_name}`"),
+                    ViolationError::missing_comment_for(CommentTag::Return, &var_name),
                     *loc,
                 ));
             }
@@ -80,11 +83,10 @@ impl Rule<FunctionDefinition> for MissingReturn {
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, MissingReturn, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, FunctionDefinition, MissingReturn, Rule, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -95,8 +97,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_require_missingparams {
+    macro_rules! test_missingreturn {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -114,7 +115,7 @@ mod tests {
         };
     }
 
-    test_require_missingparams!(
+    test_missingreturn!(
         no_return_no_violation,
         r"
         contract Test {
@@ -124,7 +125,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         named_no_violation,
         r"
         contract Test {
@@ -135,7 +136,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         unnamed_no_violation,
         r"
         contract Test {
@@ -146,7 +147,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         dollar_no_violation,
         r"
         contract Test {
@@ -157,7 +158,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         memory_no_violation,
         r"
         contract Test {
@@ -168,7 +169,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiline_no_violation,
         r"
         contract Test {
@@ -181,7 +182,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         inheritdoc_no_violation,
         r"
         contract Test {
@@ -192,7 +193,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiline_inheritdoc_no_violation,
         r"
         contract Test {
@@ -205,7 +206,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiple_no_violation,
         r"
         contract Test {
@@ -217,7 +218,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiple_multiline_no_violation,
         r"
         contract Test {
@@ -231,7 +232,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         unnamed_multiple_no_violation,
         r"
         contract Test {
@@ -243,7 +244,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         named_violation,
         r"
         contract Test {
@@ -253,12 +254,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Missing return or inheritdoc comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Return),
             func.loc
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         unnamed_violation,
         r"
         contract Test {
@@ -268,12 +269,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Missing return or inheritdoc comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Return),
             func.loc
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         too_many_comments_violation,
         r"
         contract Test {
@@ -284,12 +285,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Too many return comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Return),
             func.loc
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiline_many_comments_violation,
         r"
         contract Test {
@@ -302,12 +303,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Too many return comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Return),
             func.loc
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         name_not_found_violation,
         r"
         contract Test {
@@ -318,12 +319,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Missing return comment for `b`".to_string(),
+            ViolationError::missing_comment_for(CommentTag::Return, "b"),
             func.returns[1].0
         ))
     );
 
-    test_require_missingparams!(
+    test_missingreturn!(
         multiline_name_not_found_violation,
         r"
         contract Test {
@@ -336,7 +337,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
-            "Missing return comment for `b`".to_string(),
+            ViolationError::missing_comment_for(CommentTag::Return, "b"),
             func.returns[1].0
         ))
     );

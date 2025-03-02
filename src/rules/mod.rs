@@ -1,8 +1,12 @@
 //! This module defines the rules for the natlint linter.
 
 use solang_parser::pt::Loc;
+use violation_error::ViolationError;
 
 use crate::parser::{CommentsRef, ParseItem};
+
+pub mod macros;
+pub mod violation_error;
 
 pub mod contract;
 pub mod r#enum;
@@ -14,12 +18,12 @@ pub mod r#type;
 pub mod variable;
 
 /// A lint diagnostic.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Violation {
     /// The rule that was violated.
     pub rule: &'static str,
     /// A message describing the violation.
-    pub description: String,
+    pub description: ViolationError,
     /// The location of the violation.
     pub loc: Loc,
 }
@@ -39,7 +43,7 @@ pub trait Rule<T> {
 impl Violation {
     /// Create a new violation.
     #[must_use]
-    pub const fn new(rule: &'static str, description: String, loc: Loc) -> Self {
+    pub const fn new(rule: &'static str, description: ViolationError, loc: Loc) -> Self {
         Self {
             rule,
             description,

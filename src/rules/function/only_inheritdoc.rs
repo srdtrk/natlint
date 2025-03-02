@@ -3,7 +3,10 @@
 
 use solang_parser::pt::FunctionDefinition;
 
-use crate::parser::{CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -21,30 +24,26 @@ impl Rule<FunctionDefinition> for OnlyInheritdoc {
         comments: CommentsRef,
     ) -> Option<Violation> {
         if comments.find_inheritdoc_base().is_some() {
-            match comments.len() {
+            return match comments.len() {
                 0 => unreachable!("Inheritdoc comment should have been found"),
                 1 => None,
                 _ => Some(Violation::new(
                     Self::NAME,
-                    Self::DESCRIPTION.to_string(),
+                    ViolationError::OnlyInheritdoc,
                     func.loc,
                 )),
-            }
-        } else {
-            None
+            };
         }
+        None
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{OnlyInheritdoc, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
-    };
+    use super::{CommentsRef, FunctionDefinition, OnlyInheritdoc, Rule, Violation, ViolationError};
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
-    use solang_parser::{parse, pt::FunctionDefinition};
+    use solang_parser::parse;
 
     fn parse_source(src: &str) -> Parser {
         let (mut source, comments) = parse(src, 0).expect("failed to parse source");
@@ -53,8 +52,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `RequireInheritdoc` rule
-    macro_rules! test_require_inheritdoc {
+    macro_rules! test_only_inheritdoc {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -75,7 +73,7 @@ mod tests {
         };
     }
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         inheritdoc_no_violation,
         r"
         contract Test {
@@ -86,7 +84,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         empty_no_violation,
         r"
         contract Test {
@@ -96,7 +94,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         no_inheritdoc_no_violation,
         r"
         contract Test {
@@ -107,7 +105,7 @@ mod tests {
         |_| None
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         public_violation,
         r"
         contract Test {
@@ -118,12 +116,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
-            OnlyInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::OnlyInheritdoc,
             func.loc
         ))
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         multiline_violation,
         r"
         contract Test {
@@ -136,12 +134,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
-            OnlyInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::OnlyInheritdoc,
             func.loc
         ))
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         external_violation,
         r"
         contract Test {
@@ -152,12 +150,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
-            OnlyInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::OnlyInheritdoc,
             func.loc
         ))
     );
 
-    test_require_inheritdoc!(
+    test_only_inheritdoc!(
         inheritdoc_violation,
         r"
         contract Test {
@@ -168,7 +166,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
-            OnlyInheritdoc::DESCRIPTION.to_string(),
+            ViolationError::OnlyInheritdoc,
             func.loc
         ))
     );

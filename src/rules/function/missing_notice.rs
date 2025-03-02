@@ -1,6 +1,9 @@
 use solang_parser::pt::FunctionDefinition;
 
-use crate::parser::{CommentTag, CommentsRef, ParseItem};
+use crate::{
+    parser::{CommentTag, CommentsRef, ParseItem},
+    rules::violation_error::ViolationError,
+};
 
 use super::super::{Rule, Violation};
 
@@ -26,13 +29,13 @@ impl Rule<FunctionDefinition> for MissingNotice {
         match comments.include_tag(CommentTag::Notice).len() {
             0 => Some(Violation::new(
                 Self::NAME,
-                "Missing notice or inheritdoc comment".to_string(),
+                ViolationError::MissingComment(CommentTag::Notice),
                 func.loc,
             )),
             1 => None,
             _ => Some(Violation::new(
                 Self::NAME,
-                "Too many notice comments".to_string(),
+                ViolationError::TooManyComments(CommentTag::Notice),
                 func.loc,
             )),
         }
@@ -41,11 +44,10 @@ impl Rule<FunctionDefinition> for MissingNotice {
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, MissingNotice, Rule};
-    use crate::{
-        parser::{CommentsRef, Parser},
-        rules::Violation,
+    use super::{
+        CommentTag, CommentsRef, FunctionDefinition, MissingNotice, Rule, Violation, ViolationError,
     };
+    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -56,8 +58,7 @@ mod tests {
         doc
     }
 
-    /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_require_missingparams {
+    macro_rules! test_missingnotice {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -75,7 +76,7 @@ mod tests {
         };
     }
 
-    test_require_missingparams!(
+    test_missingnotice!(
         public_no_violation,
         r"
         contract Test {
@@ -86,7 +87,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
         private_no_violation,
         r"
         contract Test {
@@ -97,7 +98,18 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
+        no_tag_no_violation,
+        r"
+        contract Test {
+            /// Some function
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_missingnotice!(
         multiline_no_violation,
         r"
         contract Test {
@@ -110,7 +122,34 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
+        multiline_no_tag_no_violation,
+        r"
+        contract Test {
+            /**
+             * Some function
+             */
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_missingnotice!(
+        long_multiline_no_tag_no_violation,
+        r"
+        contract Test {
+            /**
+             * Some function
+             * next line
+             */
+            function test(uint256 a) private {}
+        }
+        ",
+        |_| None
+    );
+
+    test_missingnotice!(
         inheritdoc_no_violation,
         r"
         contract Test {
@@ -121,7 +160,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
         multiline_inheritdoc_no_violation,
         r"
         contract Test {
@@ -134,7 +173,7 @@ mod tests {
         |_| None
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
         public_violation,
         r"
         contract Test {
@@ -143,12 +182,12 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Missing notice or inheritdoc comment".to_string(),
+            ViolationError::MissingComment(CommentTag::Notice),
             func.loc
         ))
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
         too_many_comments_violation,
         r"
         contract Test {
@@ -159,12 +198,28 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Too many notice comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Notice),
             func.loc
         ))
     );
 
-    test_require_missingparams!(
+    test_missingnotice!(
+        too_many_comments_tag_no_tag_violation,
+        r"
+        contract Test {
+            /// Another function
+            /// @notice Some function
+            function test(uint256 a) public {}
+        }
+        ",
+        |func: &FunctionDefinition| Some(Violation::new(
+            MissingNotice::NAME,
+            ViolationError::TooManyComments(CommentTag::Notice),
+            func.loc
+        ))
+    );
+
+    test_missingnotice!(
         multiline_many_comments_violation,
         r"
         contract Test {
@@ -177,7 +232,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingNotice::NAME,
-            "Too many notice comments".to_string(),
+            ViolationError::TooManyComments(CommentTag::Notice),
             func.loc
         ))
     );
