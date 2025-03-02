@@ -1,8 +1,6 @@
 use solang_parser::pt::ContractDefinition;
 
-use crate::no_comment_rule;
-
-no_comment_rule!(
+crate::no_comment_rule!(
     NoParam,
     ContractDefinition,
     Param,

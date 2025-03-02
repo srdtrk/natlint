@@ -1,41 +1,19 @@
 use solang_parser::pt::ContractDefinition;
 
-use crate::{
-    parser::{CommentTag, CommentsRef, ParseItem},
-    rules::violation_error::ViolationError,
-};
-
-use super::super::{Rule, Violation};
-
-/// This rule requires that contracts do not have a param comment.
-pub struct NoReturn;
-
-impl Rule<ContractDefinition> for NoReturn {
-    const NAME: &'static str = "No Return";
-    const DESCRIPTION: &'static str = "Contracts must not have a return comment.";
-
-    fn check(
-        _: Option<&ParseItem>,
-        contract: &ContractDefinition,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        if !comments.include_tag(CommentTag::Return).is_empty() {
-            return Some(Violation::new(
-                Self::NAME,
-                ViolationError::CommentNotAllowed(CommentTag::Return),
-                contract.loc,
-            ));
-        }
-        None
-    }
-}
+crate::no_comment_rule!(
+    NoReturn,
+    ContractDefinition,
+    Return,
+    "Contracts must not have a return comment."
+);
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CommentTag, CommentsRef, ContractDefinition, NoReturn, Rule, Violation, ViolationError,
+    use super::{ContractDefinition, NoReturn};
+    use crate::{
+        parser::{CommentTag, CommentsRef, Parser},
+        rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
