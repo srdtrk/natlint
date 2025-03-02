@@ -1,17 +1,15 @@
-//! This rule requires that all contacts have a title comment.
-
 use solang_parser::pt::ContractDefinition;
 
-crate::missing_comment_rule!(
-    MissingTitle,
+crate::too_many_comments_rule!(
+    TooManyTitle,
     ContractDefinition,
     Title,
-    "Contracts must have a title comment."
+    "Contracts must not have more than one title comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{ContractDefinition, MissingTitle};
+    use super::{ContractDefinition, TooManyTitle};
     use crate::{
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
@@ -27,7 +25,7 @@ mod tests {
     }
 
     /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_missingtitle {
+    macro_rules! test_too_many_title {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -39,13 +37,22 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(MissingTitle::check(None, contract, comments), expected);
+                assert_eq!(TooManyTitle::check(None, contract, comments), expected);
             }
         };
     }
 
-    test_missingtitle!(
-        no_violation,
+    test_too_many_title!(
+        empty_no_violation,
+        r"
+        contract Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_too_many_title!(
+        exists_no_violation,
         r"
         /// @title Some title
         interface Test {
@@ -54,19 +61,19 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_too_many_title!(
         multi_no_violation,
         r"
+        /// @custom:test Some comment
         /// @title Some title
-        /// @author Some author
         contract Test {
         }
         ",
         |_| None
     );
 
-    test_missingtitle!(
-        multiline_no_violation,
+    test_too_many_title!(
+        multiline_exists_no_violation,
         r"
         /**
          * @title Some title
@@ -77,12 +84,12 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
+    test_too_many_title!(
         multiline_multi_no_violation,
         r"
         /**
+         * @custom:test Some comment
          * @title Some title
-         * @author Some author
          */
         library Test {
         }
@@ -90,45 +97,56 @@ mod tests {
         |_| None
     );
 
-    test_missingtitle!(
-        empty_violation,
+    test_too_many_title!(
+        no_violation,
         r"
-        contract Test {
-        }
-        ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
-    );
-
-    test_missingtitle!(
-        violation,
-        r"
-        /// @author Some author
+        /// @custom:test Some comment
         interface Test {
         }
         ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
+        |_| None
     );
 
-    test_missingtitle!(
-        multiline_violation,
+    test_too_many_title!(
+        multiline_no_violation,
         r"
         /**
-         * @author Some author
+         * @custom:test Some comment
          */
         library Test {
         }
         ",
+        |_| None
+    );
+
+    test_too_many_title!(
+        multi_violation,
+        r"
+        /// @title Some title
+        /// @title Some title
+        abstract contract Test {
+        }
+        ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
+            TooManyTitle::NAME,
+            ViolationError::TooManyComments(CommentTag::Title),
+            sct.loc
+        ))
+    );
+
+    test_too_many_title!(
+        multiline_multi_violation,
+        r"
+        /**
+         * @title Some title
+         * @title Some title
+         */
+        contract Test {
+        }
+        ",
+        |sct: &ContractDefinition| Some(Violation::new(
+            TooManyTitle::NAME,
+            ViolationError::TooManyComments(CommentTag::Title),
             sct.loc
         ))
     );
