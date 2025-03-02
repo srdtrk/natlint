@@ -2,16 +2,16 @@
 
 use solang_parser::pt::ContractDefinition;
 
-crate::missing_comment_rule!(
-    MissingNotice,
+crate::too_many_comments_rule!(
+    TooManyNotice,
     ContractDefinition,
     Notice,
-    "Contracts must have a notice comment."
+    "Contracts must not have more than one notice comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{ContractDefinition, MissingNotice};
+    use super::{ContractDefinition, TooManyNotice};
     use crate::{
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
@@ -27,7 +27,7 @@ mod tests {
     }
 
     /// Macro to define a test case for `MissingParams` rule
-    macro_rules! test_missingnotice {
+    macro_rules! test_too_many_notice {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -39,13 +39,22 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(MissingNotice::check(None, contract, comments), expected);
+                assert_eq!(TooManyNotice::check(None, contract, comments), expected);
             }
         };
     }
 
-    test_missingnotice!(
-        no_violation,
+    test_too_many_notice!(
+        empty_no_violation,
+        r"
+        contract Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_too_many_notice!(
+        exists_no_violation,
         r"
         /// @notice Some notice
         interface Test {
@@ -54,7 +63,7 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
+    test_too_many_notice!(
         multi_no_violation,
         r"
         /// @title Some title
@@ -65,8 +74,8 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
-        multiline_no_violation,
+    test_too_many_notice!(
+        multiline_exists_no_violation,
         r"
         /**
          * @notice Some notice
@@ -77,11 +86,11 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
+    test_too_many_notice!(
         multiline_multi_no_violation,
         r"
         /**
-         * @title Some title
+         * @custom:test Some comment
          * @notice Some notice
          */
         library Test {
@@ -90,45 +99,56 @@ mod tests {
         |_| None
     );
 
-    test_missingnotice!(
-        empty_violation,
+    test_too_many_notice!(
+        no_violation,
         r"
-        contract Test {
-        }
-        ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
-    );
-
-    test_missingnotice!(
-        violation,
-        r"
-        /// @author Some author
+        /// @custom:test Some comment
         interface Test {
         }
         ",
-        |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
+        |_| None
     );
 
-    test_missingnotice!(
-        multiline_violation,
+    test_too_many_notice!(
+        multiline_no_violation,
         r"
         /**
-         * @author Some author
+         * @custom:test Some comment
          */
         library Test {
         }
         ",
+        |_| None
+    );
+
+    test_too_many_notice!(
+        multi_violation,
+        r"
+        /// @notice Some notice
+        /// @notice Some notice
+        abstract contract Test {
+        }
+        ",
         |sct: &ContractDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
+            TooManyNotice::NAME,
+            ViolationError::TooManyComments(CommentTag::Notice),
+            sct.loc
+        ))
+    );
+
+    test_too_many_notice!(
+        multiline_multi_violation,
+        r"
+        /**
+         * @notice Some notice
+         * @notice Some notice
+         */
+        contract Test {
+        }
+        ",
+        |sct: &ContractDefinition| Some(Violation::new(
+            TooManyNotice::NAME,
+            ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc
         ))
     );
