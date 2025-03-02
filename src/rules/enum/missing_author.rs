@@ -1,18 +1,18 @@
 //! This rule requires that all structs have an author comment.
 //! This rule will be off by default.
 
-use solang_parser::pt::StructDefinition;
+use solang_parser::pt::EnumDefinition;
 
 crate::missing_comment_rule!(
     MissingAuthor,
-    StructDefinition,
+    EnumDefinition,
     Author,
-    "Structs must have an author comment."
+    "Enums must have an author comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{MissingAuthor, StructDefinition};
+    use super::{EnumDefinition, MissingAuthor};
     use crate::{
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
@@ -35,7 +35,8 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let item = child.as_struct().unwrap();
+                let item = child.as_enum().unwrap();
+
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(item);
@@ -50,8 +51,9 @@ mod tests {
         r"
         interface Test {
             /// @author Some author
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -78,8 +80,9 @@ mod tests {
         interface Test {
             /// @author Some author
             /// @author Some other
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -94,6 +97,10 @@ mod tests {
              * @author Some author
              * @custom:test Some comment
              */
+            enum Option {
+                Some,
+                None
+            }
             struct TestStruct {
                 uint256 a;
             }
@@ -110,8 +117,9 @@ mod tests {
              * @author Some author
              * @author Some other
              */
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -127,7 +135,7 @@ mod tests {
             }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &EnumDefinition| Some(Violation::new(
             MissingAuthor::NAME,
             ViolationError::MissingComment(CommentTag::Author),
             sct.loc
@@ -144,7 +152,7 @@ mod tests {
             }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &EnumDefinition| Some(Violation::new(
             MissingAuthor::NAME,
             ViolationError::MissingComment(CommentTag::Author),
             sct.loc
@@ -163,7 +171,7 @@ mod tests {
             }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &EnumDefinition| Some(Violation::new(
             MissingAuthor::NAME,
             ViolationError::MissingComment(CommentTag::Author),
             sct.loc
