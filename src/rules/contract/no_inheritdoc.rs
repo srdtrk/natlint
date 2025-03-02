@@ -1,42 +1,24 @@
+//! This module defines the `NoInheritdoc` rule
+//! This rule may be removed in the future: <https://github.com/ethereum/solidity/issues/14045>
+
 use solang_parser::pt::ContractDefinition;
 
-use crate::{
-    parser::{CommentTag, CommentsRef, ParseItem},
-    rules::violation_error::ViolationError,
-};
+use crate::no_comment_rule;
 
-use super::super::{Rule, Violation};
-
-/// This rule requires that contracts do not have an inheritdoc comment.
-/// This rule may be removed in the future: <https://github.com/ethereum/solidity/issues/14045>
-pub struct NoInheritdoc;
-
-impl Rule<ContractDefinition> for NoInheritdoc {
-    const NAME: &'static str = "No Inheritdoc";
-    const DESCRIPTION: &'static str = "Contracts must not have an inheritdoc comment.";
-
-    fn check(
-        _: Option<&ParseItem>,
-        contract: &ContractDefinition,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        if !comments.include_tag(CommentTag::Inheritdoc).is_empty() {
-            return Some(Violation::new(
-                Self::NAME,
-                ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
-                contract.loc,
-            ));
-        }
-        None
-    }
-}
+no_comment_rule!(
+    NoInheritdoc,
+    ContractDefinition,
+    Inheritdoc,
+    "Contracts must not have an inheritdoc comment."
+);
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CommentTag, CommentsRef, ContractDefinition, NoInheritdoc, Rule, Violation, ViolationError,
+    use super::{ContractDefinition, NoInheritdoc};
+    use crate::{
+        parser::{CommentTag, CommentsRef, Parser},
+        rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use crate::parser::Parser;
     use forge_fmt::Visitable;
     use solang_parser::parse;
 

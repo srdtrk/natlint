@@ -5,6 +5,7 @@ use violation_error::ViolationError;
 
 use crate::parser::{CommentsRef, ParseItem};
 
+pub mod macros;
 pub mod violation_error;
 
 pub mod contract;
