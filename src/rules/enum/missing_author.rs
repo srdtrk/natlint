@@ -1,4 +1,4 @@
-//! This rule requires that all structs have an author comment.
+//! This rule requires that all enums have an author comment.
 //! This rule will be off by default.
 
 use solang_parser::pt::EnumDefinition;
@@ -66,8 +66,9 @@ mod tests {
         interface Test {
             /// @author Some author
             /// @custom:test Some comment
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -101,9 +102,6 @@ mod tests {
                 Some,
                 None
             }
-            struct TestStruct {
-                uint256 a;
-            }
         }
         ",
         |_| None
@@ -130,8 +128,9 @@ mod tests {
         empty_violation,
         r"
         contract Test {
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -147,8 +146,9 @@ mod tests {
         r"
         contract Test {
             /// @custom:test Some comment
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -166,8 +166,9 @@ mod tests {
             /**
              * @custom:test Some comment
              */
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
