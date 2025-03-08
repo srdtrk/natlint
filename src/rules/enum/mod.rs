@@ -6,6 +6,7 @@ mod missing_title;
 mod no_inheritdoc;
 mod no_param;
 mod no_return;
+mod too_many_notice;
 
 // The rules are exported here:
 pub use missing_author::MissingAuthor;
@@ -14,3 +15,4 @@ pub use missing_title::MissingTitle;
 pub use no_inheritdoc::NoInheritdoc;
 pub use no_param::NoParam;
 pub use no_return::NoReturn;
+pub use too_many_notice::TooManyNotice;
