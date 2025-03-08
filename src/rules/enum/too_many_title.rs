@@ -1,15 +1,15 @@
-use solang_parser::pt::StructDefinition;
+use solang_parser::pt::EnumDefinition;
 
 crate::too_many_comments_rule!(
     TooManyTitle,
-    StructDefinition,
+    EnumDefinition,
     Title,
-    "Structs must not have more than one title comment."
+    "Enums must not have more than one title comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{StructDefinition, TooManyTitle};
+    use super::{EnumDefinition, TooManyTitle};
     use crate::{
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
@@ -32,7 +32,7 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let item = child.as_struct().unwrap();
+                let item = child.as_enum().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(item);
@@ -46,8 +46,9 @@ mod tests {
         empty_no_violation,
         r"
         interface Test {
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -59,8 +60,9 @@ mod tests {
         r"
         interface Test {
             /// @title Some title
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -73,8 +75,9 @@ mod tests {
         interface Test {
             /// @title Some title
             /// @custom:test Some comment
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -89,8 +92,9 @@ mod tests {
              * @title Some title
              * @custom:test Some comment
              */
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -102,8 +106,9 @@ mod tests {
         r"
         contract Test {
             /// @custom:test Some comment
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -117,8 +122,9 @@ mod tests {
             /**
              * @custom:test Some comment
              */
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
@@ -129,14 +135,15 @@ mod tests {
         multi_violation,
         r"
         contract Test {
-            /// @title Some struct
-            /// @title Some struct
-            struct TestStruct {
-                uint256 a;
+            /// @title Some enum
+            /// @title Some enum
+            enum Option {
+                Some,
+                None
             }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &EnumDefinition| Some(Violation::new(
             TooManyTitle::NAME,
             ViolationError::TooManyComments(CommentTag::Title),
             sct.loc
@@ -148,15 +155,16 @@ mod tests {
         r"
         contract Test {
             /**
-             * @title a Some struct
-             * @title b Some struct
+             * @title a Some enum
+             * @title b Some enum
              */
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &EnumDefinition| Some(Violation::new(
             TooManyTitle::NAME,
             ViolationError::TooManyComments(CommentTag::Title),
             sct.loc
