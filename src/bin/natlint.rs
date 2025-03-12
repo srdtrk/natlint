@@ -2,7 +2,7 @@ use clap::Parser;
 use natlint::{
     cli::cmd::{Commands, NatlintCli},
     cli::file_finder::find_matching_files,
-    parser::{Comments, CommentsRef, ParseItem},
+    parser::{Comments, CommentsRef, ParseItem, ParseSource},
     rules::{Rule, Violation},
 };
 use std::any::Any;
@@ -160,26 +160,207 @@ fn load_config(config_path: &str) -> Config {
     load_default_config()
 }
 
+/// Process a single Solidity file and return any violations
+fn process_file(file_path: &std::path::Path, config: &Config) -> eyre::Result<Vec<(String, Violation)>> {
+    use forge_fmt::Visitable;
+    use solang_parser::parse;
+    use std::fs;
+    
+    // Read file content
+    let content = fs::read_to_string(file_path)?;
+    
+    // Parse Solidity file
+    let (mut source_unit, comments) = parse(&content, 0)
+        .map_err(|e| eyre::eyre!("Failed to parse {}: {:?}", file_path.display(), e))?;
+    
+    // Create parser and visit the source unit
+    let mut parser = natlint::parser::Parser::new(comments, content);
+    source_unit.visit(&mut parser)
+        .map_err(|e| eyre::eyre!("Failed to visit {}: {:?}", file_path.display(), e))?;
+    
+    // Get parsed items
+    let items = parser.items();
+    
+    // Collect violations
+    let mut all_violations = Vec::new();
+    
+    // Function to recursively process items and their children
+    fn process_item(
+        item: &ParseItem,
+        parent: Option<&ParseItem>,
+        config: &Config,
+        file_path: &std::path::Path,
+        all_violations: &mut Vec<(String, Violation)>,
+    ) {
+        // Check item against all applicable rules
+        match &item.source {
+            ParseSource::Contract(contract) => {
+                let violations = config.check_item(
+                    parent, 
+                    &**contract as &dyn std::any::Any, 
+                    &item.comments
+                );
+                
+                for violation in violations {
+                    all_violations.push((file_path.display().to_string(), violation));
+                }
+            },
+            ParseSource::Function(function) => {
+                let violations = config.check_item(
+                    parent, 
+                    function as &dyn std::any::Any, 
+                    &item.comments
+                );
+                
+                for violation in violations {
+                    all_violations.push((file_path.display().to_string(), violation));
+                }
+            },
+            ParseSource::Struct(structure) => {
+                let violations = config.check_item(
+                    parent, 
+                    structure as &dyn std::any::Any, 
+                    &item.comments
+                );
+                
+                for violation in violations {
+                    all_violations.push((file_path.display().to_string(), violation));
+                }
+            },
+            // Add other item types as needed:
+            // ParseSource::Enum(..) => { ... },
+            // ParseSource::Error(..) => { ... },
+            // ParseSource::Event(..) => { ... },
+            // ParseSource::Variable(..) => { ... },
+            // ParseSource::Type(..) => { ... },
+            _ => {
+                // No rules implemented for these item types yet
+            }
+        }
+        
+        // Process all children
+        for child in &item.children {
+            process_item(child, Some(item), config, file_path, all_violations);
+        }
+    }
+    
+    // Process all top-level items
+    for item in &items {
+        process_item(item, None, config, file_path, &mut all_violations);
+    }
+    
+    Ok(all_violations)
+}
+
 fn main() -> eyre::Result<()> {
     let cli = NatlintCli::parse();
     match cli.command {
         Commands::Run(args) => {
             println!("Running natlint with config: {}", args.config);
+            
+            // Display helpful message for using glob patterns if no include patterns are provided
+            if args.include.is_empty() && args.root == "." {
+                println!("Tip: Use --include/-i to specify glob patterns to search for files.");
+                println!("Example: natlint run -c config.toml -i \"**/*.sol\" -e \"node_modules/**\"");
+                println!("Searching for Solidity files in the current directory...")
+            }
 
             // Load configuration with all rules
-            let _config = load_config(&args.config);
+            let config = load_config(&args.config);
 
             // Find all files in the root directory that match the include globs and do not match the exclude globs
             let files = find_matching_files(&args.root, args.include, args.exclude)?;
             println!("Found {} files to lint", files.len());
             
-            // TODO: Implement full linting pipeline:
-            // 1. Parse each Solidity file
-            // 2. For each parsed item, check against all applicable rules
-            // 3. Report violations
+            // Process each file and collect violations
+            let mut all_violations = Vec::new();
+            let mut error_count = 0;
+            let total_files = files.len();
             
-            // For now, just print the files
-            files.iter().for_each(|file| println!("  {}", file.display()));
+            // Show progress if there are more than 5 files
+            let show_progress = total_files > 5;
+            
+            for (idx, file) in files.iter().enumerate() {
+                // Show progress
+                if show_progress && idx % 5 == 0 {
+                    print!("\rProcessing files: {}/{} ({}%)", 
+                        idx + 1, 
+                        total_files, 
+                        ((idx + 1) as f64 / total_files as f64 * 100.0) as u32
+                    );
+                    std::io::Write::flush(&mut std::io::stdout()).unwrap();
+                }
+                
+                match process_file(file, &config) {
+                    Ok(violations) => {
+                        all_violations.extend(violations);
+                    },
+                    Err(err) => {
+                        if show_progress {
+                            println!(); // New line after progress indicator
+                        }
+                        eprintln!("Error processing file {}: {}", file.display(), err);
+                        error_count += 1;
+                    }
+                }
+            }
+            
+            // Clear progress line when done
+            if show_progress {
+                println!("\rProcessed {} files                ", total_files);
+            }
+            
+            // Sort violations by file, rule, and location
+            all_violations.sort_by(|(file_a, viol_a), (file_b, viol_b)| {
+                file_a.cmp(file_b)
+                    .then_with(|| viol_a.rule.cmp(viol_b.rule))
+                    .then_with(|| viol_a.loc.start().cmp(&viol_b.loc.start()))
+            });
+            
+            // Report violations
+            if all_violations.is_empty() {
+                println!("No natspec violations found!");
+            } else {
+                println!("\nNatspec violations found:");
+                
+                let mut current_file = String::new();
+                let mut violation_count = 0;
+                
+                for (file, violation) in all_violations {
+                    // Print file name when it changes
+                    if current_file != file {
+                        if !current_file.is_empty() {
+                            println!();
+                        }
+                        println!("File: {}", file);
+                        current_file = file;
+                    }
+                    
+                    // Print violation details
+                    println!("  [{}] Line {}: {}", 
+                        violation.rule,
+                        violation.loc.start(),
+                        violation.description
+                    );
+                    
+                    violation_count += 1;
+                }
+                
+                println!("\nFound {} natspec violations in {} files.", violation_count, files.len());
+                
+                if error_count > 0 {
+                    println!("Failed to process {} files due to errors.", error_count);
+                }
+                
+                // Return non-zero exit code if violations were found
+                std::process::exit(1);
+            }
+            
+            // If there were parsing errors but no violations, still exit with error
+            if error_count > 0 {
+                println!("Failed to process {} files due to errors.", error_count);
+                std::process::exit(1);
+            }
             
             Ok(())
         }
