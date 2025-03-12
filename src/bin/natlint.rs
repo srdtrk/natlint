@@ -99,16 +99,65 @@ impl Config {
     }
 }
 
-/// Load configuration from a file or use defaults
-fn load_config(_config_path: &str) -> Config {
-    // In a real implementation, this would load from a TOML/YAML/JSON file
-    // For now, we'll just create a default config
-    let config = Config::new();
+/// Create a configuration with all available rules
+fn load_default_config() -> Config {
+    use natlint::rules::{
+        contract::{
+            self as contract_rules
+        },
+        function::{
+            self as function_rules
+        },
+        r#struct::{
+            self as struct_rules
+        }
+    };
+    use solang_parser::pt::{ContractDefinition, FunctionDefinition, StructDefinition};
+
+    let mut config = Config::new();
     
-    // Example of how rules would be added
-    // config.add_rule::<solang_parser::pt::ContractDefinition, natlint::rules::contract::missing_author::MissingAuthor>();
+    // Contract Rules
+    config.add_rule::<ContractDefinition, contract_rules::MissingAuthor>();
+    config.add_rule::<ContractDefinition, contract_rules::MissingNotice>();
+    config.add_rule::<ContractDefinition, contract_rules::MissingTitle>();
+    config.add_rule::<ContractDefinition, contract_rules::NoInheritdoc>();
+    config.add_rule::<ContractDefinition, contract_rules::NoParam>();
+    config.add_rule::<ContractDefinition, contract_rules::NoReturn>();
+    config.add_rule::<ContractDefinition, contract_rules::TooManyNotice>();
+    config.add_rule::<ContractDefinition, contract_rules::TooManyTitle>();
+    
+    // Function Rules
+    config.add_rule::<FunctionDefinition, function_rules::MissingInheritdoc>();
+    config.add_rule::<FunctionDefinition, function_rules::MissingNotice>();
+    config.add_rule::<FunctionDefinition, function_rules::MissingParams>();
+    config.add_rule::<FunctionDefinition, function_rules::MissingReturn>();
+    config.add_rule::<FunctionDefinition, function_rules::NoAuthor>();
+    config.add_rule::<FunctionDefinition, function_rules::NoTitle>();
+    config.add_rule::<FunctionDefinition, function_rules::OnlyInheritdoc>();
+    
+    // Struct Rules
+    config.add_rule::<StructDefinition, struct_rules::MissingAuthor>();
+    config.add_rule::<StructDefinition, struct_rules::MissingNotice>();
+    config.add_rule::<StructDefinition, struct_rules::MissingParams>();
+    config.add_rule::<StructDefinition, struct_rules::MissingTitle>();
+    config.add_rule::<StructDefinition, struct_rules::NoInheritdoc>();
+    config.add_rule::<StructDefinition, struct_rules::NoReturn>();
+    config.add_rule::<StructDefinition, struct_rules::TooManyNotice>();
+    config.add_rule::<StructDefinition, struct_rules::TooManyTitle>();
     
     config
+}
+
+/// Load configuration from a file or use defaults
+fn load_config(config_path: &str) -> Config {
+    // In a real implementation, this would parse TOML/YAML/JSON configuration
+    // For now, we'll just use the default configuration
+    if config_path.is_empty() {
+        return load_default_config();
+    }
+    
+    // TODO: Parse config file and selectively enable rules
+    load_default_config()
 }
 
 fn main() -> eyre::Result<()> {
@@ -117,14 +166,20 @@ fn main() -> eyre::Result<()> {
         Commands::Run(args) => {
             println!("Running natlint with config: {}", args.config);
 
-            // Load configuration
+            // Load configuration with all rules
             let _config = load_config(&args.config);
 
             // Find all files in the root directory that match the include globs and do not match the exclude globs
             let files = find_matching_files(&args.root, args.include, args.exclude)?;
-            files.iter().for_each(|file| println!("{}", file.display()));
-
-            // TODO: Parse each file and apply rules using config.check_item()
+            println!("Found {} files to lint", files.len());
+            
+            // TODO: Implement full linting pipeline:
+            // 1. Parse each Solidity file
+            // 2. For each parsed item, check against all applicable rules
+            // 3. Report violations
+            
+            // For now, just print the files
+            files.iter().for_each(|file| println!("  {}", file.display()));
             
             Ok(())
         }
