@@ -1,4 +1,5 @@
 use clap::Parser;
+use line_col::LineColLookup;
 use natlint::{
     cli::cmd::{Commands, NatlintCli},
     cli::file_finder::find_matching_files,
@@ -160,8 +161,8 @@ fn load_config(config_path: &str) -> Config {
     load_default_config()
 }
 
-/// Process a single Solidity file and return any violations
-fn process_file(file_path: &std::path::Path, config: &Config) -> eyre::Result<Vec<(String, Violation)>> {
+/// Process a single Solidity file and return any violations with line numbers
+fn process_file(file_path: &std::path::Path, config: &Config) -> eyre::Result<Vec<(String, Violation, usize)>> {
     use forge_fmt::Visitable;
     use solang_parser::parse;
     use std::fs;
@@ -169,12 +170,15 @@ fn process_file(file_path: &std::path::Path, config: &Config) -> eyre::Result<Ve
     // Read file content
     let content = fs::read_to_string(file_path)?;
     
+    // Create line/column lookup for efficient offset-to-line conversion
+    let line_lookup = LineColLookup::new(&content);
+    
     // Parse Solidity file
     let (mut source_unit, comments) = parse(&content, 0)
         .map_err(|e| eyre::eyre!("Failed to parse {}: {:?}", file_path.display(), e))?;
     
     // Create parser and visit the source unit
-    let mut parser = natlint::parser::Parser::new(comments, content);
+    let mut parser = natlint::parser::Parser::new(comments, content.clone());
     source_unit.visit(&mut parser)
         .map_err(|e| eyre::eyre!("Failed to visit {}: {:?}", file_path.display(), e))?;
     
@@ -190,7 +194,8 @@ fn process_file(file_path: &std::path::Path, config: &Config) -> eyre::Result<Ve
         parent: Option<&ParseItem>,
         config: &Config,
         file_path: &std::path::Path,
-        all_violations: &mut Vec<(String, Violation)>,
+        line_lookup: &LineColLookup,
+        all_violations: &mut Vec<(String, Violation, usize)>,
     ) {
         // Check item against all applicable rules
         match &item.source {
@@ -202,7 +207,9 @@ fn process_file(file_path: &std::path::Path, config: &Config) -> eyre::Result<Ve
                 );
                 
                 for violation in violations {
-                    all_violations.push((file_path.display().to_string(), violation));
+                    // Get line number (1-based) using efficient lookup
+                    let (line, _) = line_lookup.get(violation.loc.start());
+                    all_violations.push((file_path.display().to_string(), violation, line));
                 }
             },
             ParseSource::Function(function) => {
@@ -213,7 +220,8 @@ fn process_file(file_path: &std::path::Path, config: &Config) -> eyre::Result<Ve
                 );
                 
                 for violation in violations {
-                    all_violations.push((file_path.display().to_string(), violation));
+                    let (line, _) = line_lookup.get(violation.loc.start());
+                    all_violations.push((file_path.display().to_string(), violation, line));
                 }
             },
             ParseSource::Struct(structure) => {
@@ -224,7 +232,8 @@ fn process_file(file_path: &std::path::Path, config: &Config) -> eyre::Result<Ve
                 );
                 
                 for violation in violations {
-                    all_violations.push((file_path.display().to_string(), violation));
+                    let (line, _) = line_lookup.get(violation.loc.start());
+                    all_violations.push((file_path.display().to_string(), violation, line));
                 }
             },
             // Add other item types as needed:
@@ -240,13 +249,13 @@ fn process_file(file_path: &std::path::Path, config: &Config) -> eyre::Result<Ve
         
         // Process all children
         for child in &item.children {
-            process_item(child, Some(item), config, file_path, all_violations);
+            process_item(child, Some(item), config, file_path, line_lookup, all_violations);
         }
     }
     
     // Process all top-level items
     for item in &items {
-        process_item(item, None, config, file_path, &mut all_violations);
+        process_item(item, None, config, file_path, &line_lookup, &mut all_violations);
     }
     
     Ok(all_violations)
@@ -310,11 +319,11 @@ fn main() -> eyre::Result<()> {
                 println!("\rProcessed {} files                ", total_files);
             }
             
-            // Sort violations by file, rule, and location
-            all_violations.sort_by(|(file_a, viol_a), (file_b, viol_b)| {
+            // Sort violations by file, rule, and actual line number
+            all_violations.sort_by(|(file_a, viol_a, line_a), (file_b, viol_b, line_b)| {
                 file_a.cmp(file_b)
+                    .then_with(|| line_a.cmp(line_b))
                     .then_with(|| viol_a.rule.cmp(viol_b.rule))
-                    .then_with(|| viol_a.loc.start().cmp(&viol_b.loc.start()))
             });
             
             // Report violations
@@ -326,7 +335,7 @@ fn main() -> eyre::Result<()> {
                 let mut current_file = String::new();
                 let mut violation_count = 0;
                 
-                for (file, violation) in all_violations {
+                for (file, violation, line_number) in all_violations {
                     // Print file name when it changes
                     if current_file != file {
                         if !current_file.is_empty() {
@@ -336,10 +345,10 @@ fn main() -> eyre::Result<()> {
                         current_file = file;
                     }
                     
-                    // Print violation details
+                    // Print violation details with converted line number
                     println!("  [{}] Line {}: {}", 
                         violation.rule,
-                        violation.loc.start(),
+                        line_number,
                         violation.description
                     );
                     
