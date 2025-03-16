@@ -11,6 +11,7 @@ crate::no_comment_rule!(
 mod tests {
     use super::{EnumDefinition, NoReturn};
     use crate::{
+        generate_no_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -42,83 +43,17 @@ mod tests {
         };
     }
 
-    test_no_return!(
-        empty_no_violation,
+    generate_no_comment_tests!(
+        Return,
+        test_no_return,
+        NoReturn,
         r"
-        interface Test {
             enum Option {
                 Some,
                 None
             }
-        }
         ",
-        |_| None
-    );
-
-    test_no_return!(
-        no_violation,
-        r"
-        interface Test {
-            /// @custom:test Some comment
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-    test_no_return!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @custom:test Some comment
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_no_return!(
-        return_violation,
-        r"
-        interface Test {
-            /// @return something
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |item: &EnumDefinition| Some(Violation::new(
-            NoReturn::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Return),
-            item.loc
-        ))
-    );
-
-    test_no_return!(
-        multiline_return_violation,
-        r"
-        interface Test {
-            /**
-             * @return something
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |item: &EnumDefinition| Some(Violation::new(
-            NoReturn::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Return),
-            item.loc
-        ))
+        "@return",
+        EnumDefinition
     );
 }
