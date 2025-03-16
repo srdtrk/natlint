@@ -3,7 +3,7 @@ use solang_parser::pt::EnumDefinition;
 crate::no_comment_rule!(
     NoReturn,
     EnumDefinition,
-    return,
+    Return,
     "Enums must not have a return comment."
 );
 
