@@ -25,19 +25,15 @@ impl Rule<FunctionDefinition> for MissingNotice {
         }
 
         // Function must have a notice comment
-        match comments.include_tag(CommentTag::Notice).len() {
-            0 => Some(Violation::new(
+        if comments.include_tag(CommentTag::Notice).is_empty() {
+            return Some(Violation::new(
                 Self::NAME,
                 ViolationError::MissingComment(CommentTag::Notice),
                 func.loc,
-            )),
-            1 => None,
-            _ => Some(Violation::new(
-                Self::NAME,
-                ViolationError::TooManyComments(CommentTag::Notice),
-                func.loc,
-            )),
+            ));
         }
+
+        None
     }
 }
 
@@ -46,7 +42,7 @@ mod tests {
     use super::{
         CommentTag, CommentsRef, FunctionDefinition, MissingNotice, Rule, Violation, ViolationError,
     };
-    use crate::parser::Parser;
+    use crate::{generate_missing_comment_tests, parser::Parser};
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -75,164 +71,157 @@ mod tests {
         };
     }
 
-    test_missingnotice!(
-        public_no_violation,
-        r"
-        contract Test {
-            /// @notice Some function
-            function test(uint256 a) public {}
-        }
-        ",
-        |_| None
-    );
+    mod public_test {
+        use super::*;
 
-    test_missingnotice!(
-        private_no_violation,
-        r"
-        contract Test {
-            /// @notice Some function
-            function test(uint256 a) private {}
-        }
-        ",
-        |_| None
-    );
+        generate_missing_comment_tests!(
+            Notice,
+            test_missingnotice,
+            MissingNotice,
+            r"
+                function test(uint256 a) public {}
+            ",
+            "@notice",
+            FunctionDefinition
+        );
 
-    test_missingnotice!(
-        no_tag_no_violation,
-        r"
-        contract Test {
-            /// Some function
-            function test(uint256 a) private {}
-        }
-        ",
-        |_| None
-    );
+        test_missingnotice!(
+            long_multiline_no_tag_no_violation,
+            r"
+            contract Test {
+                /**
+                 * Some function
+                 * next line
+                 */
+                function test(uint256 a) public {}
+            }
+            ",
+            |_| None
+        );
 
-    test_missingnotice!(
-        multiline_no_violation,
-        r"
-        contract Test {
-            /**
-             * @notice Some function
-             */
-            function test(uint256 a) private {}
-        }
-        ",
-        |_| None
-    );
+        test_missingnotice!(
+            inheritdoc_no_violation,
+            r"
+            contract Test {
+                /// @inheritdoc something
+                function test(uint256 a) public {}
+            }
+            ",
+            |_| None
+        );
 
-    test_missingnotice!(
-        multiline_no_tag_no_violation,
-        r"
-        contract Test {
-            /**
-             * Some function
-             */
-            function test(uint256 a) private {}
-        }
-        ",
-        |_| None
-    );
+        test_missingnotice!(
+            multiline_inheritdoc_no_violation,
+            r"
+            contract Test {
+                /**
+                 * @inheritdoc something
+                 */
+                function test(uint256 a) public {}
+            }
+            ",
+            |_| None
+        );
 
-    test_missingnotice!(
-        long_multiline_no_tag_no_violation,
-        r"
-        contract Test {
-            /**
-             * Some function
-             * next line
-             */
-            function test(uint256 a) private {}
-        }
-        ",
-        |_| None
-    );
+        test_missingnotice!(
+            no_tag_no_violation,
+            r"
+                contract Test {
+                    /// Some function
+                    function test(uint256 a) public {}
+                }
+            ",
+            |_| None
+        );
 
-    test_missingnotice!(
-        inheritdoc_no_violation,
-        r"
-        contract Test {
-            /// @inheritdoc something
-            function test(uint256 a) public {}
-        }
-        ",
-        |_| None
-    );
+        test_missingnotice!(
+            multiline_no_tag_no_violation,
+            r"
+            contract Test {
+                /**
+                 * Some function
+                 */
+                function test(uint256 a) public {}
+            }
+            ",
+            |_| None
+        );
+    }
 
-    test_missingnotice!(
-        multiline_inheritdoc_no_violation,
-        r"
-        contract Test {
-            /**
-             * @inheritdoc something
-             */
-            function test(uint256 a) public {}
-        }
-        ",
-        |_| None
-    );
+    mod private_test {
+        use super::*;
 
-    test_missingnotice!(
-        public_violation,
-        r"
-        contract Test {
-            function test(uint256 a) public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            func.loc
-        ))
-    );
+        generate_missing_comment_tests!(
+            Notice,
+            test_missingnotice,
+            MissingNotice,
+            r"
+                function test(uint256 a) private {}
+            ",
+            "@notice",
+            FunctionDefinition
+        );
 
-    test_missingnotice!(
-        too_many_comments_violation,
-        r"
-        contract Test {
-            /// @notice Some function
-            /// @notice Another function
-            function test(uint256 a) public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            func.loc
-        ))
-    );
+        test_missingnotice!(
+            long_multiline_no_tag_no_violation,
+            r"
+            contract Test {
+                /**
+                 * Some function
+                 * next line
+                 */
+                function test(uint256 a) private {}
+            }
+            ",
+            |_| None
+        );
 
-    test_missingnotice!(
-        too_many_comments_tag_no_tag_violation,
-        r"
-        contract Test {
-            /// Another function
-            /// @notice Some function
-            function test(uint256 a) public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            func.loc
-        ))
-    );
+        test_missingnotice!(
+            inheritdoc_no_violation,
+            r"
+            contract Test {
+                /// @inheritdoc something
+                function test(uint256 a) private {}
+            }
+            ",
+            |_| None
+        );
 
-    test_missingnotice!(
-        multiline_many_comments_violation,
-        r"
-        contract Test {
-            /**
-             * @notice Some function
-             * @notice Another function
-             */
-            function test(uint256 a) public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            func.loc
-        ))
-    );
+        test_missingnotice!(
+            multiline_inheritdoc_no_violation,
+            r"
+            contract Test {
+                /**
+                 * @inheritdoc something
+                 */
+                function test(uint256 a) private {}
+            }
+            ",
+            |_| None
+        );
+
+        test_missingnotice!(
+            no_tag_no_violation,
+            r"
+                contract Test {
+                    /// Some function
+                    function test(uint256 a) private {}
+                }
+            ",
+            |_| None
+        );
+
+        test_missingnotice!(
+            multiline_no_tag_no_violation,
+            r"
+            contract Test {
+                /**
+                 * Some function
+                 */
+                function test(uint256 a) private {}
+            }
+            ",
+            |_| None
+        );
+    }
 }

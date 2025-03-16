@@ -112,7 +112,7 @@ macro_rules! generate_missing_comment_tests {
         $rule_name:ident,               // The rule struct (e.g., MissingAuthor)
         $struct_body:expr,              // The body of the struct/enum/function being tested
         $doc_tag:expr,                  // The doc tag (e.g., "@author")
-        $parse_item:ty                  // The parse item type (e.g., StructDefinition)
+        $parse_item:ty                 // The parse item type (e.g., StructDefinition)
     ) => {
         $test_macro!(
             no_violation,
