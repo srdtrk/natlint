@@ -13,6 +13,7 @@ crate::no_comment_rule!(
 mod tests {
     use super::{FunctionDefinition, NoTitle};
     use crate::{
+        generate_no_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -44,29 +45,14 @@ mod tests {
         };
     }
 
-    test_no_title!(
-        no_violation,
+    generate_no_comment_tests!(
+        Title,
+        test_no_title,
+        NoTitle,
         r"
-        contract Test {
-            /// @inheritdoc Base
             function test() public {}
-        }
         ",
-        |_| None
-    );
-
-    test_no_title!(
-        violation,
-        r"
-        contract Test {
-            /// @title Some function
-            function test() public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            NoTitle::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Title),
-            func.loc,
-        ))
+        "@title",
+        FunctionDefinition
     );
 }
