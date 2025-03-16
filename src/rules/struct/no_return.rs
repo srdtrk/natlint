@@ -11,7 +11,7 @@ crate::no_comment_rule!(
 mod tests {
     use super::{NoReturn, StructDefinition};
     use crate::{
-        generate_no_comment_tests,
+        generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -43,7 +43,7 @@ mod tests {
         };
     }
 
-    generate_no_comment_tests!(
+    generate_no_comment_test_cases!(
         Return,
         test_no_return,
         NoReturn,

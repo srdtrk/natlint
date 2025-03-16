@@ -42,7 +42,7 @@ mod tests {
     use super::{
         CommentTag, CommentsRef, FunctionDefinition, MissingNotice, Rule, Violation, ViolationError,
     };
-    use crate::{generate_missing_comment_tests, parser::Parser};
+    use crate::{generate_missing_comment_test_cases, parser::Parser};
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -74,7 +74,7 @@ mod tests {
     mod public_test {
         use super::*;
 
-        generate_missing_comment_tests!(
+        generate_missing_comment_test_cases!(
             Notice,
             test_missingnotice,
             MissingNotice,
@@ -151,7 +151,7 @@ mod tests {
     mod private_test {
         use super::*;
 
-        generate_missing_comment_tests!(
+        generate_missing_comment_test_cases!(
             Notice,
             test_missingnotice,
             MissingNotice,

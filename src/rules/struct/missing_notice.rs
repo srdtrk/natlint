@@ -11,7 +11,7 @@ crate::missing_comment_rule!(
 mod tests {
     use super::{MissingNotice, StructDefinition};
     use crate::{
-        generate_missing_comment_tests,
+        generate_missing_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -43,7 +43,7 @@ mod tests {
         };
     }
 
-    generate_missing_comment_tests!(
+    generate_missing_comment_test_cases!(
         Notice,
         test_missingnotice,
         MissingNotice,

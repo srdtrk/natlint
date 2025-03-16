@@ -11,7 +11,7 @@ crate::too_many_comments_rule!(
 mod tests {
     use super::{FunctionDefinition, TooManyInheritdoc};
     use crate::{
-        generate_too_many_comment_tests,
+        generate_too_many_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{Rule, Violation, ViolationError},
     };
@@ -46,7 +46,7 @@ mod tests {
         };
     }
 
-    generate_too_many_comment_tests!(
+    generate_too_many_comment_test_cases!(
         Inheritdoc,
         test_too_many_inheritdoc,
         TooManyInheritdoc,

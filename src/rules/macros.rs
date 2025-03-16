@@ -105,7 +105,7 @@ macro_rules! too_many_comments_rule {
 
 /// Generates test cases for a missing comment rule.
 #[macro_export]
-macro_rules! generate_missing_comment_tests {
+macro_rules! generate_missing_comment_test_cases {
     (
         $comment_variant:ident,         // The CommentTag variant (e.g., Author)
         $test_macro:ident,              // The test macro name (e.g., test_missingauthor)
@@ -243,7 +243,7 @@ macro_rules! generate_missing_comment_tests {
 
 /// Generates test cases for a "No Comment" rule.
 #[macro_export]
-macro_rules! generate_no_comment_tests {
+macro_rules! generate_no_comment_test_cases {
     (
         $comment_variant:ident,        // The CommentTag variant (e.g., Inheritdoc)
         $test_macro:ident,             // The test macro name (e.g., test_no_inheritdoc)
@@ -417,7 +417,7 @@ macro_rules! generate_no_comment_tests {
 
 /// Generates test cases for a "Too Many Comment" rule.
 #[macro_export]
-macro_rules! generate_too_many_comment_tests {
+macro_rules! generate_too_many_comment_test_cases {
     (
         $comment_variant:ident,        // The CommentTag variant (e.g., Title)
         $test_macro:ident,             // The test macro name (e.g., test_too_many_title)

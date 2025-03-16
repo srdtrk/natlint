@@ -68,7 +68,7 @@ mod tests {
         CommentTag, CommentsRef, FunctionDefinition, MissingInheritdoc, Rule, Violation,
         ViolationError,
     };
-    use crate::{generate_missing_comment_tests, parser::Parser};
+    use crate::{generate_missing_comment_test_cases, parser::Parser};
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -103,7 +103,7 @@ mod tests {
     mod public_test {
         use super::*;
 
-        generate_missing_comment_tests!(
+        generate_missing_comment_test_cases!(
             Inheritdoc,
             test_missinginheritdoc,
             MissingInheritdoc,
@@ -118,7 +118,7 @@ mod tests {
     mod external_test {
         use super::*;
 
-        generate_missing_comment_tests!(
+        generate_missing_comment_test_cases!(
             Inheritdoc,
             test_missinginheritdoc,
             MissingInheritdoc,
@@ -133,7 +133,7 @@ mod tests {
     mod override_test {
         use super::*;
 
-        generate_missing_comment_tests!(
+        generate_missing_comment_test_cases!(
             Inheritdoc,
             test_missinginheritdoc,
             MissingInheritdoc,

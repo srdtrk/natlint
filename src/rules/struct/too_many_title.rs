@@ -11,7 +11,7 @@ crate::too_many_comments_rule!(
 mod tests {
     use super::{StructDefinition, TooManyTitle};
     use crate::{
-        generate_too_many_comment_tests,
+        generate_too_many_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -43,7 +43,7 @@ mod tests {
         };
     }
 
-    generate_too_many_comment_tests!(
+    generate_too_many_comment_test_cases!(
         Title,
         test_too_many_title,
         TooManyTitle,

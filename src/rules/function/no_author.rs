@@ -13,7 +13,7 @@ crate::no_comment_rule!(
 mod tests {
     use super::{FunctionDefinition, NoAuthor};
     use crate::{
-        generate_no_comment_tests,
+        generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -45,7 +45,7 @@ mod tests {
         };
     }
 
-    generate_no_comment_tests!(
+    generate_no_comment_test_cases!(
         Author,
         test_no_author,
         NoAuthor,
