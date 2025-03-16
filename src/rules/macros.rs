@@ -118,7 +118,7 @@ macro_rules! generate_missing_comment_tests {
             no_violation,
             &format!(
                 r"
-                interface Test {{
+                contract Test {{
                     /// {} Some comment
                     {}
                 }}",
@@ -131,7 +131,7 @@ macro_rules! generate_missing_comment_tests {
             multi_no_violation,
             &format!(
                 r"
-                interface Test {{
+                contract Test {{
                     /// {} Some comment
                     /// @custom:test Some comment
                     {}
@@ -145,7 +145,7 @@ macro_rules! generate_missing_comment_tests {
             multi_comment_no_violation,
             &format!(
                 r"
-                interface Test {{
+                contract Test {{
                     /// {} Some comment
                     /// {} Some other
                     {}
@@ -159,7 +159,7 @@ macro_rules! generate_missing_comment_tests {
             multiline_multi_no_violation,
             &format!(
                 r"
-                interface Test {{
+                contract Test {{
                     /**
                      * {} Some comment
                      * @custom:test Some comment
@@ -175,7 +175,7 @@ macro_rules! generate_missing_comment_tests {
             multiline_multi_comment_no_violation,
             &format!(
                 r"
-                interface Test {{
+                contract Test {{
                     /**
                      * {} Some comment
                      * {} Some other
