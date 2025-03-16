@@ -11,9 +11,9 @@ use super::super::{Rule, Violation};
 pub struct MissingReturn;
 
 impl Rule<FunctionDefinition> for MissingReturn {
-    const NAME: &'static str = "Missing Return";
+    const NAME: &'static str = "MissingReturn";
     const DESCRIPTION: &'static str =
-        "All functions must have their return variables documented or have an inheritdoc comment.";
+        "Functions must have their return variables documented or have an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,

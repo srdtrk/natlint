@@ -11,9 +11,8 @@ use super::super::{Rule, Violation};
 pub struct MissingNotice;
 
 impl Rule<FunctionDefinition> for MissingNotice {
-    const NAME: &'static str = "Missing Notice";
-    const DESCRIPTION: &'static str =
-        "This rule requires that all functions have a notice or an inheritdoc comment.";
+    const NAME: &'static str = "MissingNotice";
+    const DESCRIPTION: &'static str = "Functions must have a notice or an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,
