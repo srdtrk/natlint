@@ -11,6 +11,7 @@ crate::too_many_comments_rule!(
 mod tests {
     use super::{FunctionDefinition, TooManyNotice};
     use crate::{
+        generate_too_many_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{Rule, Violation, ViolationError},
     };
@@ -42,53 +43,14 @@ mod tests {
         };
     }
 
-    test_too_many_notice!(
-        too_many_comments_violation,
+    generate_too_many_comment_tests!(
+        Notice,
+        test_too_many_notice,
+        TooManyNotice,
         r"
-        contract Test {
-            /// @notice Some function
-            /// @notice Another function
-            function test(uint256 a) public {}
-        }
+            function test() private {}
         ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            TooManyNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            func.loc
-        ))
-    );
-
-    test_too_many_notice!(
-        too_many_comments_tag_no_tag_violation,
-        r"
-        contract Test {
-            /// Another function
-            /// @notice Some function
-            function test(uint256 a) public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            TooManyNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            func.loc
-        ))
-    );
-
-    test_too_many_notice!(
-        multiline_many_comments_violation,
-        r"
-        contract Test {
-            /**
-             * @notice Some function
-             * @notice Another function
-             */
-            function test(uint256 a) public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            TooManyNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            func.loc
-        ))
+        "@notice",
+        FunctionDefinition
     );
 }

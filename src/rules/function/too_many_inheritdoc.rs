@@ -11,6 +11,7 @@ crate::too_many_comments_rule!(
 mod tests {
     use super::{FunctionDefinition, TooManyInheritdoc};
     use crate::{
+        generate_too_many_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{Rule, Violation, ViolationError},
     };
@@ -45,37 +46,14 @@ mod tests {
         };
     }
 
-    test_too_many_inheritdoc!(
-        too_many_violation,
+    generate_too_many_comment_tests!(
+        Inheritdoc,
+        test_too_many_inheritdoc,
+        TooManyInheritdoc,
         r"
-        contract Test {
-            /// @inheritdoc Base
-            /// @inheritdoc Base2
-            function test() override {}
-        }
+            function test() private {}
         ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            TooManyInheritdoc::NAME,
-            ViolationError::TooManyComments(CommentTag::Inheritdoc),
-            func.loc
-        ))
-    );
-
-    test_too_many_inheritdoc!(
-        multiline_too_many_violation,
-        r"
-        contract Test {
-            /**
-             * @inheritdoc Base
-             * @inheritdoc Base2
-             */
-            function test() override {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            TooManyInheritdoc::NAME,
-            ViolationError::TooManyComments(CommentTag::Inheritdoc),
-            func.loc
-        ))
+        "@inheritdoc",
+        FunctionDefinition
     );
 }
