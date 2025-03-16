@@ -11,6 +11,7 @@ crate::too_many_comments_rule!(
 mod tests {
     use super::{StructDefinition, TooManyTitle};
     use crate::{
+        generate_too_many_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -42,124 +43,16 @@ mod tests {
         };
     }
 
-    test_too_many_title!(
-        empty_no_violation,
+    generate_too_many_comment_test_cases!(
+        Title,
+        test_too_many_title,
+        TooManyTitle,
         r"
-        interface Test {
             struct TestStruct {
                 uint256 a;
             }
-        }
         ",
-        |_| None
-    );
-
-    test_too_many_title!(
-        no_violation,
-        r"
-        interface Test {
-            /// @title Some title
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_too_many_title!(
-        multi_no_violation,
-        r"
-        interface Test {
-            /// @title Some title
-            /// @custom:test Some comment
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_too_many_title!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @title Some title
-             * @custom:test Some comment
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_too_many_title!(
-        missing_no_violation,
-        r"
-        contract Test {
-            /// @custom:test Some comment
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_too_many_title!(
-        multiline_missing_no_violation,
-        r"
-        contract Test {
-            /**
-             * @custom:test Some comment
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_too_many_title!(
-        multi_violation,
-        r"
-        contract Test {
-            /// @title Some struct
-            /// @title Some struct
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            TooManyTitle::NAME,
-            ViolationError::TooManyComments(CommentTag::Title),
-            sct.loc
-        ))
-    );
-
-    test_too_many_title!(
-        multiline_multi_violation,
-        r"
-        contract Test {
-            /**
-             * @title a Some struct
-             * @title b Some struct
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            TooManyTitle::NAME,
-            ViolationError::TooManyComments(CommentTag::Title),
-            sct.loc
-        ))
+        "@title",
+        StructDefinition
     );
 }

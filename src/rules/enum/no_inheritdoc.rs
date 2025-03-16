@@ -11,6 +11,7 @@ crate::no_comment_rule!(
 mod tests {
     use super::{EnumDefinition, NoInheritdoc};
     use crate::{
+        generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -42,83 +43,17 @@ mod tests {
         };
     }
 
-    test_no_inheritdoc!(
-        empty_no_violation,
+    generate_no_comment_test_cases!(
+        Inheritdoc,
+        test_no_inheritdoc,
+        NoInheritdoc,
         r"
-        interface Test {
             enum Option {
                 Some,
                 None
             }
-        }
         ",
-        |_| None
-    );
-
-    test_no_inheritdoc!(
-        no_violation,
-        r"
-        interface Test {
-            /// @custom:test Some comment
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-    test_no_inheritdoc!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @custom:test Some comment
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_no_inheritdoc!(
-        inheritdoc_violation,
-        r"
-        interface Test {
-            /// @inheritdoc Base
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |item: &EnumDefinition| Some(Violation::new(
-            NoInheritdoc::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
-            item.loc
-        ))
-    );
-
-    test_no_inheritdoc!(
-        multiline_inheritdoc_violation,
-        r"
-        interface Test {
-            /**
-             * @inheritdoc Base
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |item: &EnumDefinition| Some(Violation::new(
-            NoInheritdoc::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
-            item.loc
-        ))
+        "@inheritdoc",
+        EnumDefinition
     );
 }

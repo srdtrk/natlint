@@ -14,6 +14,7 @@ crate::missing_comment_rule!(
 mod tests {
     use super::{EnumDefinition, MissingTitle};
     use crate::{
+        generate_missing_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -46,136 +47,17 @@ mod tests {
         };
     }
 
-    test_missingtitle!(
-        no_violation,
+    generate_missing_comment_test_cases!(
+        Title,
+        test_missingtitle,
+        MissingTitle,
         r"
-        interface Test {
-            /// @title Some title
             enum Option {
                 Some,
                 None
             }
-        }
         ",
-        |_| None
-    );
-
-    test_missingtitle!(
-        multi_no_violation,
-        r"
-        interface Test {
-            /// @title Some title
-            /// @custom:test Some comment
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingtitle!(
-        multi_title_no_violation,
-        r"
-        interface Test {
-            /// @title Some title
-            /// @title Some other
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingtitle!(
-        multiline_multi_no_violation,
-        r"
-        interface Test {
-            /**
-             * @title Some title
-             * @custom:test Some comment
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingtitle!(
-        multiline_multi_title_no_violation,
-        r"
-        interface Test {
-            /**
-             * @title Some title
-             * @title Some other
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingtitle!(
-        empty_violation,
-        r"
-        contract Test {
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
-    );
-
-    test_missingtitle!(
-        violation,
-        r"
-        contract Test {
-            /// @custom:test Some comment
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
-    );
-
-    test_missingtitle!(
-        multiline_violation,
-        r"
-        contract Test {
-            /**
-             * @custom:test Some comment
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
+        "@title",
+        EnumDefinition
     );
 }

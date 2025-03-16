@@ -11,6 +11,7 @@ crate::no_comment_rule!(
 mod tests {
     use super::{EnumDefinition, NoParam};
     use crate::{
+        generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -42,83 +43,17 @@ mod tests {
         };
     }
 
-    test_no_param!(
-        empty_no_violation,
+    generate_no_comment_test_cases!(
+        Param,
+        test_no_param,
+        NoParam,
         r"
-        interface Test {
             enum Option {
                 Some,
                 None
             }
-        }
         ",
-        |_| None
-    );
-
-    test_no_param!(
-        no_violation,
-        r"
-        interface Test {
-            /// @custom:test Some comment
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-    test_no_param!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @custom:test Some comment
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_no_param!(
-        param_violation,
-        r"
-        interface Test {
-            /// @param Base
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |item: &EnumDefinition| Some(Violation::new(
-            NoParam::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Param),
-            item.loc
-        ))
-    );
-
-    test_no_param!(
-        multiline_param_violation,
-        r"
-        interface Test {
-            /**
-             * @param Base
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |item: &EnumDefinition| Some(Violation::new(
-            NoParam::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Param),
-            item.loc
-        ))
+        "@param",
+        EnumDefinition
     );
 }

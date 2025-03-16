@@ -1,19 +1,19 @@
-use solang_parser::pt::EnumDefinition;
+use solang_parser::pt::FunctionDefinition;
 
-crate::no_comment_rule!(
-    NoReturn,
-    EnumDefinition,
-    Return,
-    "Enums must not have a return comment."
+crate::too_many_comments_rule!(
+    TooManyNotice,
+    FunctionDefinition,
+    Notice,
+    "Functions must not have more than one notice comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{EnumDefinition, NoReturn};
+    use super::{FunctionDefinition, TooManyNotice};
     use crate::{
-        generate_no_comment_test_cases,
+        generate_too_many_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
-        rules::{violation_error::ViolationError, Rule, Violation},
+        rules::{Rule, Violation, ViolationError},
     };
     use forge_fmt::Visitable;
     use solang_parser::parse;
@@ -25,7 +25,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_no_return {
+    macro_rules! test_too_many_notice {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -33,27 +33,24 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let item = child.as_enum().unwrap();
+                let func = child.as_function().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
-                let expected = $expected(item);
+                let expected = $expected(func);
 
-                assert_eq!(NoReturn::check(Some(parent), item, comments), expected);
+                assert_eq!(TooManyNotice::check(Some(parent), func, comments), expected);
             }
         };
     }
 
-    generate_no_comment_test_cases!(
-        Return,
-        test_no_return,
-        NoReturn,
+    generate_too_many_comment_test_cases!(
+        Notice,
+        test_too_many_notice,
+        TooManyNotice,
         r"
-            enum Option {
-                Some,
-                None
-            }
+            function test() private {}
         ",
-        "@return",
-        EnumDefinition
+        "@notice",
+        FunctionDefinition
     );
 }

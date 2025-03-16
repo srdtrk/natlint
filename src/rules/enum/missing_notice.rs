@@ -13,6 +13,7 @@ crate::missing_comment_rule!(
 mod tests {
     use super::{EnumDefinition, MissingNotice};
     use crate::{
+        generate_missing_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -45,136 +46,17 @@ mod tests {
         };
     }
 
-    test_missingnotice!(
-        no_violation,
+    generate_missing_comment_test_cases!(
+        Notice,
+        test_missingnotice,
+        MissingNotice,
         r"
-        interface Test {
-            /// @notice Some notice
             enum Option {
                 Some,
                 None
             }
-        }
         ",
-        |_| None
-    );
-
-    test_missingnotice!(
-        multi_no_violation,
-        r"
-        interface Test {
-            /// @notice Some notice
-            /// @custom:test Some comment
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingnotice!(
-        multi_notice_no_violation,
-        r"
-        interface Test {
-            /// @notice Some notice
-            /// @notice Some other
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingnotice!(
-        multiline_multi_no_violation,
-        r"
-        interface Test {
-            /**
-             * @notice Some notice
-             * @custom:test Some comment
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingnotice!(
-        multiline_multi_notice_no_violation,
-        r"
-        interface Test {
-            /**
-             * @notice Some notice
-             * @notice Some other
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingnotice!(
-        empty_violation,
-        r"
-        contract Test {
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
-    );
-
-    test_missingnotice!(
-        violation,
-        r"
-        contract Test {
-            /// @custom:test Some comment
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
-    );
-
-    test_missingnotice!(
-        multiline_violation,
-        r"
-        contract Test {
-            /**
-             * @custom:test Some comment
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
+        "@notice",
+        EnumDefinition
     );
 }

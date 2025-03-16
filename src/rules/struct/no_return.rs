@@ -11,6 +11,7 @@ crate::no_comment_rule!(
 mod tests {
     use super::{NoReturn, StructDefinition};
     use crate::{
+        generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -42,78 +43,16 @@ mod tests {
         };
     }
 
-    test_no_return!(
-        empty_no_violation,
+    generate_no_comment_test_cases!(
+        Return,
+        test_no_return,
+        NoReturn,
         r"
-        interface Test {
             struct TestStruct {
                 uint256 a;
             }
-        }
         ",
-        |_| None
-    );
-
-    test_no_return!(
-        no_violation,
-        r"
-        interface Test {
-            /// @inheritdoc Base
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-    test_no_return!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @notice Some notice
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_no_return!(
-        return_violation,
-        r"
-        interface Test {
-            /// @return Some return
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |item: &StructDefinition| Some(Violation::new(
-            NoReturn::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Return),
-            item.loc
-        ))
-    );
-
-    test_no_return!(
-        multiline_return_violation,
-        r"
-        interface Test {
-            /**
-             * @return Some return
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |item: &StructDefinition| Some(Violation::new(
-            NoReturn::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Return),
-            item.loc
-        ))
+        "@return",
+        StructDefinition
     );
 }
