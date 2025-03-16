@@ -68,7 +68,7 @@ mod tests {
         CommentTag, CommentsRef, FunctionDefinition, MissingInheritdoc, Rule, Violation,
         ViolationError,
     };
-    use crate::parser::Parser;
+    use crate::{generate_missing_comment_tests, parser::Parser};
     use forge_fmt::Visitable;
     use solang_parser::parse;
 
@@ -100,38 +100,50 @@ mod tests {
         };
     }
 
-    test_missinginheritdoc!(
-        public_no_violation,
-        r"
-        contract Test {
-            /// @inheritdoc Base
-            function test() public {}
-        }
-        ",
-        |_| None
-    );
+    mod public_test {
+        use super::*;
 
-    test_missinginheritdoc!(
-        external_no_violation,
-        r"
-        contract Test {
-            /// @inheritdoc Base
-            function test() external {}
-        }
-        ",
-        |_| None
-    );
+        generate_missing_comment_tests!(
+            Inheritdoc,
+            test_missinginheritdoc,
+            MissingInheritdoc,
+            r"
+                function test() public {}
+            ",
+            "@inheritdoc",
+            FunctionDefinition
+        );
+    }
 
-    test_missinginheritdoc!(
-        override_no_violation,
-        r"
-        contract Test {
-            /// @inheritdoc Base
-            function test() override {}
-        }
-        ",
-        |_| None
-    );
+    mod external_test {
+        use super::*;
+
+        generate_missing_comment_tests!(
+            Inheritdoc,
+            test_missinginheritdoc,
+            MissingInheritdoc,
+            r"
+                function test() external {}
+            ",
+            "@inheritdoc",
+            FunctionDefinition
+        );
+    }
+
+    mod override_test {
+        use super::*;
+
+        generate_missing_comment_tests!(
+            Inheritdoc,
+            test_missinginheritdoc,
+            MissingInheritdoc,
+            r"
+                function test() override {}
+            ",
+            "@inheritdoc",
+            FunctionDefinition
+        );
+    }
 
     test_missinginheritdoc!(
         private_no_violation,
@@ -211,48 +223,6 @@ mod tests {
         }
         ",
         |_| None
-    );
-
-    test_missinginheritdoc!(
-        public_violation,
-        r"
-        contract Test {
-            function test() public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingInheritdoc::NAME,
-            ViolationError::MissingComment(CommentTag::Inheritdoc),
-            func.loc
-        ))
-    );
-
-    test_missinginheritdoc!(
-        external_violation,
-        r"
-        contract Test {
-            function test() external {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingInheritdoc::NAME,
-            ViolationError::MissingComment(CommentTag::Inheritdoc),
-            func.loc
-        ))
-    );
-
-    test_missinginheritdoc!(
-        override_violation,
-        r"
-        contract Test {
-            function test() override {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingInheritdoc::NAME,
-            ViolationError::MissingComment(CommentTag::Inheritdoc),
-            func.loc
-        ))
     );
 
     test_missinginheritdoc!(
