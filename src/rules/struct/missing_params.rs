@@ -11,8 +11,8 @@ use super::super::{Rule, Violation};
 pub struct MissingParams;
 
 impl Rule<StructDefinition> for MissingParams {
-    const NAME: &'static str = "Missing Params";
-    const DESCRIPTION: &'static str = "All structs must document all parameters.";
+    const NAME: &'static str = "MissingParams";
+    const DESCRIPTION: &'static str = "Structs must document all parameters.";
 
     fn check(
         _: Option<&ParseItem>,

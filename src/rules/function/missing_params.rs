@@ -12,9 +12,9 @@ use super::super::{Rule, Violation};
 pub struct MissingParams;
 
 impl Rule<FunctionDefinition> for MissingParams {
-    const NAME: &'static str = "Missing Params";
+    const NAME: &'static str = "MissingParams";
     const DESCRIPTION: &'static str =
-        "All functions must have their parameters documented or have an inheritdoc comment.";
+        "Functions must have their parameters documented or have an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,

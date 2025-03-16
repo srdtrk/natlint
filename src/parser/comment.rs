@@ -51,6 +51,11 @@ impl CommentTag {
         };
         Some(tag)
     }
+
+    /// Create a new instance of [CommentTag::Custom] with the `variant` tag.
+    pub fn variant() -> Self {
+        Self::Custom("variant".to_string())
+    }
 }
 
 /// The natspec documentation comment.

@@ -13,9 +13,9 @@ use super::super::{Rule, Violation};
 pub struct MissingInheritdoc;
 
 impl Rule<FunctionDefinition> for MissingInheritdoc {
-    const NAME: &'static str = "Missing Inheritdoc";
+    const NAME: &'static str = "MissingInheritdoc";
     const DESCRIPTION: &'static str =
-        "All public and override functions must have an inheritdoc comment.";
+        "Public and override functions must have an inheritdoc comment.";
 
     fn check(
         parent: Option<&ParseItem>,
