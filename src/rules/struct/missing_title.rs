@@ -14,6 +14,7 @@ crate::missing_comment_rule!(
 mod tests {
     use super::{MissingTitle, StructDefinition};
     use crate::{
+        generate_missing_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -45,98 +46,16 @@ mod tests {
         };
     }
 
-    test_missingtitle!(
-        no_violation,
+    generate_missing_comment_tests!(
+        Title,
+        test_missingtitle,
+        MissingTitle,
         r"
-        interface Test {
-            /// @title Some title
             struct TestStruct {
                 uint256 a;
             }
-        }
         ",
-        |_| None
-    );
-
-    test_missingtitle!(
-        multi_no_violation,
-        r"
-        interface Test {
-            /// @title Some title
-            /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingtitle!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @title Some title
-             * @param a Some param
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingtitle!(
-        empty_violation,
-        r"
-        contract Test {
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
-    );
-
-    test_missingtitle!(
-        violation,
-        r"
-        contract Test {
-            /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
-    );
-
-    test_missingtitle!(
-        multiline_violation,
-        r"
-        contract Test {
-            /**
-             * @param a Some param
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingTitle::NAME,
-            ViolationError::MissingComment(CommentTag::Title),
-            sct.loc
-        ))
+        "@title",
+        StructDefinition
     );
 }
