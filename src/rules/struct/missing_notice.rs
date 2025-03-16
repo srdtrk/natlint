@@ -11,6 +11,7 @@ crate::missing_comment_rule!(
 mod tests {
     use super::{MissingNotice, StructDefinition};
     use crate::{
+        generate_missing_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -42,63 +43,17 @@ mod tests {
         };
     }
 
-    test_missingnotice!(
-        no_violation,
+    generate_missing_comment_tests!(
+        Notice,
+        test_missingnotice,
+        MissingNotice,
         r"
-        interface Test {
-            /// @notice Some notice
             struct TestStruct {
                 uint256 a;
             }
-        }
         ",
-        |_| None
-    );
-
-    test_missingnotice!(
-        multi_no_violation,
-        r"
-        interface Test {
-            /// @notice Some notice
-            /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingnotice!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @notice Some notice
-             * @param a Some param
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingnotice!(
-        empty_violation,
-        r"
-        contract Test {
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
+        "@notice",
+        StructDefinition
     );
 
     test_missingnotice!(
@@ -127,41 +82,5 @@ mod tests {
         }
         ",
         |_| None // WARNING: solang parser and the natspec docs interpret no tags as a notice
-    );
-
-    test_missingnotice!(
-        violation,
-        r"
-        contract Test {
-            /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
-    );
-
-    test_missingnotice!(
-        multiline_violation,
-        r"
-        contract Test {
-            /**
-             * @param a Some param
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingNotice::NAME,
-            ViolationError::MissingComment(CommentTag::Notice),
-            sct.loc
-        ))
     );
 }

@@ -142,7 +142,7 @@ macro_rules! generate_missing_comment_tests {
         );
 
         $test_macro!(
-            multi_author_no_violation,
+            multi_comment_no_violation,
             &format!(
                 r"
                 interface Test {{
@@ -172,7 +172,7 @@ macro_rules! generate_missing_comment_tests {
         );
 
         $test_macro!(
-            multiline_multi_author_no_violation,
+            multiline_multi_comment_no_violation,
             &format!(
                 r"
                 interface Test {{
