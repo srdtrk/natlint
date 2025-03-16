@@ -11,6 +11,7 @@ crate::no_comment_rule!(
 mod tests {
     use super::{NoInheritdoc, StructDefinition};
     use crate::{
+        generate_no_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -42,78 +43,16 @@ mod tests {
         };
     }
 
-    test_no_inheritdoc!(
-        empty_no_violation,
+    generate_no_comment_tests!(
+        Inheritdoc,
+        test_no_inheritdoc,
+        NoInheritdoc,
         r"
-        interface Test {
             struct TestStruct {
                 uint256 a;
             }
-        }
         ",
-        |_| None
-    );
-
-    test_no_inheritdoc!(
-        no_violation,
-        r"
-        interface Test {
-            /// @notice Some notice
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-    test_no_inheritdoc!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @notice Some notice
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_no_inheritdoc!(
-        inheritdoc_violation,
-        r"
-        interface Test {
-            /// @inheritdoc Base
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |item: &StructDefinition| Some(Violation::new(
-            NoInheritdoc::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
-            item.loc
-        ))
-    );
-
-    test_no_inheritdoc!(
-        multiline_inheritdoc_violation,
-        r"
-        interface Test {
-            /**
-             * @inheritdoc Base
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |item: &StructDefinition| Some(Violation::new(
-            NoInheritdoc::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
-            item.loc
-        ))
+        "@inheritdoc",
+        StructDefinition
     );
 }

@@ -107,12 +107,12 @@ macro_rules! too_many_comments_rule {
 #[macro_export]
 macro_rules! generate_missing_comment_tests {
     (
-        $comment_variant:ident,        // The CommentTag variant (e.g., Author)
+        $comment_variant:ident,         // The CommentTag variant (e.g., Author)
         $test_macro:ident,              // The test macro name (e.g., test_missingauthor)
         $rule_name:ident,               // The rule struct (e.g., MissingAuthor)
         $struct_body:expr,              // The body of the struct/enum/function being tested
         $doc_tag:expr,                  // The doc tag (e.g., "@author")
-        $parse_item:ty                 // The parse item type (e.g., StructDefinition)
+        $parse_item:ty                  // The parse item type (e.g., StructDefinition)
     ) => {
         $test_macro!(
             no_violation,
@@ -235,6 +235,180 @@ macro_rules! generate_missing_comment_tests {
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
                 ViolationError::MissingComment(CommentTag::$comment_variant),
+                item.loc
+            ))
+        );
+    };
+}
+
+/// Generates test cases for a "No Comment" rule.
+#[macro_export]
+macro_rules! generate_no_comment_tests {
+    (
+        $comment_variant:ident,        // The CommentTag variant (e.g., Inheritdoc)
+        $test_macro:ident,             // The test macro name (e.g., test_no_inheritdoc)
+        $rule_name:ident,              // The rule struct (e.g., NoInheritdoc)
+        $struct_body:expr,             // The body of the struct/enum/function being tested
+        $doc_tag:expr,                 // The doc tag (e.g., "@inheritdoc")
+        $parse_item:ty                 // The parse item type (e.g., StructDefinition)
+    ) => {
+        // Case: No violation when there is no comment
+        $test_macro!(
+            empty_no_violation,
+            &format!(
+                r"
+                interface Test {{
+                    {}
+                }}",
+                $struct_body
+            ),
+            |_| None
+        );
+
+        // Case: No violation when there is a different comment tag
+        $test_macro!(
+            no_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /// @custom:test Some comment
+                    {}
+                }}",
+                $struct_body
+            ),
+            |_| None
+        );
+
+        // Case: No violation when there is a different comment tag (multiline)
+        $test_macro!(
+            multiline_no_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /**
+                     * @custom:test Some comment
+                     */
+                    {}
+                }}",
+                $struct_body
+            ),
+            |_| None
+        );
+
+        // Case: Violation when the disallowed comment is present
+        $test_macro!(
+            comment_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /// {} Some comment
+                    {}
+                }}",
+                $doc_tag, $struct_body
+            ),
+            |item: &$parse_item| Some(Violation::new(
+                $rule_name::NAME,
+                ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
+                item.loc
+            ))
+        );
+
+        // Case: Violation when the disallowed comment appears multiple times
+        $test_macro!(
+            multi_comment_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /// {} Some comment
+                    /// {} Some other
+                    {}
+                }}",
+                $doc_tag, $doc_tag, $struct_body
+            ),
+            |item: &$parse_item| Some(Violation::new(
+                $rule_name::NAME,
+                ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
+                item.loc
+            ))
+        );
+
+        // Case: Violation when both allowed and disallowed comments are present
+        $test_macro!(
+            with_comment_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /// {} Some comment
+                    /// @custom:test Some comment
+                    {}
+                }}",
+                $doc_tag, $struct_body
+            ),
+            |item: &$parse_item| Some(Violation::new(
+                $rule_name::NAME,
+                ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
+                item.loc
+            ))
+        );
+
+        // Case: Violation when the disallowed comment appears in multiline
+        $test_macro!(
+            multiline_comment_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /**
+                     * {} Some comment
+                     */
+                    {}
+                }}",
+                $doc_tag, $struct_body
+            ),
+            |item: &$parse_item| Some(Violation::new(
+                $rule_name::NAME,
+                ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
+                item.loc
+            ))
+        );
+
+        // Case: Violation when both allowed and disallowed comments are present in multiline
+        $test_macro!(
+            multiline_with_comment_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /**
+                     * {} Some comment
+                     * @custom:test Some comment
+                     */
+                    {}
+                }}",
+                $doc_tag, $struct_body
+            ),
+            |item: &$parse_item| Some(Violation::new(
+                $rule_name::NAME,
+                ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
+                item.loc
+            ))
+        );
+
+        // Case: Violation when the disallowed comment appears multiple times in multiline
+        $test_macro!(
+            multiline_multi_comment_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /**
+                     * {} Some comment
+                     * {} Some other
+                     */
+                    {}
+                }}",
+                $doc_tag, $doc_tag, $struct_body
+            ),
+            |item: &$parse_item| Some(Violation::new(
+                $rule_name::NAME,
+                ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
                 item.loc
             ))
         );
