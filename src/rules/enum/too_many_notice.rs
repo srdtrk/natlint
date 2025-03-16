@@ -11,6 +11,7 @@ crate::too_many_comments_rule!(
 mod tests {
     use super::{EnumDefinition, TooManyNotice};
     use crate::{
+        generate_too_many_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -42,63 +43,18 @@ mod tests {
         };
     }
 
-    test_too_many_notice!(
-        empty_no_violation,
+    generate_too_many_comment_tests!(
+        Notice,
+        test_too_many_notice,
+        TooManyNotice,
         r"
-        interface Test {
             enum Option {
                 Some,
                 None
             }
-        }
         ",
-        |_| None
-    );
-
-    test_too_many_notice!(
-        no_violation,
-        r"
-        interface Test {
-            /// @notice Some notice
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_too_many_notice!(
-        multi_no_violation,
-        r"
-        interface Test {
-            /// @notice Some notice
-            /// @param a Some param
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_too_many_notice!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @notice Some notice
-             * @param a Some param
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
+        "@notice",
+        EnumDefinition
     );
 
     test_too_many_notice!(
@@ -106,7 +62,7 @@ mod tests {
         r"
         contract Test {
             /// Some notice
-            /// @notice b Some enum
+            /// @notice Some other
             enum Option {
                 Some,
                 None
@@ -121,31 +77,12 @@ mod tests {
     );
 
     test_too_many_notice!(
-        multi_violation,
-        r"
-        contract Test {
-            /// @notice a Some enum
-            /// @notice b Some enum
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            TooManyNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            sct.loc
-        ))
-    );
-
-    test_too_many_notice!(
-        multiline_multi_violation,
+        multiline_no_tag_violation,
         r"
         contract Test {
             /**
-             * @notice a Some enum
-             * @notice b Some enum
+             * Some comment
+             * @notice Some othe
              */
             enum Option {
                 Some,
@@ -157,6 +94,6 @@ mod tests {
             TooManyNotice::NAME,
             ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc
-        ))
+        )) // WARNING: solang parser and the natspec docs interpret no tags as a notice
     );
 }
