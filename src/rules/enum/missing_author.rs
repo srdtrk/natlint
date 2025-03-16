@@ -14,6 +14,7 @@ crate::missing_comment_rule!(
 mod tests {
     use super::{EnumDefinition, MissingAuthor};
     use crate::{
+        generate_missing_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -46,136 +47,17 @@ mod tests {
         };
     }
 
-    test_missingauthor!(
-        no_violation,
+    generate_missing_comment_tests!(
+        Author,
+        test_missingauthor,
+        MissingAuthor,
         r"
-        interface Test {
-            /// @author Some author
             enum Option {
                 Some,
                 None
             }
-        }
         ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        multi_no_violation,
-        r"
-        interface Test {
-            /// @author Some author
-            /// @custom:test Some comment
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        multi_author_no_violation,
-        r"
-        interface Test {
-            /// @author Some author
-            /// @author Some other
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        multiline_multi_no_violation,
-        r"
-        interface Test {
-            /**
-             * @author Some author
-             * @custom:test Some comment
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        multiline_multi_author_no_violation,
-        r"
-        interface Test {
-            /**
-             * @author Some author
-             * @author Some other
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        empty_violation,
-        r"
-        contract Test {
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
-        violation,
-        r"
-        contract Test {
-            /// @custom:test Some comment
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
-        multiline_violation,
-        r"
-        contract Test {
-            /**
-             * @custom:test Some comment
-             */
-            enum Option {
-                Some,
-                None
-            }
-        }
-        ",
-        |sct: &EnumDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
-            sct.loc
-        ))
+        "@author",
+        EnumDefinition
     );
 }
