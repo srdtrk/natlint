@@ -50,19 +50,15 @@ impl Rule<FunctionDefinition> for MissingInheritdoc {
         })?;
 
         // Function must have an inheritdoc comment
-        match comments.include_tag(CommentTag::Inheritdoc).len() {
-            0 => Some(Violation::new(
+        if comments.include_tag(CommentTag::Inheritdoc).is_empty() {
+            return Some(Violation::new(
                 Self::NAME,
                 ViolationError::MissingComment(CommentTag::Inheritdoc),
                 func.loc,
-            )),
-            1 => None,
-            _ => Some(Violation::new(
-                Self::NAME,
-                ViolationError::TooManyComments(CommentTag::Inheritdoc),
-                func.loc,
-            )),
+            ));
         }
+
+        None
     }
 }
 
@@ -241,40 +237,6 @@ mod tests {
         |func: &FunctionDefinition| Some(Violation::new(
             MissingInheritdoc::NAME,
             ViolationError::MissingComment(CommentTag::Inheritdoc),
-            func.loc
-        ))
-    );
-
-    test_missinginheritdoc!(
-        too_many_violation,
-        r"
-        contract Test {
-            /// @inheritdoc Base
-            /// @inheritdoc Base2
-            function test() override {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingInheritdoc::NAME,
-            ViolationError::TooManyComments(CommentTag::Inheritdoc),
-            func.loc
-        ))
-    );
-
-    test_missinginheritdoc!(
-        multiline_too_many_violation,
-        r"
-        contract Test {
-            /**
-             * @inheritdoc Base
-             * @inheritdoc Base2
-             */
-            function test() override {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            MissingInheritdoc::NAME,
-            ViolationError::TooManyComments(CommentTag::Inheritdoc),
             func.loc
         ))
     );

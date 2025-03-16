@@ -1,15 +1,15 @@
 use solang_parser::pt::FunctionDefinition;
 
 crate::too_many_comments_rule!(
-    TooManyNotice,
+    TooManyInheritdoc,
     FunctionDefinition,
-    Notice,
-    "Functions must not have more than one notice comment."
+    Inheritdoc,
+    "Functions must not have more than one inheritdoc comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, TooManyNotice};
+    use super::{FunctionDefinition, TooManyInheritdoc};
     use crate::{
         parser::{CommentTag, CommentsRef, Parser},
         rules::{Rule, Violation, ViolationError},
@@ -24,7 +24,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_too_many_notice {
+    macro_rules! test_too_many_inheritdoc {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -37,57 +37,44 @@ mod tests {
 
                 let expected = $expected(func);
 
-                assert_eq!(TooManyNotice::check(Some(parent), func, comments), expected);
+                assert_eq!(
+                    TooManyInheritdoc::check(Some(parent), func, comments),
+                    expected
+                );
             }
         };
     }
 
-    test_too_many_notice!(
-        too_many_comments_violation,
+    test_too_many_inheritdoc!(
+        too_many_violation,
         r"
         contract Test {
-            /// @notice Some function
-            /// @notice Another function
-            function test(uint256 a) public {}
+            /// @inheritdoc Base
+            /// @inheritdoc Base2
+            function test() override {}
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            TooManyNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
+            TooManyInheritdoc::NAME,
+            ViolationError::TooManyComments(CommentTag::Inheritdoc),
             func.loc
         ))
     );
 
-    test_too_many_notice!(
-        too_many_comments_tag_no_tag_violation,
-        r"
-        contract Test {
-            /// Another function
-            /// @notice Some function
-            function test(uint256 a) public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            TooManyNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            func.loc
-        ))
-    );
-
-    test_too_many_notice!(
-        multiline_many_comments_violation,
+    test_too_many_inheritdoc!(
+        multiline_too_many_violation,
         r"
         contract Test {
             /**
-             * @notice Some function
-             * @notice Another function
+             * @inheritdoc Base
+             * @inheritdoc Base2
              */
-            function test(uint256 a) public {}
+            function test() override {}
         }
         ",
         |func: &FunctionDefinition| Some(Violation::new(
-            TooManyNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
+            TooManyInheritdoc::NAME,
+            ViolationError::TooManyComments(CommentTag::Inheritdoc),
             func.loc
         ))
     );
