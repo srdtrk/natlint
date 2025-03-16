@@ -1,7 +1,7 @@
 //! At the time of writing, solidity does not support a way to document enum variants.
 //! This has led to different practices in the community, each with its own pros and cons.
 //! This rule follows the practice of using `@custom:variant` to document enum variants.
-//! This is used by foundry-rs to document enum variants. <https://github.com/foundry-rs/foundry/issues/9545>
+//! This practice is used by `foundry-rs` to document enum variants. <https://github.com/foundry-rs/foundry/issues/9545>
 //! This rule is disabled by default.
 
 use solang_parser::pt::EnumDefinition;
