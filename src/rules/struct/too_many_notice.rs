@@ -11,6 +11,7 @@ crate::too_many_comments_rule!(
 mod tests {
     use super::{StructDefinition, TooManyNotice};
     use crate::{
+        generate_too_many_comment_tests,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -42,59 +43,17 @@ mod tests {
         };
     }
 
-    test_too_many_notice!(
-        empty_no_violation,
+    generate_too_many_comment_tests!(
+        Notice,
+        test_too_many_notice,
+        TooManyNotice,
         r"
-        interface Test {
             struct TestStruct {
                 uint256 a;
             }
-        }
         ",
-        |_| None
-    );
-
-    test_too_many_notice!(
-        no_violation,
-        r"
-        interface Test {
-            /// @notice Some notice
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_too_many_notice!(
-        multi_no_violation,
-        r"
-        interface Test {
-            /// @notice Some notice
-            /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_too_many_notice!(
-        multiline_no_violation,
-        r"
-        interface Test {
-            /**
-             * @notice Some notice
-             * @param a Some param
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
+        "@notice",
+        StructDefinition
     );
 
     test_too_many_notice!(
@@ -113,43 +72,5 @@ mod tests {
             ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc
         )) // WARNING: solang parser and the natspec docs interpret no tags as a notice
-    );
-
-    test_too_many_notice!(
-        multi_violation,
-        r"
-        contract Test {
-            /// @notice a Some struct
-            /// @notice b Some struct
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            TooManyNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            sct.loc
-        ))
-    );
-
-    test_too_many_notice!(
-        multiline_multi_violation,
-        r"
-        contract Test {
-            /**
-             * @notice a Some struct
-             * @notice b Some struct
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            TooManyNotice::NAME,
-            ViolationError::TooManyComments(CommentTag::Notice),
-            sct.loc
-        ))
     );
 }

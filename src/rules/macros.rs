@@ -414,3 +414,145 @@ macro_rules! generate_no_comment_tests {
         );
     };
 }
+
+/// Generates test cases for a "Too Many Comment" rule.
+#[macro_export]
+macro_rules! generate_too_many_comment_tests {
+    (
+        $comment_variant:ident,        // The CommentTag variant (e.g., Title)
+        $test_macro:ident,             // The test macro name (e.g., test_too_many_title)
+        $rule_name:ident,              // The rule struct (e.g., TooManyTitle)
+        $struct_body:expr,             // The body of the struct/enum/function being tested
+        $doc_tag:expr,                 // The doc tag (e.g., "@title")
+        $parse_item:ty                 // The parse item type (e.g., StructDefinition)
+    ) => {
+        // Case: No violation when there is no comment
+        $test_macro!(
+            empty_no_violation,
+            &format!(
+                r"
+                interface Test {{
+                    {}
+                }}",
+                $struct_body
+            ),
+            |_| None
+        );
+
+        // Case: No violation when there is exactly one of the required comment
+        $test_macro!(
+            no_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /// {} Some comment
+                    {}
+                }}",
+                $doc_tag, $struct_body
+            ),
+            |_| None
+        );
+
+        // Case: No violation when there is an allowed additional comment
+        $test_macro!(
+            multi_no_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /// {} Some comment
+                    /// @custom:test Some comment
+                    {}
+                }}",
+                $doc_tag, $struct_body
+            ),
+            |_| None
+        );
+
+        // Case: No violation when the allowed additional comment appears in multiline
+        $test_macro!(
+            multiline_no_violation,
+            &format!(
+                r"
+                interface Test {{
+                    /**
+                     * {} Some comment
+                     * @custom:test Some comment
+                     */
+                    {}
+                }}",
+                $doc_tag, $struct_body
+            ),
+            |_| None
+        );
+
+        // Case: No violation when the required comment is missing but another is present
+        $test_macro!(
+            missing_no_violation,
+            &format!(
+                r"
+                contract Test {{
+                    /// @custom:test Some comment
+                    {}
+                }}",
+                $struct_body
+            ),
+            |_| None
+        );
+
+        // Case: No violation when the required comment is missing but another is present (multiline)
+        $test_macro!(
+            multiline_missing_no_violation,
+            &format!(
+                r"
+                contract Test {{
+                    /**
+                     * @custom:test Some comment
+                     */
+                    {}
+                }}",
+                $struct_body
+            ),
+            |_| None
+        );
+
+        // Case: Violation when the disallowed comment appears multiple times
+        $test_macro!(
+            multi_violation,
+            &format!(
+                r"
+                contract Test {{
+                    /// {} Some comment
+                    /// {} Some other
+                    {}
+                }}",
+                $doc_tag, $doc_tag, $struct_body
+            ),
+            |item: &$parse_item| Some(Violation::new(
+                $rule_name::NAME,
+                ViolationError::TooManyComments(CommentTag::$comment_variant),
+                item.loc
+            ))
+        );
+
+        // Case: Violation when the disallowed comment appears multiple times in multiline
+        $test_macro!(
+            multiline_multi_violation,
+            &format!(
+                r"
+                contract Test {{
+                    /**
+                     * {} Some comment
+                     * {} Some other
+                     */
+                    {}
+                }}",
+                $doc_tag, $doc_tag, $struct_body
+            ),
+            |item: &$parse_item| Some(Violation::new(
+                $rule_name::NAME,
+                ViolationError::TooManyComments(CommentTag::$comment_variant),
+                item.loc
+            ))
+        );
+    };
+}
