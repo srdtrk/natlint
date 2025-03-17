@@ -1,4 +1,4 @@
-use solang_parser::pt::StructDefinition;
+use solang_parser::pt::ErrorDefinition;
 
 use crate::{
     parser::{CommentTag, CommentsRef, ParseItem},
@@ -7,16 +7,16 @@ use crate::{
 
 use super::super::{Rule, Violation};
 
-/// This rule requires that structs do not miss any parameters.
-pub struct MissingParams;
+/// This rule requires that all errors have their parameters documented.
+pub struct MissingParam;
 
-impl Rule<StructDefinition> for MissingParams {
-    const NAME: &'static str = "MissingParams";
-    const DESCRIPTION: &'static str = "Structs must document all parameters.";
+impl Rule<ErrorDefinition> for MissingParam {
+    const NAME: &'static str = "MissingParam";
+    const DESCRIPTION: &'static str = "Errors must document all parameters.";
 
     fn check(
         _: Option<&ParseItem>,
-        item: &StructDefinition,
+        item: &ErrorDefinition,
         comments: CommentsRef,
     ) -> Option<Violation> {
         let param_comments = comments.include_tag(CommentTag::Param);
@@ -69,7 +69,7 @@ impl Rule<StructDefinition> for MissingParams {
 #[cfg(test)]
 mod tests {
     use super::{
-        CommentTag, CommentsRef, MissingParams, Rule, StructDefinition, Violation, ViolationError,
+        CommentTag, CommentsRef, ErrorDefinition, MissingParam, Rule, Violation, ViolationError,
     };
     use crate::parser::Parser;
     use forge_fmt::Visitable;
@@ -90,11 +90,11 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let item = child.as_struct().unwrap();
+                let item = child.as_error().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(item);
-                let result = MissingParams::check(None, item, comments);
+                let result = MissingParam::check(None, item, comments);
 
                 assert_eq!(expected, result);
             }
@@ -106,9 +106,7 @@ mod tests {
         r"
         interface Test {
             /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
+            error Unauthorized(address a);
         }
         ",
         |_| None
@@ -118,8 +116,7 @@ mod tests {
         empty_no_violation,
         r"
         interface Test {
-            struct TestStruct {
-            }
+            error Unauthorized();
         }
         ",
         |_| None
@@ -131,10 +128,7 @@ mod tests {
         interface Test {
             /// @param a Some param
             /// @param b Some param
-            struct TestStruct {
-                uint256 a;
-                uint256 b;
-            }
+            error Unauthorized(address a, address b);
         }
         ",
         |_| None
@@ -148,10 +142,7 @@ mod tests {
              * @param a Some param
              * @param b Some param
              */
-            struct TestStruct {
-                uint256 a;
-                uint256 b;
-            }
+            error Unauthorized(address a, address b);
         }
         ",
         |_| None
@@ -163,13 +154,11 @@ mod tests {
         interface Test {
             /// @param a Some param
             /// @param b Some param
-            struct TestStruct {
-                uint256 a;
-            }
+            error Unauthorized(address a);
         }
         ",
-        |item: &StructDefinition| Some(Violation::new(
-            MissingParams::NAME,
+        |item: &ErrorDefinition| Some(Violation::new(
+            MissingParam::NAME,
             ViolationError::TooManyComments(CommentTag::Param),
             item.loc
         ))
@@ -183,13 +172,11 @@ mod tests {
              * @param a Some param
              * @param b Some param
              */
-            struct TestStruct {
-                uint256 a;
-            }
+            error Unauthorized(address a);
         }
         ",
-        |item: &StructDefinition| Some(Violation::new(
-            MissingParams::NAME,
+        |item: &ErrorDefinition| Some(Violation::new(
+            MissingParam::NAME,
             ViolationError::TooManyComments(CommentTag::Param),
             item.loc
         ))
@@ -199,13 +186,11 @@ mod tests {
         empty_violation,
         r"
         interface Test {
-            struct TestStruct {
-                uint256 a;
-            }
+            error Unauthorized(address a);
         }
         ",
-        |item: &StructDefinition| Some(Violation::new(
-            MissingParams::NAME,
+        |item: &ErrorDefinition| Some(Violation::new(
+            MissingParam::NAME,
             ViolationError::MissingComment(CommentTag::Param),
             item.loc
         ))
@@ -217,14 +202,11 @@ mod tests {
         interface Test {
             /// @param a Some param
             /// @param c Some param
-            struct TestStruct {
-                uint256 a;
-                uint256 b;
-            }
+            error Unauthorized(address a, address b);
         }
         ",
-        |item: &StructDefinition| Some(Violation::new(
-            MissingParams::NAME,
+        |item: &ErrorDefinition| Some(Violation::new(
+            MissingParam::NAME,
             ViolationError::missing_comment_for(CommentTag::Param, "b"),
             item.fields[1].name.as_ref().unwrap().loc
         ))
@@ -238,14 +220,11 @@ mod tests {
              * @param a Some param
              * @param c Some param
              */
-            struct TestStruct {
-                uint256 a;
-                uint256 b;
-            }
+            error Unauthorized(address a, address b);
         }
         ",
-        |item: &StructDefinition| Some(Violation::new(
-            MissingParams::NAME,
+        |item: &ErrorDefinition| Some(Violation::new(
+            MissingParam::NAME,
             ViolationError::missing_comment_for(CommentTag::Param, "b"),
             item.fields[1].name.as_ref().unwrap().loc
         ))

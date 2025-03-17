@@ -14,6 +14,7 @@ crate::missing_comment_rule!(
 mod tests {
     use super::{MissingAuthor, StructDefinition};
     use crate::{
+        generate_missing_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -45,128 +46,16 @@ mod tests {
         };
     }
 
-    test_missingauthor!(
-        no_violation,
+    generate_missing_comment_test_cases!(
+        Author,
+        test_missingauthor,
+        MissingAuthor,
         r"
-        interface Test {
-            /// @author Some author
             struct TestStruct {
                 uint256 a;
             }
-        }
         ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        multi_no_violation,
-        r"
-        interface Test {
-            /// @author Some author
-            /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        multi_author_no_violation,
-        r"
-        interface Test {
-            /// @author Some author
-            /// @author Some other
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        multiline_multi_no_violation,
-        r"
-        interface Test {
-            /**
-             * @author Some author
-             * @param a Some param
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        multiline_multi_author_no_violation,
-        r"
-        interface Test {
-            /**
-             * @author Some author
-             * @author Some other
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |_| None
-    );
-
-    test_missingauthor!(
-        empty_violation,
-        r"
-        contract Test {
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
-        violation,
-        r"
-        contract Test {
-            /// @param a Some param
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
-            sct.loc
-        ))
-    );
-
-    test_missingauthor!(
-        multiline_violation,
-        r"
-        contract Test {
-            /**
-             * @param a Some param
-             */
-            struct TestStruct {
-                uint256 a;
-            }
-        }
-        ",
-        |sct: &StructDefinition| Some(Violation::new(
-            MissingAuthor::NAME,
-            ViolationError::MissingComment(CommentTag::Author),
-            sct.loc
-        ))
+        "@author",
+        StructDefinition
     );
 }

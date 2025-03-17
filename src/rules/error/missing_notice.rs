@@ -1,19 +1,17 @@
-//! This rule requires that functions do not have a title comment.
+use solang_parser::pt::ErrorDefinition;
 
-use solang_parser::pt::FunctionDefinition;
-
-crate::no_comment_rule!(
-    NoTitle,
-    FunctionDefinition,
-    Title,
-    "Functions must not have a title comment."
+crate::missing_comment_rule!(
+    MissingNotice,
+    ErrorDefinition,
+    Notice,
+    "Errors must have a notice comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, NoTitle};
+    use super::{ErrorDefinition, MissingNotice};
     use crate::{
-        generate_no_comment_test_cases,
+        generate_missing_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -27,7 +25,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_no_title {
+    macro_rules! test_missing_notice {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -35,24 +33,24 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let func = child.as_function().unwrap();
+                let func = child.as_error().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(func);
 
-                assert_eq!(NoTitle::check(Some(parent), func, comments), expected);
+                assert_eq!(MissingNotice::check(Some(parent), func, comments), expected);
             }
         };
     }
 
-    generate_no_comment_test_cases!(
-        Title,
-        test_no_title,
-        NoTitle,
+    generate_missing_comment_test_cases!(
+        Notice,
+        test_missing_notice,
+        MissingNotice,
         r"
-            function test() public {}
+            error Unauthorized();
         ",
-        "@title",
-        FunctionDefinition
+        "@notice",
+        ErrorDefinition
     );
 }

@@ -1,19 +1,20 @@
-//! This rule requires that functions do not have a title comment.
+//! This rule requires that all enums have a title comment.
+//! This rule will be off by default.
 
-use solang_parser::pt::FunctionDefinition;
+use solang_parser::pt::EnumDefinition;
 
-crate::no_comment_rule!(
-    NoTitle,
-    FunctionDefinition,
+crate::missing_comment_rule!(
+    MissingTitle,
+    EnumDefinition,
     Title,
-    "Functions must not have a title comment."
+    "Enums must have a title comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, NoTitle};
+    use super::{EnumDefinition, MissingTitle};
     use crate::{
-        generate_no_comment_test_cases,
+        generate_missing_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -27,7 +28,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_no_title {
+    macro_rules! test_missingtitle {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -35,24 +36,28 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let func = child.as_function().unwrap();
+                let item = child.as_enum().unwrap();
+
                 let comments = CommentsRef::from(&child.comments);
 
-                let expected = $expected(func);
+                let expected = $expected(item);
 
-                assert_eq!(NoTitle::check(Some(parent), func, comments), expected);
+                assert_eq!(MissingTitle::check(Some(parent), item, comments), expected);
             }
         };
     }
 
-    generate_no_comment_test_cases!(
+    generate_missing_comment_test_cases!(
         Title,
-        test_no_title,
-        NoTitle,
+        test_missingtitle,
+        MissingTitle,
         r"
-            function test() public {}
+            enum Option {
+                Some,
+                None
+            }
         ",
         "@title",
-        FunctionDefinition
+        EnumDefinition
     );
 }

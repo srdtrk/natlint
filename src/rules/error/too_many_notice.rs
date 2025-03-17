@@ -1,21 +1,19 @@
-//! This rule requires that functions do not have a title comment.
+use solang_parser::pt::ErrorDefinition;
 
-use solang_parser::pt::FunctionDefinition;
-
-crate::no_comment_rule!(
-    NoTitle,
-    FunctionDefinition,
-    Title,
-    "Functions must not have a title comment."
+crate::too_many_comments_rule!(
+    TooManyNotice,
+    ErrorDefinition,
+    Notice,
+    "Errors must not have more than one notice comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, NoTitle};
+    use super::{ErrorDefinition, TooManyNotice};
     use crate::{
-        generate_no_comment_test_cases,
+        generate_too_many_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
-        rules::{violation_error::ViolationError, Rule, Violation},
+        rules::{Rule, Violation, ViolationError},
     };
     use forge_fmt::Visitable;
     use solang_parser::parse;
@@ -27,7 +25,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_no_title {
+    macro_rules! test_too_many_notice {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -35,24 +33,24 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let func = child.as_function().unwrap();
+                let func = child.as_error().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(func);
 
-                assert_eq!(NoTitle::check(Some(parent), func, comments), expected);
+                assert_eq!(TooManyNotice::check(Some(parent), func, comments), expected);
             }
         };
     }
 
-    generate_no_comment_test_cases!(
-        Title,
-        test_no_title,
-        NoTitle,
+    generate_too_many_comment_test_cases!(
+        Notice,
+        test_too_many_notice,
+        TooManyNotice,
         r"
-            function test() public {}
+            error Unauthorized();
         ",
-        "@title",
-        FunctionDefinition
+        "@notice",
+        ErrorDefinition
     );
 }

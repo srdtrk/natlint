@@ -1,17 +1,15 @@
-//! This rule requires that functions do not have a title comment.
-
-use solang_parser::pt::FunctionDefinition;
+use solang_parser::pt::ErrorDefinition;
 
 crate::no_comment_rule!(
     NoTitle,
-    FunctionDefinition,
+    ErrorDefinition,
     Title,
-    "Functions must not have a title comment."
+    "Errors must not have a title comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, NoTitle};
+    use super::{ErrorDefinition, NoTitle};
     use crate::{
         generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
@@ -35,7 +33,7 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let func = child.as_function().unwrap();
+                let func = child.as_error().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(func);
@@ -50,9 +48,9 @@ mod tests {
         test_no_title,
         NoTitle,
         r"
-            function test() public {}
+            error Unauthorized();
         ",
         "@title",
-        FunctionDefinition
+        ErrorDefinition
     );
 }

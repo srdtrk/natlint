@@ -13,6 +13,7 @@ crate::no_comment_rule!(
 mod tests {
     use super::{FunctionDefinition, NoAuthor};
     use crate::{
+        generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
@@ -44,69 +45,14 @@ mod tests {
         };
     }
 
-    test_no_author!(
-        empty_no_violation,
+    generate_no_comment_test_cases!(
+        Author,
+        test_no_author,
+        NoAuthor,
         r"
-        contract Test {
             function test() public {}
-        }
         ",
-        |_| None
-    );
-
-    test_no_author!(
-        no_violation,
-        r"
-        contract Test {
-            /// @custom:test Some function
-            function test() public {}
-        }
-        ",
-        |_| None
-    );
-
-    test_no_author!(
-        multiline_no_violation,
-        r"
-        contract Test {
-            /**
-             * @custom:test Some function
-             */
-            function test() public {}
-        }
-        ",
-        |_| None
-    );
-
-    test_no_author!(
-        violation,
-        r"
-        contract Test {
-            /// @author Some author
-            function test() public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            NoAuthor::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Author),
-            func.loc,
-        ))
-    );
-
-    test_no_author!(
-        multiline_violation,
-        r"
-        contract Test {
-            /**
-             * @author Some author
-             */
-            function test() public {}
-        }
-        ",
-        |func: &FunctionDefinition| Some(Violation::new(
-            NoAuthor::NAME,
-            ViolationError::CommentNotAllowed(CommentTag::Author),
-            func.loc,
-        ))
+        "@author",
+        FunctionDefinition
     );
 }

@@ -1,17 +1,15 @@
-//! This rule requires that functions do not have a title comment.
-
-use solang_parser::pt::FunctionDefinition;
+use solang_parser::pt::EnumDefinition;
 
 crate::no_comment_rule!(
-    NoTitle,
-    FunctionDefinition,
-    Title,
-    "Functions must not have a title comment."
+    NoInheritdoc,
+    EnumDefinition,
+    Inheritdoc,
+    "Enums must not have an inheritdoc comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, NoTitle};
+    use super::{EnumDefinition, NoInheritdoc};
     use crate::{
         generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
@@ -27,7 +25,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_no_title {
+    macro_rules! test_no_inheritdoc {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -35,24 +33,27 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let func = child.as_function().unwrap();
+                let item = child.as_enum().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
-                let expected = $expected(func);
+                let expected = $expected(item);
 
-                assert_eq!(NoTitle::check(Some(parent), func, comments), expected);
+                assert_eq!(NoInheritdoc::check(Some(parent), item, comments), expected);
             }
         };
     }
 
     generate_no_comment_test_cases!(
-        Title,
-        test_no_title,
-        NoTitle,
+        Inheritdoc,
+        test_no_inheritdoc,
+        NoInheritdoc,
         r"
-            function test() public {}
+            enum Option {
+                Some,
+                None
+            }
         ",
-        "@title",
-        FunctionDefinition
+        "@inheritdoc",
+        EnumDefinition
     );
 }

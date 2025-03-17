@@ -14,7 +14,7 @@ use super::super::{Rule, Violation};
 pub struct OnlyInheritdoc;
 
 impl Rule<FunctionDefinition> for OnlyInheritdoc {
-    const NAME: &'static str = "Only Inheritdoc";
+    const NAME: &'static str = "OnlyInheritdoc";
     const DESCRIPTION: &'static str =
         "If a function has an inheritdoc comment, then it must be the only comment.";
 

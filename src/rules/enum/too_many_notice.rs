@@ -1,15 +1,15 @@
-use solang_parser::pt::StructDefinition;
+use solang_parser::pt::EnumDefinition;
 
 crate::too_many_comments_rule!(
     TooManyNotice,
-    StructDefinition,
+    EnumDefinition,
     Notice,
-    "Structs must not have more than one notice comment."
+    "Enums must not have more than one notice comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{StructDefinition, TooManyNotice};
+    use super::{EnumDefinition, TooManyNotice};
     use crate::{
         generate_too_many_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
@@ -33,7 +33,7 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let item = child.as_struct().unwrap();
+                let item = child.as_enum().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(item);
@@ -48,12 +48,13 @@ mod tests {
         test_too_many_notice,
         TooManyNotice,
         r"
-            struct TestStruct {
-                uint256 a;
+            enum Option {
+                Some,
+                None
             }
         ",
         "@notice",
-        StructDefinition
+        EnumDefinition
     );
 
     test_too_many_notice!(
@@ -61,13 +62,35 @@ mod tests {
         r"
         contract Test {
             /// Some notice
-            /// @notice b Some struct
-            struct TestStruct {
-                uint256 a;
+            /// @notice Some other
+            enum Option {
+                Some,
+                None
             }
         }
         ",
-        |sct: &StructDefinition| Some(Violation::new(
+        |sct: &EnumDefinition| Some(Violation::new(
+            TooManyNotice::NAME,
+            ViolationError::TooManyComments(CommentTag::Notice),
+            sct.loc
+        )) // WARNING: solang parser and the natspec docs interpret no tags as a notice
+    );
+
+    test_too_many_notice!(
+        multiline_no_tag_violation,
+        r"
+        contract Test {
+            /**
+             * Some comment
+             * @notice Some othe
+             */
+            enum Option {
+                Some,
+                None
+            }
+        }
+        ",
+        |sct: &EnumDefinition| Some(Violation::new(
             TooManyNotice::NAME,
             ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc

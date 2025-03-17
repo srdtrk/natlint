@@ -145,6 +145,8 @@ impl ParseItem {
     as_inner_source!(pub fn as_variable(&self, Variable) -> VariableDefinition);
     as_inner_source!(pub fn as_function(&self, Function) -> FunctionDefinition);
     as_inner_source!(pub fn as_struct(&self, Struct) -> StructDefinition);
+    as_inner_source!(pub fn as_enum(&self, Enum) -> EnumDefinition);
+    as_inner_source!(pub fn as_error(&self, Error) -> ErrorDefinition);
 }
 
 /// A wrapper type around pt token.

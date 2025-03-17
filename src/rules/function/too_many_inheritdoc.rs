@@ -1,21 +1,19 @@
-//! This rule requires that functions do not have a title comment.
-
 use solang_parser::pt::FunctionDefinition;
 
-crate::no_comment_rule!(
-    NoTitle,
+crate::too_many_comments_rule!(
+    TooManyInheritdoc,
     FunctionDefinition,
-    Title,
-    "Functions must not have a title comment."
+    Inheritdoc,
+    "Functions must not have more than one inheritdoc comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionDefinition, NoTitle};
+    use super::{FunctionDefinition, TooManyInheritdoc};
     use crate::{
-        generate_no_comment_test_cases,
+        generate_too_many_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
-        rules::{violation_error::ViolationError, Rule, Violation},
+        rules::{Rule, Violation, ViolationError},
     };
     use forge_fmt::Visitable;
     use solang_parser::parse;
@@ -27,7 +25,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_no_title {
+    macro_rules! test_too_many_inheritdoc {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -40,19 +38,22 @@ mod tests {
 
                 let expected = $expected(func);
 
-                assert_eq!(NoTitle::check(Some(parent), func, comments), expected);
+                assert_eq!(
+                    TooManyInheritdoc::check(Some(parent), func, comments),
+                    expected
+                );
             }
         };
     }
 
-    generate_no_comment_test_cases!(
-        Title,
-        test_no_title,
-        NoTitle,
+    generate_too_many_comment_test_cases!(
+        Inheritdoc,
+        test_too_many_inheritdoc,
+        TooManyInheritdoc,
         r"
-            function test() public {}
+            function test() private {}
         ",
-        "@title",
+        "@inheritdoc",
         FunctionDefinition
     );
 }
