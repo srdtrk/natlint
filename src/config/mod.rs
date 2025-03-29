@@ -15,7 +15,7 @@ use crate::rules::{
     r#struct::{self as struct_rules},
     variable::{self as variable_rules},
 };
-use crate::rules::{AnyRule, Rule, RuleWrapper, Violation};
+use crate::rules::{AnyRule, Rule, RuleSet, RuleWrapper, Violation};
 use solang_parser::pt::{
     ContractDefinition, EnumDefinition, ErrorDefinition, FunctionDefinition, StructDefinition,
     VariableDefinition,
@@ -47,6 +47,12 @@ impl Config {
         let rule = Arc::new(RuleWrapper::<T, R>::new());
         self.rules.push(rule);
         self
+    }
+
+    /// Get the rule set
+    #[must_use]
+    pub fn rule_set(&self) -> impl RuleSet {
+        self.rules.clone()
     }
 
     /// Check an item against all applicable rules
@@ -143,8 +149,6 @@ pub fn load_default_config() -> Config {
 /// Load configuration from a file or use defaults
 #[must_use]
 pub fn load_config(config_path: &str) -> Config {
-    // In a real implementation, this would parse TOML/YAML/JSON configuration
-    // For now, we'll just use the default configuration
     if config_path.is_empty() {
         return load_default_config();
     }

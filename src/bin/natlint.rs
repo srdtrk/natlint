@@ -16,24 +16,21 @@ fn main() -> eyre::Result<()> {
     let cli = NatlintCli::parse();
     match cli.command {
         Commands::Run(args) => {
-            println!("Running natlint with config: {}", args.config);
-
             // TODO: Load specified config, default config path or default config
             let config = load_default_config();
 
             let file_violations: Vec<(String, Vec<(Violation, usize)>)> =
-                find_matching_files(&args.root, &args.include, &args.exclude)?
+                find_matching_files(&args.root, args.include, args.exclude)?
                     .iter()
                     .map(|file| {
                         let content = fs::read_to_string(file).unwrap();
                         let file_path = file.to_str().unwrap().to_owned();
 
-                        (file_path, lint(&content, &config).unwrap())
+                        (file_path, lint(&content, &config.rule_set()).unwrap())
                     })
                     .sorted_by(|(file_a, _), (file_b, _)| file_a.cmp(file_b))
                     .collect::<Vec<_>>();
 
-            // Report violations
             let mut file_count = 0;
             let mut violation_count = 0;
 
@@ -66,4 +63,3 @@ fn main() -> eyre::Result<()> {
         }
     }
 }
-

@@ -12,7 +12,8 @@ mod natspec_test {
         let content = fs::read_to_string(file_path).expect("Failed to read test file");
 
         let config = load_default_config();
-        let violations: Vec<_> = lint(&content, &config).expect("Failed to process file");
+        let violations: Vec<_> =
+            lint(&content, &config.rule_set()).expect("Failed to process file");
 
         assert_eq!(violations.len(), 6);
 
@@ -36,7 +37,8 @@ mod natspec_test {
         let content = fs::read_to_string(file_path).expect("Failed to read test file");
 
         let config = load_default_config();
-        let violations: Vec<_> = lint(&content, &config).expect("Failed to process file");
+        let violations: Vec<_> =
+            lint(&content, &config.rule_set()).expect("Failed to process file");
 
         assert_eq!(violations.len(), 5);
 
@@ -58,7 +60,8 @@ mod natspec_test {
         let content = fs::read_to_string(file_path).expect("Failed to read test file");
 
         let config = load_default_config();
-        let violations: Vec<_> = lint(&content, &config).expect("Failed to process file");
+        let violations: Vec<_> =
+            lint(&content, &config.rule_set()).expect("Failed to process file");
 
         assert_eq!(violations.len(), 7);
 

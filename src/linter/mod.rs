@@ -3,17 +3,19 @@
 use line_col::LineColLookup;
 
 use crate::{
-    config::Config,
     parser::{ParseItem, ParseSource, Parser},
-    rules::Violation,
+    rules::{RuleSet, Violation},
 };
 use forge_fmt::Visitable;
 use solang_parser::parse;
 
-/// Lints a string (e.g. a file) return any violations with line numbers
+/// Lints a string (e.g. a file) against a set of rules
 /// # Errors
 /// Returns an error if the content cannot be parsed or checked for whatever reason
-pub fn lint(content: &str, config: &Config) -> eyre::Result<Vec<(Violation, usize)>> {
+pub fn lint<T>(content: &str, rule_set: &T) -> eyre::Result<Vec<(Violation, usize)>>
+where
+    T: RuleSet + Send + Sync + 'static,
+{
     let line_lookup = LineColLookup::new(content);
 
     let (mut source_unit, comments) =
@@ -24,54 +26,32 @@ pub fn lint(content: &str, config: &Config) -> eyre::Result<Vec<(Violation, usiz
         .visit(&mut parser)
         .map_err(|e| eyre::eyre!("Failed to visit: {:?}", e))?;
 
-    let items = parser.items();
-
-    let mut all_violations = Vec::new();
-
-    // Process all top-level items
-    for item in &items {
-        process_item(item, None, config, &line_lookup, &mut all_violations);
-    }
-
-    Ok(all_violations)
+    Ok(parser
+        .items()
+        .into_iter()
+        .flat_map(|item| process_item(&item, None, rule_set, &line_lookup))
+        .collect::<Vec<_>>())
 }
 
-fn process_item(
+fn process_item<T>(
     item: &ParseItem,
     parent: Option<&ParseItem>,
-    config: &Config,
+    config: &T,
     line_lookup: &LineColLookup,
-    all_violations: &mut Vec<(Violation, usize)>,
-) {
+) -> Vec<(Violation, usize)>
+where
+    T: RuleSet + Send + Sync + 'static,
+{
     // Check item against all applicable rules
-    match &item.source {
+    let mut violations = match &item.source {
         ParseSource::Contract(contract) => {
-            let violations =
-                config.check_item(parent, &**contract as &dyn std::any::Any, &item.comments);
-
-            for violation in violations {
-                // Get line number (1-based) using efficient lookup
-                let (line, _) = line_lookup.get(violation.loc.start());
-                all_violations.push((violation, line));
-            }
+            config.check(parent, &**contract as &dyn std::any::Any, &item.comments)
         }
         ParseSource::Function(function) => {
-            let violations =
-                config.check_item(parent, function as &dyn std::any::Any, &item.comments);
-
-            for violation in violations {
-                let (line, _) = line_lookup.get(violation.loc.start());
-                all_violations.push((violation, line));
-            }
+            config.check(parent, function as &dyn std::any::Any, &item.comments)
         }
         ParseSource::Struct(structure) => {
-            let violations =
-                config.check_item(parent, structure as &dyn std::any::Any, &item.comments);
-
-            for violation in violations {
-                let (line, _) = line_lookup.get(violation.loc.start());
-                all_violations.push((violation, line));
-            }
+            config.check(parent, structure as &dyn std::any::Any, &item.comments)
         }
         // Add other item types as needed:
         // ParseSource::Enum(..) => { ... },
@@ -80,12 +60,34 @@ fn process_item(
         // ParseSource::Variable(..) => { ... },
         // ParseSource::Type(..) => { ... },
         _ => {
+            panic!("Unsupported item type: {:?}", item.source);
             // No rules implemented for these item types yet
         }
     }
+    .into_iter()
+    .map(|violation| {
+        // Convert the line number to the original source line
+        let (line, _) = line_lookup.get(violation.loc.start());
+        (violation, line)
+    })
+    .collect::<Vec<_>>();
 
-    // Process all children
     for child in &item.children {
-        process_item(child, Some(item), config, line_lookup, all_violations);
+        let child_violations = process_item(child, Some(item), config, line_lookup);
+        violations.extend(child_violations);
     }
+
+    violations
+
+    // let child_violations = &item
+    //     .children
+    //     .iter()
+    //     .flat_map(|child| process_item(child, Some(item), config, line_lookup))
+    //     .collect::<Vec<_>>();
+    //
+    // // Combine violations from the item and its children
+    // violations
+    //     .into_iter()
+    //     .chain(child_violations.iter().cloned())
+    //     .collect::<Vec<_>>()
 }

@@ -1,11 +1,11 @@
 //! This module defines the rules for the natlint linter.
 
-use std::any::Any;
+use std::{any::Any, sync::Arc};
 
 use solang_parser::pt::Loc;
 use violation_error::ViolationError;
 
-use crate::parser::{CommentsRef, ParseItem};
+use crate::parser::{Comments, CommentsRef, ParseItem};
 
 pub mod macros;
 pub mod violation_error;
@@ -49,6 +49,17 @@ pub trait Rule<T> {
 
     /// Check the construct for violations of this rule.
     fn check(parent: Option<&ParseItem>, item: &T, comments: CommentsRef) -> Option<Violation>;
+}
+
+/// A set of rules that can be applied to a parseable item.
+pub trait RuleSet {
+    /// Check the item against all applicable rules.
+    fn check(
+        &self,
+        parent: Option<&ParseItem>,
+        item: &dyn Any,
+        comments: &Comments,
+    ) -> Vec<Violation>;
 }
 
 /// A trait object that can check any parseable item
@@ -121,5 +132,27 @@ impl<T: 'static + Send + Sync, R: Rule<T> + Send + Sync> AnyRule for RuleWrapper
 
     fn description(&self) -> &'static str {
         R::DESCRIPTION
+    }
+}
+
+impl RuleSet for Vec<Arc<dyn AnyRule>> {
+    fn check(
+        &self,
+        parent: Option<&ParseItem>,
+        item: &dyn Any,
+        comments: &Comments,
+    ) -> Vec<Violation> {
+        let mut violations = Vec::new();
+
+        for rule in self {
+            if rule.applies_to(item) {
+                let comments_ref = CommentsRef::from(comments);
+                if let Some(violation) = rule.check_item(parent, item, comments_ref) {
+                    violations.push(violation);
+                }
+            }
+        }
+
+        violations
     }
 }
