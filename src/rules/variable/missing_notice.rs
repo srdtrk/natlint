@@ -24,7 +24,7 @@ impl Rule<VariableDefinition> for MissingNotice {
             return None;
         }
 
-        // Function must have a notice comment
+        // Variable must have a notice comment
         if comments.include_tag(CommentTag::Notice).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
@@ -61,12 +61,12 @@ mod tests {
 
                 let parent = src.items_ref().first().unwrap();
                 let child = parent.children.first().unwrap();
-                let func = child.as_variable().unwrap();
+                let var = child.as_variable().unwrap();
                 let comments = CommentsRef::from(&child.comments);
 
-                let expected = $expected(func);
+                let expected = $expected(var);
 
-                assert_eq!(MissingNotice::check(Some(parent), func, comments), expected);
+                assert_eq!(MissingNotice::check(Some(parent), var, comments), expected);
             }
         };
     }
@@ -88,10 +88,10 @@ mod tests {
         test_missingnotice!(
             no_tag_no_violation,
             r#"
-                contract Test {
-                    /// Some variable
-                    bytes32 public constant SOME_CONST = keccak256("SOME_CONST");
-                }
+            contract Test {
+                /// Some variable
+                bytes32 public constant SOME_CONST = keccak256("SOME_CONST");
+            }
             "#,
             |_| None
         );
@@ -151,10 +151,10 @@ mod tests {
         test_missingnotice!(
             no_tag_no_violation,
             r"
-                contract Test {
-                    /// Some variable
-                    bytes32 public immutable SOME_IMMUT;
-                }
+            contract Test {
+                /// Some variable
+                bytes32 public immutable SOME_IMMUT;
+            }
             ",
             |_| None
         );
@@ -191,6 +191,69 @@ mod tests {
                  * @inheritdoc something
                  */
                 bytes32 public immutable SOME_IMMUT;
+            }
+            ",
+            |_| None
+        );
+    }
+
+    mod private_state_test {
+        use super::*;
+
+        generate_missing_comment_test_cases!(
+            Notice,
+            test_missingnotice,
+            MissingNotice,
+            r"
+                State private state;
+            ",
+            "@notice",
+            VariableDefinition
+        );
+
+        test_missingnotice!(
+            no_tag_no_violation,
+            r"
+            contract Test {
+                /// Some variable
+                State private state;
+            }
+            ",
+            |_| None
+        );
+
+        test_missingnotice!(
+            multiline_no_tag_no_violation,
+            r"
+            contract Test {
+                /**
+                 * Some function
+                 */
+                State private state;
+            }
+            ",
+            |_| None
+        );
+
+        test_missingnotice!(
+            inheritdoc_no_violation,
+            r"
+            contract Test {
+                /// @inheritdoc something
+                State private state;
+            }
+            ",
+            |_| None
+        );
+
+        test_missingnotice!(
+            multiline_inheritdoc_no_violation,
+            r"
+            contract Test {
+                /**
+                 * @inheritdoc something
+                 */
+                State private state;
             }
             ",
             |_| None
