@@ -197,7 +197,7 @@ mod tests {
         );
     }
 
-    mod private_state_test {
+    mod priv_state_test {
         use super::*;
 
         generate_missing_comment_test_cases!(
