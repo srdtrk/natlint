@@ -4,7 +4,7 @@ crate::too_many_comments_rule!(
     TooManyTitle,
     ContractDefinition,
     Title,
-    "Contracts must not have more than one title comment."
+    "Contracts must not have more than one title comment"
 );
 
 #[cfg(test)]
@@ -129,6 +129,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             TooManyTitle::NAME,
+            TooManyTitle::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Title),
             sct.loc
         ))
@@ -146,6 +147,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             TooManyTitle::NAME,
+            TooManyTitle::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Title),
             sct.loc
         ))

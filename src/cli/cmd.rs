@@ -35,7 +35,7 @@ pub mod run {
         pub include: Vec<String>,
 
         /// The exclude globs for the linter.
-        /// Put multiple patterns in quotes: "node_modules/**" "dist/**"
+        /// Put multiple patterns in quotes: "`node_modules/**`" "`dist/**`"
         #[clap(short = 'e', long)]
         pub exclude: Vec<String>,
 

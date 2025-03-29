@@ -124,7 +124,7 @@ fn main() -> eyre::Result<()> {
             let config = load_config(&args.config);
 
             // Find all files in the root directory that match the include globs and do not match the exclude globs
-            let files = find_matching_files(&args.root, args.include, args.exclude)?;
+            let files = find_matching_files(&args.root, args.include, &args.exclude)?;
             println!("Found {} files to lint", files.len());
             
             // Process each file and collect violations
@@ -169,7 +169,7 @@ fn main() -> eyre::Result<()> {
             all_violations.sort_by(|(file_a, viol_a, line_a), (file_b, viol_b, line_b)| {
                 file_a.cmp(file_b)
                     .then_with(|| line_a.cmp(line_b))
-                    .then_with(|| viol_a.rule.cmp(viol_b.rule))
+                    .then_with(|| viol_a.rule_name.cmp(viol_b.rule_name))
             });
             
             // Report violations
@@ -193,9 +193,9 @@ fn main() -> eyre::Result<()> {
                     
                     // Print violation details with converted line number
                     println!("  [{}] Line {}: {}", 
-                        violation.rule,
+                        violation.rule_name,
                         line_number,
-                        violation.description
+                        violation.rule_description
                     );
                     
                     violation_count += 1;

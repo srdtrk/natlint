@@ -4,7 +4,7 @@ crate::no_comment_rule!(
     NoParam,
     ContractDefinition,
     Param,
-    "Contracts must not have a param comment."
+    "Contracts must not have a param comment"
 );
 
 #[cfg(test)]
@@ -106,6 +106,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoParam::NAME,
+            NoParam::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
@@ -121,6 +122,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoParam::NAME,
+            NoParam::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
@@ -137,6 +139,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoParam::NAME,
+            NoParam::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
@@ -154,6 +157,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoParam::NAME,
+            NoParam::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))

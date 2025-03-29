@@ -24,7 +24,7 @@ pub trait AnyRule: Send + Sync {
     fn description(&self) -> &'static str;
 }
 
-/// A wrapper to make Rule<T> implementors work with AnyRule
+/// A wrapper to make Rule<T> implementors work with `AnyRule`
 struct RuleWrapper<T: 'static + Send + Sync, R: Rule<T> + Send + Sync> {
     _phantom: std::marker::PhantomData<T>,
     _rule: std::marker::PhantomData<R>,
@@ -32,7 +32,7 @@ struct RuleWrapper<T: 'static + Send + Sync, R: Rule<T> + Send + Sync> {
 
 impl<T: 'static + Send + Sync, R: Rule<T> + Send + Sync> RuleWrapper<T, R> {
     /// Create a new rule wrapper
-    fn new() -> Self {
+    const fn new() -> Self {
         Self {
             _phantom: std::marker::PhantomData,
             _rule: std::marker::PhantomData,
@@ -46,11 +46,7 @@ impl<T: 'static + Send + Sync, R: Rule<T> + Send + Sync> AnyRule for RuleWrapper
     }
     
     fn check_item(&self, parent: Option<&ParseItem>, item: &dyn Any, comments: CommentsRef) -> Option<Violation> {
-        if let Some(concrete_item) = item.downcast_ref::<T>() {
-            R::check(parent, concrete_item, comments)
-        } else {
-            None
-        }
+        item.downcast_ref::<T>().and_then(|concrete_item| R::check(parent, concrete_item, comments))
     }
     
     fn name(&self) -> &'static str {
@@ -68,8 +64,15 @@ pub struct Config {
     rules: Vec<Arc<dyn AnyRule>>,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Config {
     /// Create a new empty configuration
+    #[must_use]
     pub fn new() -> Self {
         Self {
             rules: Vec::new(),
@@ -101,6 +104,7 @@ impl Config {
 }
 
 /// Create a configuration with all available rules
+#[must_use]
 pub fn load_default_config() -> Config {
     use crate::rules::{
         contract::{
@@ -150,6 +154,7 @@ pub fn load_default_config() -> Config {
 }
 
 /// Load configuration from a file or use defaults
+#[must_use]
 pub fn load_config(config_path: &str) -> Config {
     // In a real implementation, this would parse TOML/YAML/JSON configuration
     // For now, we'll just use the default configuration

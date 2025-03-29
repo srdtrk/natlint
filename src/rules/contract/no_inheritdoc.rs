@@ -7,7 +7,7 @@ crate::no_comment_rule!(
     NoInheritdoc,
     ContractDefinition,
     Inheritdoc,
-    "Contracts must not have an inheritdoc comment."
+    "Contracts must not have an inheritdoc comment"
 );
 
 #[cfg(test)]
@@ -109,6 +109,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
+            NoInheritdoc::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))
@@ -124,6 +125,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
+            NoInheritdoc::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))
@@ -140,6 +142,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
+            NoInheritdoc::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))
@@ -157,6 +160,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
+            NoInheritdoc::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))

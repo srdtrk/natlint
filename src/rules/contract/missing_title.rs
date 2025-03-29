@@ -6,7 +6,7 @@ crate::missing_comment_rule!(
     MissingTitle,
     ContractDefinition,
     Title,
-    "Contracts must have a title comment."
+    "Contracts must have a title comment"
 );
 
 #[cfg(test)]
@@ -47,7 +47,7 @@ mod tests {
     test_missingtitle!(
         no_violation,
         r"
-        /// @title Some title
+        /// @title Some Title
         interface Test {
         }
         ",
@@ -57,9 +57,20 @@ mod tests {
     test_missingtitle!(
         multi_no_violation,
         r"
-        /// @title Some title
         /// @author Some author
+        /// @title Some Title
         contract Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_missingtitle!(
+        multi_title_no_violation,
+        r"
+        /// @title Some Title
+        /// @title Some other
+        abstract contract Test {
         }
         ",
         |_| None
@@ -69,9 +80,9 @@ mod tests {
         multiline_no_violation,
         r"
         /**
-         * @title Some title
+         * @title Some Title
          */
-        abstract contract Test {
+        interface Test {
         }
         ",
         |_| None
@@ -81,10 +92,23 @@ mod tests {
         multiline_multi_no_violation,
         r"
         /**
-         * @title Some title
          * @author Some author
+         * @title Some Title
          */
         library Test {
+        }
+        ",
+        |_| None
+    );
+
+    test_missingtitle!(
+        multiline_multi_title_no_violation,
+        r"
+        /**
+         * @title Some Title
+         * @title Some other
+         */
+        contract Test {
         }
         ",
         |_| None
@@ -98,6 +122,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
+            MissingTitle::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Title),
             sct.loc
         ))
@@ -112,6 +137,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
+            MissingTitle::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Title),
             sct.loc
         ))
@@ -128,8 +154,10 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingTitle::NAME,
+            MissingTitle::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Title),
             sct.loc
         ))
     );
 }
+

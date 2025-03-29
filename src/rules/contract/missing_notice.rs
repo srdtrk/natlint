@@ -98,6 +98,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingNotice::NAME,
+            MissingNotice::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Notice),
             sct.loc
         ))
@@ -112,6 +113,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingNotice::NAME,
+            MissingNotice::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Notice),
             sct.loc
         ))
@@ -128,6 +130,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingNotice::NAME,
+            MissingNotice::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Notice),
             sct.loc
         ))
