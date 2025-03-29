@@ -53,15 +53,20 @@ where
         ParseSource::Struct(structure) => {
             config.check(parent, structure as &dyn std::any::Any, &item.comments)
         }
-        // Add other item types as needed:
-        // ParseSource::Enum(..) => { ... },
-        // ParseSource::Error(..) => { ... },
-        // ParseSource::Event(..) => { ... },
-        // ParseSource::Variable(..) => { ... },
-        // ParseSource::Type(..) => { ... },
-        _ => {
-            panic!("Unsupported item type: {:?}", item.source);
-            // No rules implemented for these item types yet
+        ParseSource::Variable(variable) => {
+            config.check(parent, variable as &dyn std::any::Any, &item.comments)
+        }
+        ParseSource::Enum(enumeration) => {
+            config.check(parent, enumeration as &dyn std::any::Any, &item.comments)
+        }
+        ParseSource::Error(error) => {
+            config.check(parent, error as &dyn std::any::Any, &item.comments)
+        }
+        ParseSource::Event(event) => {
+            config.check(parent, event as &dyn std::any::Any, &item.comments)
+        }
+        ParseSource::Type(type_def) => {
+            config.check(parent, type_def as &dyn std::any::Any, &item.comments)
         }
     }
     .into_iter()
