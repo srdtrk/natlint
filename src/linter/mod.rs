@@ -13,7 +13,7 @@ use solang_parser::parse;
 /// Lints a string (e.g. a file) return any violations with line numbers
 /// # Errors
 /// Returns an error if the content cannot be parsed or checked for whatever reason
-pub fn process_file(content: &str, config: &Config) -> eyre::Result<Vec<(Violation, usize)>> {
+pub fn lint(content: &str, config: &Config) -> eyre::Result<Vec<(Violation, usize)>> {
     let line_lookup = LineColLookup::new(content);
 
     let (mut source_unit, comments) =

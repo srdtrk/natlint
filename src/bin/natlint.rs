@@ -8,7 +8,7 @@ use natlint::{
         file_finder::find_matching_files,
     },
     config::load_default_config,
-    linter::process_file,
+    linter::lint,
     rules::Violation,
 };
 
@@ -28,7 +28,7 @@ fn main() -> eyre::Result<()> {
                         let content = fs::read_to_string(file).unwrap();
                         let file_path = file.to_str().unwrap().to_owned();
 
-                        (file_path, process_file(&content, &config).unwrap())
+                        (file_path, lint(&content, &config).unwrap())
                     })
                     .sorted_by(|(file_a, _), (file_b, _)| file_a.cmp(file_b))
                     .collect::<Vec<_>>();

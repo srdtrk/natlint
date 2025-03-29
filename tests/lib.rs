@@ -2,7 +2,7 @@
 
 mod natspec_test {
     use natlint::config::load_default_config;
-    use natlint::linter::process_file;
+    use natlint::linter::lint;
     use std::fs;
     use std::path::Path;
 
@@ -12,7 +12,7 @@ mod natspec_test {
         let content = fs::read_to_string(file_path).expect("Failed to read test file");
 
         let config = load_default_config();
-        let violations: Vec<_> = process_file(&content, &config).expect("Failed to process file");
+        let violations: Vec<_> = lint(&content, &config).expect("Failed to process file");
 
         assert_eq!(violations.len(), 6);
 
@@ -28,5 +28,21 @@ mod natspec_test {
         assert!(violations[4].1 == 9);
         assert!(violations[5].0.rule_name == "MissingParams");
         assert!(violations[5].1 == 9);
+    }
+
+    #[test]
+    fn test_interface() {
+        let file_path = Path::new("tests/contracts/TestInterface.sol");
+        let content = fs::read_to_string(file_path).expect("Failed to read test file");
+
+        let config = load_default_config();
+        let violations: Vec<_> = lint(&content, &config).expect("Failed to process file");
+
+        assert_eq!(violations.len(), 5);
+
+        assert!(violations[0].0.rule_name == "MissingAuthor");
+        assert!(violations[0].1 == 6);
+        assert!(violations[1].0.rule_name == "MissingNotice");
+        assert!(violations[1].1 == 6);
     }
 }

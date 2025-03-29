@@ -15,70 +15,11 @@ use crate::rules::{
     r#struct::{self as struct_rules},
     variable::{self as variable_rules},
 };
-use crate::rules::{Rule, Violation};
+use crate::rules::{AnyRule, Rule, RuleWrapper, Violation};
 use solang_parser::pt::{
-    ContractDefinition, EnumDefinition, ErrorDefinition, FunctionDefinition, StructDefinition, VariableDefinition,
+    ContractDefinition, EnumDefinition, ErrorDefinition, FunctionDefinition, StructDefinition,
+    VariableDefinition,
 };
-
-/// A trait object that can check any parseable item
-pub trait AnyRule: Send + Sync {
-    /// Check if this rule applies to the given item
-    fn applies_to(&self, item: &dyn Any) -> bool;
-
-    /// Run the rule check on the given item if applicable
-    fn check_item(
-        &self,
-        parent: Option<&ParseItem>,
-        item: &dyn Any,
-        comments: CommentsRef,
-    ) -> Option<Violation>;
-
-    /// Get the name of the rule
-    fn name(&self) -> &'static str;
-
-    /// Get the description of the rule
-    fn description(&self) -> &'static str;
-}
-
-/// A wrapper to make Rule<T> implementors work with `AnyRule`
-struct RuleWrapper<T: 'static + Send + Sync, R: Rule<T> + Send + Sync> {
-    _phantom: std::marker::PhantomData<T>,
-    _rule: std::marker::PhantomData<R>,
-}
-
-impl<T: 'static + Send + Sync, R: Rule<T> + Send + Sync> RuleWrapper<T, R> {
-    /// Create a new rule wrapper
-    const fn new() -> Self {
-        Self {
-            _phantom: std::marker::PhantomData,
-            _rule: std::marker::PhantomData,
-        }
-    }
-}
-
-impl<T: 'static + Send + Sync, R: Rule<T> + Send + Sync> AnyRule for RuleWrapper<T, R> {
-    fn applies_to(&self, item: &dyn Any) -> bool {
-        item.downcast_ref::<T>().is_some()
-    }
-
-    fn check_item(
-        &self,
-        parent: Option<&ParseItem>,
-        item: &dyn Any,
-        comments: CommentsRef,
-    ) -> Option<Violation> {
-        item.downcast_ref::<T>()
-            .and_then(|concrete_item| R::check(parent, concrete_item, comments))
-    }
-
-    fn name(&self) -> &'static str {
-        R::NAME
-    }
-
-    fn description(&self) -> &'static str {
-        R::DESCRIPTION
-    }
-}
 
 /// Configuration for natlint rules
 pub struct Config {
@@ -211,4 +152,3 @@ pub fn load_config(config_path: &str) -> Config {
     // TODO: Parse config file and selectively enable rules
     load_default_config()
 }
-
