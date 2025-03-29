@@ -27,6 +27,9 @@ pub use item::{ParseItem, ParseSource};
 mod comment;
 pub use comment::{Comment, CommentTag, Comments, CommentsRef};
 
+/// Process file.
+pub mod process_file;
+
 /// The documentation parser. This type implements a [Visitor] trait.
 ///
 /// While walking the parse tree, [Parser] will collect relevant source items and corresponding

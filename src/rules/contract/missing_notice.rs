@@ -6,7 +6,7 @@ crate::missing_comment_rule!(
     MissingNotice,
     ContractDefinition,
     Notice,
-    "Contracts must have a notice comment."
+    "Contracts must have a notice comment"
 );
 
 #[cfg(test)]
@@ -136,3 +136,4 @@ mod tests {
         ))
     );
 }
+

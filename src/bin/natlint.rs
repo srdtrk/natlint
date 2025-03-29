@@ -1,122 +1,25 @@
 use clap::Parser;
-use line_col::LineColLookup;
 use natlint::{
-    cli::cmd::{Commands, NatlintCli},
-    cli::file_finder::find_matching_files,
-    config::{load_config},
-    parser::{ParseItem, ParseSource},
+    cli::{
+        cmd::{Commands, NatlintCli},
+        file_finder::find_matching_files,
+    },
+    config::load_config,
+    parser::process_file::process_file,
 };
-
-/// Process a single Solidity file and return any violations with line numbers
-fn process_file(file_path: &std::path::Path, config: &natlint::config::Config) -> eyre::Result<Vec<(String, natlint::rules::Violation, usize)>> {
-    use forge_fmt::Visitable;
-    use solang_parser::parse;
-    use std::fs;
-    
-    // Read file content
-    let content = fs::read_to_string(file_path)?;
-    
-    // Create line/column lookup for efficient offset-to-line conversion
-    let line_lookup = LineColLookup::new(&content);
-    
-    // Parse Solidity file
-    let (mut source_unit, comments) = parse(&content, 0)
-        .map_err(|e| eyre::eyre!("Failed to parse {}: {:?}", file_path.display(), e))?;
-    
-    // Create parser and visit the source unit
-    let mut parser = natlint::parser::Parser::new(comments, content.clone());
-    source_unit.visit(&mut parser)
-        .map_err(|e| eyre::eyre!("Failed to visit {}: {:?}", file_path.display(), e))?;
-    
-    // Get parsed items
-    let items = parser.items();
-    
-    // Collect violations
-    let mut all_violations = Vec::new();
-    
-    // Function to recursively process items and their children
-    fn process_item(
-        item: &ParseItem,
-        parent: Option<&ParseItem>,
-        config: &natlint::config::Config,
-        file_path: &std::path::Path,
-        line_lookup: &LineColLookup,
-        all_violations: &mut Vec<(String, natlint::rules::Violation, usize)>,
-    ) {
-        // Check item against all applicable rules
-        match &item.source {
-            ParseSource::Contract(contract) => {
-                let violations = config.check_item(
-                    parent, 
-                    &**contract as &dyn std::any::Any, 
-                    &item.comments
-                );
-                
-                for violation in violations {
-                    // Get line number (1-based) using efficient lookup
-                    let (line, _) = line_lookup.get(violation.loc.start());
-                    all_violations.push((file_path.display().to_string(), violation, line));
-                }
-            },
-            ParseSource::Function(function) => {
-                let violations = config.check_item(
-                    parent, 
-                    function as &dyn std::any::Any, 
-                    &item.comments
-                );
-                
-                for violation in violations {
-                    let (line, _) = line_lookup.get(violation.loc.start());
-                    all_violations.push((file_path.display().to_string(), violation, line));
-                }
-            },
-            ParseSource::Struct(structure) => {
-                let violations = config.check_item(
-                    parent, 
-                    structure as &dyn std::any::Any, 
-                    &item.comments
-                );
-                
-                for violation in violations {
-                    let (line, _) = line_lookup.get(violation.loc.start());
-                    all_violations.push((file_path.display().to_string(), violation, line));
-                }
-            },
-            // Add other item types as needed:
-            // ParseSource::Enum(..) => { ... },
-            // ParseSource::Error(..) => { ... },
-            // ParseSource::Event(..) => { ... },
-            // ParseSource::Variable(..) => { ... },
-            // ParseSource::Type(..) => { ... },
-            _ => {
-                // No rules implemented for these item types yet
-            }
-        }
-        
-        // Process all children
-        for child in &item.children {
-            process_item(child, Some(item), config, file_path, line_lookup, all_violations);
-        }
-    }
-    
-    // Process all top-level items
-    for item in &items {
-        process_item(item, None, config, file_path, &line_lookup, &mut all_violations);
-    }
-    
-    Ok(all_violations)
-}
 
 fn main() -> eyre::Result<()> {
     let cli = NatlintCli::parse();
     match cli.command {
         Commands::Run(args) => {
             println!("Running natlint with config: {}", args.config);
-            
+
             // Display helpful message for using glob patterns if no include patterns are provided
             if args.include.is_empty() && args.root == "." {
                 println!("Tip: Use --include/-i to specify glob patterns to search for files.");
-                println!("Example: natlint run -c config.toml -i \"**/*.sol\" -e \"node_modules/**\"");
+                println!(
+                    "Example: natlint run -c config.toml -i \"**/*.sol\" -e \"node_modules/**\""
+                );
                 println!("Searching for Solidity files in the current directory...")
             }
 
@@ -126,30 +29,31 @@ fn main() -> eyre::Result<()> {
             // Find all files in the root directory that match the include globs and do not match the exclude globs
             let files = find_matching_files(&args.root, args.include, &args.exclude)?;
             println!("Found {} files to lint", files.len());
-            
+
             // Process each file and collect violations
             let mut all_violations = Vec::new();
             let mut error_count = 0;
             let total_files = files.len();
-            
+
             // Show progress if there are more than 5 files
             let show_progress = total_files > 5;
-            
+
             for (idx, file) in files.iter().enumerate() {
                 // Show progress
                 if show_progress && idx % 5 == 0 {
-                    print!("\rProcessing files: {}/{} ({}%)", 
-                        idx + 1, 
-                        total_files, 
+                    print!(
+                        "\rProcessing files: {}/{} ({}%)",
+                        idx + 1,
+                        total_files,
                         ((idx + 1) as f64 / total_files as f64 * 100.0) as u32
                     );
                     std::io::Write::flush(&mut std::io::stdout()).unwrap();
                 }
-                
+
                 match process_file(file, &config) {
                     Ok(violations) => {
                         all_violations.extend(violations);
-                    },
+                    }
                     Err(err) => {
                         if show_progress {
                             println!(); // New line after progress indicator
@@ -159,28 +63,29 @@ fn main() -> eyre::Result<()> {
                     }
                 }
             }
-            
+
             // Clear progress line when done
             if show_progress {
                 println!("\rProcessed {} files                ", total_files);
             }
-            
+
             // Sort violations by file, rule, and actual line number
             all_violations.sort_by(|(file_a, viol_a, line_a), (file_b, viol_b, line_b)| {
-                file_a.cmp(file_b)
+                file_a
+                    .cmp(file_b)
                     .then_with(|| line_a.cmp(line_b))
                     .then_with(|| viol_a.rule_name.cmp(viol_b.rule_name))
             });
-            
+
             // Report violations
             if all_violations.is_empty() {
                 println!("No natspec violations found!");
             } else {
                 println!("\nNatspec violations found:");
-                
+
                 let mut current_file = String::new();
                 let mut violation_count = 0;
-                
+
                 for (file, violation, line_number) in all_violations {
                     // Print file name when it changes
                     if current_file != file {
@@ -190,34 +95,38 @@ fn main() -> eyre::Result<()> {
                         println!("File: {}", file);
                         current_file = file;
                     }
-                    
+
                     // Print violation details with converted line number
-                    println!("  [{}] Line {}: {}", 
-                        violation.rule_name,
-                        line_number,
-                        violation.rule_description
+                    println!(
+                        "  [{}] Line {}: {}",
+                        violation.rule_name, line_number, violation.rule_description
                     );
-                    
+
                     violation_count += 1;
                 }
-                
-                println!("\nFound {} natspec violations in {} files.", violation_count, files.len());
-                
+
+                println!(
+                    "\nFound {} natspec violations in {} files.",
+                    violation_count,
+                    files.len()
+                );
+
                 if error_count > 0 {
                     println!("Failed to process {} files due to errors.", error_count);
                 }
-                
+
                 // Return non-zero exit code if violations were found
                 std::process::exit(1);
             }
-            
+
             // If there were parsing errors but no violations, still exit with error
             if error_count > 0 {
                 println!("Failed to process {} files due to errors.", error_count);
                 std::process::exit(1);
             }
-            
+
             Ok(())
         }
     }
 }
+
