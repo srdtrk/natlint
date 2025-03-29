@@ -2,18 +2,17 @@
 
 mod natspec_test {
     use natlint::config::load_default_config;
-    use natlint::parser::process_file::process_file;
+    use natlint::linter::process_file;
+    use std::fs;
     use std::path::Path;
 
     #[test]
     fn test_contract() {
         let file_path = Path::new("tests/contracts/TestContract.sol");
+        let content = fs::read_to_string(file_path).expect("Failed to read test file");
+
         let config = load_default_config();
-        let violations: Vec<_> = process_file(file_path, &config)
-            .expect("Failed to process file")
-            .into_iter()
-            .map(|(_, violation, line)| (violation, line))
-            .collect();
+        let violations: Vec<_> = process_file(&content, &config).expect("Failed to process file");
 
         assert_eq!(violations.len(), 6);
 

@@ -1,3 +1,5 @@
+//! Implements checking a file for a given config
+
 use line_col::LineColLookup;
 
 use crate::{
@@ -5,16 +7,17 @@ use crate::{
     parser::{ParseItem, ParseSource, Parser},
     rules::Violation,
 };
+use forge_fmt::Visitable;
+use solang_parser::parse;
+use std::fs;
 
 /// Process a single Solidity file and return any violations with line numbers
+/// # Errors
+/// Returns an error if the content cannot be parsed or checked for whatever reason
 pub fn process_file(
     file_path: &std::path::Path,
     config: &Config,
 ) -> eyre::Result<Vec<(String, Violation, usize)>> {
-    use forge_fmt::Visitable;
-    use solang_parser::parse;
-    use std::fs;
-
     // Read file content
     let content = fs::read_to_string(file_path)?;
 

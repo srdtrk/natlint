@@ -7,19 +7,30 @@ use std::any::Any;
 use std::sync::Arc;
 
 use crate::parser::{Comments, CommentsRef, ParseItem};
+use crate::rules::{
+    contract::{self as contract_rules},
+    function::{self as function_rules},
+    r#struct::{self as struct_rules},
+};
 use crate::rules::{Rule, Violation};
+use solang_parser::pt::{ContractDefinition, FunctionDefinition, StructDefinition};
 
 /// A trait object that can check any parseable item
 pub trait AnyRule: Send + Sync {
     /// Check if this rule applies to the given item
     fn applies_to(&self, item: &dyn Any) -> bool;
-    
+
     /// Run the rule check on the given item if applicable
-    fn check_item(&self, parent: Option<&ParseItem>, item: &dyn Any, comments: CommentsRef) -> Option<Violation>;
-    
+    fn check_item(
+        &self,
+        parent: Option<&ParseItem>,
+        item: &dyn Any,
+        comments: CommentsRef,
+    ) -> Option<Violation>;
+
     /// Get the name of the rule
     fn name(&self) -> &'static str;
-    
+
     /// Get the description of the rule
     fn description(&self) -> &'static str;
 }
@@ -44,15 +55,21 @@ impl<T: 'static + Send + Sync, R: Rule<T> + Send + Sync> AnyRule for RuleWrapper
     fn applies_to(&self, item: &dyn Any) -> bool {
         item.downcast_ref::<T>().is_some()
     }
-    
-    fn check_item(&self, parent: Option<&ParseItem>, item: &dyn Any, comments: CommentsRef) -> Option<Violation> {
-        item.downcast_ref::<T>().and_then(|concrete_item| R::check(parent, concrete_item, comments))
+
+    fn check_item(
+        &self,
+        parent: Option<&ParseItem>,
+        item: &dyn Any,
+        comments: CommentsRef,
+    ) -> Option<Violation> {
+        item.downcast_ref::<T>()
+            .and_then(|concrete_item| R::check(parent, concrete_item, comments))
     }
-    
+
     fn name(&self) -> &'static str {
         R::NAME
     }
-    
+
     fn description(&self) -> &'static str {
         R::DESCRIPTION
     }
@@ -74,22 +91,27 @@ impl Config {
     /// Create a new empty configuration
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            rules: Vec::new(),
-        }
+        Self { rules: Vec::new() }
     }
-    
+
     /// Add a rule to the configuration
-    pub fn add_rule<T: 'static + Send + Sync, R: Rule<T> + Send + Sync + 'static>(&mut self) -> &mut Self {
+    pub fn add_rule<T: 'static + Send + Sync, R: Rule<T> + Send + Sync + 'static>(
+        &mut self,
+    ) -> &mut Self {
         let rule = Arc::new(RuleWrapper::<T, R>::new());
         self.rules.push(rule);
         self
     }
-    
+
     /// Check an item against all applicable rules
-    pub fn check_item(&self, parent: Option<&ParseItem>, item: &dyn Any, comments: &Comments) -> Vec<Violation> {
+    pub fn check_item(
+        &self,
+        parent: Option<&ParseItem>,
+        item: &dyn Any,
+        comments: &Comments,
+    ) -> Vec<Violation> {
         let mut violations = Vec::new();
-        
+
         for rule in &self.rules {
             if rule.applies_to(item) {
                 let comments_ref = CommentsRef::from(comments);
@@ -98,7 +120,7 @@ impl Config {
                 }
             }
         }
-        
+
         violations
     }
 }
@@ -106,21 +128,8 @@ impl Config {
 /// Create a configuration with all available rules
 #[must_use]
 pub fn load_default_config() -> Config {
-    use crate::rules::{
-        contract::{
-            self as contract_rules
-        },
-        function::{
-            self as function_rules
-        },
-        r#struct::{
-            self as struct_rules
-        }
-    };
-    use solang_parser::pt::{ContractDefinition, FunctionDefinition, StructDefinition};
-
     let mut config = Config::new();
-    
+
     // Contract Rules
     config.add_rule::<ContractDefinition, contract_rules::MissingAuthor>();
     config.add_rule::<ContractDefinition, contract_rules::MissingNotice>();
@@ -130,7 +139,7 @@ pub fn load_default_config() -> Config {
     config.add_rule::<ContractDefinition, contract_rules::NoReturn>();
     config.add_rule::<ContractDefinition, contract_rules::TooManyNotice>();
     config.add_rule::<ContractDefinition, contract_rules::TooManyTitle>();
-    
+
     // Function Rules
     config.add_rule::<FunctionDefinition, function_rules::MissingInheritdoc>();
     config.add_rule::<FunctionDefinition, function_rules::MissingNotice>();
@@ -139,7 +148,7 @@ pub fn load_default_config() -> Config {
     config.add_rule::<FunctionDefinition, function_rules::NoAuthor>();
     config.add_rule::<FunctionDefinition, function_rules::NoTitle>();
     config.add_rule::<FunctionDefinition, function_rules::OnlyInheritdoc>();
-    
+
     // Struct Rules
     config.add_rule::<StructDefinition, struct_rules::MissingAuthor>();
     config.add_rule::<StructDefinition, struct_rules::MissingNotice>();
@@ -149,7 +158,7 @@ pub fn load_default_config() -> Config {
     config.add_rule::<StructDefinition, struct_rules::NoReturn>();
     config.add_rule::<StructDefinition, struct_rules::TooManyNotice>();
     config.add_rule::<StructDefinition, struct_rules::TooManyTitle>();
-    
+
     config
 }
 
@@ -161,7 +170,8 @@ pub fn load_config(config_path: &str) -> Config {
     if config_path.is_empty() {
         return load_default_config();
     }
-    
+
     // TODO: Parse config file and selectively enable rules
     load_default_config()
 }
+
