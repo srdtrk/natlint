@@ -1,15 +1,15 @@
 use solang_parser::pt::VariableDefinition;
 
 crate::no_comment_rule!(
-    NoParam,
+    NoReturn,
     VariableDefinition,
-    Param,
-    "Variables must not have a param comment."
+    Return,
+    "Variables must not have a return comment."
 );
 
 #[cfg(test)]
 mod tests {
-    use super::{NoParam, VariableDefinition};
+    use super::{NoReturn, VariableDefinition};
     use crate::{
         generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
@@ -25,7 +25,7 @@ mod tests {
         doc
     }
 
-    macro_rules! test_no_param {
+    macro_rules! test_no_return {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
@@ -38,7 +38,7 @@ mod tests {
 
                 let expected = $expected(var);
 
-                assert_eq!(NoParam::check(Some(parent), var, comments), expected);
+                assert_eq!(NoReturn::check(Some(parent), var, comments), expected);
             }
         };
     }
@@ -47,13 +47,13 @@ mod tests {
         use super::*;
 
         generate_no_comment_test_cases!(
-            Param,
-            test_no_param,
-            NoParam,
+            Return,
+            test_no_return,
+            NoReturn,
             r#"
                 bytes32 public constant SOME_CONST = keccak256("SOME_CONST");
             "#,
-            "@param",
+            "@return",
             VariableDefinition
         );
     }
@@ -62,13 +62,13 @@ mod tests {
         use super::*;
 
         generate_no_comment_test_cases!(
-            Param,
-            test_no_param,
-            NoParam,
+            Return,
+            test_no_return,
+            NoReturn,
             r"
                 bytes32 public immutable SOME_IMMUT;
             ",
-            "@param",
+            "@return",
             VariableDefinition
         );
     }
@@ -77,13 +77,13 @@ mod tests {
         use super::*;
 
         generate_no_comment_test_cases!(
-            Param,
-            test_no_param,
-            NoParam,
+            Return,
+            test_no_return,
+            NoReturn,
             r"
                 State private state;
             ",
-            "@param",
+            "@return",
             VariableDefinition
         );
     }
