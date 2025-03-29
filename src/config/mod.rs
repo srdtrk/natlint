@@ -9,11 +9,16 @@ use std::sync::Arc;
 use crate::parser::{Comments, CommentsRef, ParseItem};
 use crate::rules::{
     contract::{self as contract_rules},
+    error::{self as error_rules},
     function::{self as function_rules},
+    r#enum::{self as enum_rules},
     r#struct::{self as struct_rules},
+    variable::{self as variable_rules},
 };
 use crate::rules::{Rule, Violation};
-use solang_parser::pt::{ContractDefinition, FunctionDefinition, StructDefinition};
+use solang_parser::pt::{
+    ContractDefinition, EnumDefinition, ErrorDefinition, FunctionDefinition, StructDefinition, VariableDefinition,
+};
 
 /// A trait object that can check any parseable item
 pub trait AnyRule: Send + Sync {
@@ -140,6 +145,26 @@ pub fn load_default_config() -> Config {
     config.add_rule::<ContractDefinition, contract_rules::TooManyNotice>();
     config.add_rule::<ContractDefinition, contract_rules::TooManyTitle>();
 
+    // Enum Rules
+    config.add_rule::<EnumDefinition, enum_rules::MissingAuthor>();
+    config.add_rule::<EnumDefinition, enum_rules::MissingNotice>();
+    config.add_rule::<EnumDefinition, enum_rules::MissingTitle>();
+    config.add_rule::<EnumDefinition, enum_rules::MissingVariant>();
+    config.add_rule::<EnumDefinition, enum_rules::NoInheritdoc>();
+    config.add_rule::<EnumDefinition, enum_rules::NoParam>();
+    config.add_rule::<EnumDefinition, enum_rules::NoReturn>();
+    config.add_rule::<EnumDefinition, enum_rules::TooManyNotice>();
+    config.add_rule::<EnumDefinition, enum_rules::TooManyTitle>();
+
+    // Error Rules
+    config.add_rule::<ErrorDefinition, error_rules::MissingNotice>();
+    config.add_rule::<ErrorDefinition, error_rules::MissingParam>();
+    config.add_rule::<ErrorDefinition, error_rules::NoAuthor>();
+    config.add_rule::<ErrorDefinition, error_rules::NoInheritdoc>();
+    config.add_rule::<ErrorDefinition, error_rules::NoReturn>();
+    config.add_rule::<ErrorDefinition, error_rules::NoTitle>();
+    config.add_rule::<ErrorDefinition, error_rules::TooManyNotice>();
+
     // Function Rules
     config.add_rule::<FunctionDefinition, function_rules::MissingInheritdoc>();
     config.add_rule::<FunctionDefinition, function_rules::MissingNotice>();
@@ -148,6 +173,8 @@ pub fn load_default_config() -> Config {
     config.add_rule::<FunctionDefinition, function_rules::NoAuthor>();
     config.add_rule::<FunctionDefinition, function_rules::NoTitle>();
     config.add_rule::<FunctionDefinition, function_rules::OnlyInheritdoc>();
+    config.add_rule::<FunctionDefinition, function_rules::TooManyInheritdoc>();
+    config.add_rule::<FunctionDefinition, function_rules::TooManyNotice>();
 
     // Struct Rules
     config.add_rule::<StructDefinition, struct_rules::MissingAuthor>();
@@ -158,6 +185,16 @@ pub fn load_default_config() -> Config {
     config.add_rule::<StructDefinition, struct_rules::NoReturn>();
     config.add_rule::<StructDefinition, struct_rules::TooManyNotice>();
     config.add_rule::<StructDefinition, struct_rules::TooManyTitle>();
+
+    // Variable Rules
+    config.add_rule::<VariableDefinition, variable_rules::MissingInheritdoc>();
+    config.add_rule::<VariableDefinition, variable_rules::MissingNotice>();
+    config.add_rule::<VariableDefinition, variable_rules::NoAuthor>();
+    config.add_rule::<VariableDefinition, variable_rules::NoParam>();
+    config.add_rule::<VariableDefinition, variable_rules::NoReturn>();
+    config.add_rule::<VariableDefinition, variable_rules::NoTitle>();
+    config.add_rule::<VariableDefinition, variable_rules::TooManyInheritdoc>();
+    config.add_rule::<VariableDefinition, variable_rules::TooManyNotice>();
 
     config
 }
