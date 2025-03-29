@@ -78,8 +78,8 @@ mod natspec_test {
     }
     
     #[test]
-    fn test_iics26_router_msgs() {
-        let file_path = Path::new("tests/contracts/IICS26RouterMsgs.sol");
+    fn test_contract() {
+        let file_path = Path::new("tests/contracts/TestContract.sol");
         let content = fs::read_to_string(file_path).expect("Failed to read file");
         let line_lookup = LineColLookup::new(&content);
         let violations = check_file(file_path);
@@ -93,6 +93,10 @@ mod natspec_test {
             .collect();
         
         assert!(!violations.is_empty(), "Expected at least one violation");
+
+        for (violation, line) in &violations_with_lines {
+            println!("Violation: {}, {}, {}", violation.rule, violation.description, line);
+        }
         
         assert!(
             grouped.contains_key("MissingTitle"), 

@@ -22,6 +22,7 @@ macro_rules! no_comment_rule {
                 {
                     return Some($crate::rules::Violation::new(
                         Self::NAME,
+                        $description,
                         $crate::rules::violation_error::ViolationError::CommentNotAllowed(
                             $crate::parser::CommentTag::$comment_variant,
                         ),
@@ -56,6 +57,7 @@ macro_rules! missing_comment_rule {
                 {
                     return Some($crate::rules::Violation::new(
                         Self::NAME,
+                        $description,
                         $crate::rules::violation_error::ViolationError::MissingComment(
                             $crate::parser::CommentTag::$comment_variant,
                         ),
@@ -91,6 +93,7 @@ macro_rules! too_many_comments_rule {
                 {
                     return Some($crate::rules::Violation::new(
                         Self::NAME,
+                        $description,
                         $crate::rules::violation_error::ViolationError::TooManyComments(
                             $crate::parser::CommentTag::$comment_variant,
                         ),
