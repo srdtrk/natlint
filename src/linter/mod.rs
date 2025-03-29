@@ -43,7 +43,7 @@ where
     T: RuleSet + Send + Sync + 'static,
 {
     // Check item against all applicable rules
-    let mut violations = match &item.source {
+    let item_violations = match &item.source {
         ParseSource::Contract(contract) => {
             config.check(parent, &**contract as &dyn std::any::Any, &item.comments)
         }
@@ -68,31 +68,19 @@ where
         ParseSource::Type(type_def) => {
             config.check(parent, type_def as &dyn std::any::Any, &item.comments)
         }
-    }
-    .into_iter()
-    .map(|violation| {
-        // Convert the line number to the original source line
-        let (line, _) = line_lookup.get(violation.loc.start());
-        (violation, line)
-    })
-    .collect::<Vec<_>>();
+    };
 
-    for child in &item.children {
-        let child_violations = process_item(child, Some(item), config, line_lookup);
-        violations.extend(child_violations);
-    }
-
-    violations
-
-    // let child_violations = &item
-    //     .children
-    //     .iter()
-    //     .flat_map(|child| process_item(child, Some(item), config, line_lookup))
-    //     .collect::<Vec<_>>();
-    //
-    // // Combine violations from the item and its children
-    // violations
-    //     .into_iter()
-    //     .chain(child_violations.iter().cloned())
-    //     .collect::<Vec<_>>()
+    item_violations
+        .into_iter()
+        .map(|violation| {
+            // Convert the line number to the original source line
+            let (line, _) = line_lookup.get(violation.loc.start());
+            (violation, line)
+        })
+        .chain(
+            item.children
+                .iter()
+                .flat_map(|child| process_item(child, Some(item), config, line_lookup)),
+        )
+        .collect::<Vec<_>>()
 }
