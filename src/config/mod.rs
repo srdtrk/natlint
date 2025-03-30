@@ -26,7 +26,8 @@ use std::{
 /// Type alias for a rule checking function.
 /// The function takes the optional parent item, the item itself (as `dyn Any`),
 /// and a reference to the comments, returning an optional violation.
-type RuleFn = Arc<dyn Fn(Option<&ParseItem>, &dyn Any, CommentsRef) -> Option<Violation> + Send + Sync>;
+type RuleFn =
+    Arc<dyn Fn(Option<&ParseItem>, &dyn Any, CommentsRef) -> Option<Violation> + Send + Sync>;
 
 /// Configuration for natlint rules
 pub struct Config {
@@ -44,7 +45,9 @@ impl Config {
     /// Create a new empty configuration
     #[must_use]
     pub fn new() -> Self {
-        Self { rules: HashMap::new() }
+        Self {
+            rules: HashMap::new(),
+        }
     }
 
     /// Add a rule to the configuration
@@ -152,15 +155,4 @@ pub fn load_default_config() -> Config {
     config.add_rule::<VariableDefinition, variable_rules::TooManyNotice>();
 
     config
-}
-
-/// Load configuration from a file or use defaults
-#[must_use]
-pub fn load_config(config_path: &str) -> Config {
-    if config_path.is_empty() {
-        return load_default_config();
-    }
-
-    // TODO: Parse config file and selectively enable rules
-    load_default_config()
 }
