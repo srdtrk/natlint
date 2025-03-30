@@ -1,8 +1,10 @@
 //! The linter implementation
 
-use std::any::Any;
+use std::any::{Any, TypeId};
 
 use line_col::LineColLookup;
+
+use crate::parser::ParseSource;
 
 use crate::{
     parser::{CommentsRef, ParseItem, Parser},
