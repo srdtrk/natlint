@@ -1,11 +1,9 @@
 //! This module defines the rules for the natlint linter.
 
-use std::any::Any;
-
 use solang_parser::pt::Loc;
 use violation_error::ViolationError;
 
-use crate::parser::{Comments, CommentsRef, ParseItem};
+use crate::parser::{CommentsRef, ParseItem};
 
 pub mod macros;
 pub mod violation_error;
