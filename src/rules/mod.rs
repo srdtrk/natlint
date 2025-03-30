@@ -46,7 +46,7 @@ pub trait Rule: Send + Sync {
     fn check(
         parent: Option<&ParseItem>,
         item: &Self::Target,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation>;
 }
 
@@ -63,7 +63,7 @@ pub trait DynRule: Send + Sync {
         &self,
         parent: Option<&ParseItem>,
         item: &dyn Any,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation>;
 }
 
@@ -88,7 +88,7 @@ where
         &self,
         parent: Option<&ParseItem>,
         item: &dyn Any,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         item.downcast_ref::<R::Target>()
             .and_then(|typed_item| R::check(parent, typed_item, comments))

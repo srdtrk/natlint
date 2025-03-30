@@ -16,7 +16,7 @@ macro_rules! no_comment_rule {
             fn check(
                 _: Option<&$crate::parser::ParseItem>,
                 item: &Self::Target,
-                comments: $crate::parser::CommentsRef,
+                comments: &$crate::parser::CommentsRef,
             ) -> Option<$crate::rules::Violation> {
                 if !comments
                     .include_tag($crate::parser::CommentTag::$comment_variant)
@@ -53,7 +53,7 @@ macro_rules! missing_comment_rule {
             fn check(
                 _: Option<&$crate::parser::ParseItem>,
                 item: &Self::Target,
-                comments: $crate::parser::CommentsRef,
+                comments: &$crate::parser::CommentsRef,
             ) -> Option<$crate::rules::Violation> {
                 if comments
                     .include_tag($crate::parser::CommentTag::$comment_variant)
@@ -90,7 +90,7 @@ macro_rules! too_many_comments_rule {
             fn check(
                 _: Option<&$crate::parser::ParseItem>,
                 item: &Self::Target,
-                comments: $crate::parser::CommentsRef,
+                comments: &$crate::parser::CommentsRef,
             ) -> Option<$crate::rules::Violation> {
                 if comments
                     .include_tag($crate::parser::CommentTag::$comment_variant)
