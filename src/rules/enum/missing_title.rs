@@ -42,7 +42,7 @@ mod tests {
 
                 let expected = $expected(item);
 
-                assert_eq!(MissingTitle::check(Some(parent), item, comments), expected);
+                assert_eq!(MissingTitle::check(Some(parent), item, &comments), expected);
             }
         };
     }

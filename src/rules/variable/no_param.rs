@@ -38,7 +38,7 @@ mod tests {
 
                 let expected = $expected(var);
 
-                assert_eq!(NoParam::check(Some(parent), var, comments), expected);
+                assert_eq!(NoParam::check(Some(parent), var, &comments), expected);
             }
         };
     }

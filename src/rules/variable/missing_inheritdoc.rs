@@ -20,7 +20,7 @@ impl Rule for MissingInheritdoc {
     fn check(
         parent: Option<&ParseItem>,
         var: &Self::Target,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         // Parent must be a contract, not an interface or library
         match parent?.as_contract()?.ty {
@@ -82,7 +82,7 @@ mod tests {
                 let expected = $expected(var);
 
                 assert_eq!(
-                    MissingInheritdoc::check(Some(parent), var, comments),
+                    MissingInheritdoc::check(Some(parent), var, &comments),
                     expected
                 );
             }

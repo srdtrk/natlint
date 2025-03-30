@@ -23,7 +23,7 @@ impl Rule for OnlyInheritdoc {
     fn check(
         _: Option<&ParseItem>,
         func: &Self::Target,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         if comments.find_inheritdoc_base().is_some() {
             return match comments.len() {
@@ -69,7 +69,7 @@ mod tests {
                 let expected = $expected(func);
 
                 assert_eq!(
-                    OnlyInheritdoc::check(Some(parent), func, comments),
+                    OnlyInheritdoc::check(Some(parent), func, &comments),
                     expected
                 );
             }

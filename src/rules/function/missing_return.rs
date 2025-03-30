@@ -20,7 +20,7 @@ impl Rule for MissingReturn {
     fn check(
         _: Option<&ParseItem>,
         func: &Self::Target,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         // Function type must be a user function
         match func.ty {
@@ -115,7 +115,7 @@ mod tests {
 
                 let expected = $expected(func);
 
-                assert_eq!(MissingReturn::check(Some(parent), func, comments), expected);
+                assert_eq!(MissingReturn::check(Some(parent), func, &comments), expected);
             }
         };
     }

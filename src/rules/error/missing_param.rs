@@ -19,7 +19,7 @@ impl Rule for MissingParam {
     fn check(
         _: Option<&ParseItem>,
         item: &Self::Target,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         let param_comments = comments.include_tag(CommentTag::Param);
         match item.fields.len().cmp(&param_comments.len()) {
@@ -100,7 +100,7 @@ mod tests {
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(item);
-                let result = MissingParam::check(None, item, comments);
+                let result = MissingParam::check(None, item, &comments);
 
                 assert_eq!(expected, result);
             }

@@ -45,7 +45,7 @@ fn process_item(
     rule_set
         .iter()
         .filter(|rule| rule.target_type_id() == item.type_id())
-        .filter_map(|rule| rule.check_dyn(parent, item, comments_ref.clone()))
+        .filter_map(|rule| rule.check_dyn(parent, item, &comments_ref))
         .map(|violation| {
             // Convert the line number to the original source line
             let (line, _) = line_lookup.get(violation.loc.start());
