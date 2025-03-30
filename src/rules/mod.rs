@@ -34,9 +34,9 @@ pub struct Violation {
 
 /// A trait for defining a rule that checks a specific Solidity construct.
 /// The rule should return a diagnostic if the construct violates the rule.
-pub trait Rule: Send + Sync {
+pub trait Rule {
     /// The target AST node type this rule applies to.
-    type Target: Any + Send + Sync;
+    type Target: Any;
     /// The name of the rule.
     const NAME: &'static str;
     /// A description of the rule.
@@ -51,7 +51,7 @@ pub trait Rule: Send + Sync {
 }
 
 /// A dynamic dispatch version of the [Rule] trait.
-pub trait DynRule: Send + Sync {
+pub trait DynRule {
     /// The name of the rule.
     fn name(&self) -> &'static str;
     /// A description of the rule.
@@ -70,7 +70,7 @@ pub trait DynRule: Send + Sync {
 /// Implement `DynRule` for any type `R` that implements `Rule`.
 impl<R: Rule + 'static> DynRule for R
 where
-    R::Target: Any + Send + Sync,
+    R::Target: Any,
 {
     fn name(&self) -> &'static str {
         R::NAME

@@ -37,7 +37,7 @@ impl Config {
     pub fn add_rule<R>(&mut self) -> &mut Self
     where
         R: Rule + Default + 'static,
-        R::Target: Any + Send + Sync,
+        R::Target: Any,
     {
         self.rules.push(Box::new(R::default()));
         self
