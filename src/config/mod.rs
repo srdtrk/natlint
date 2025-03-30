@@ -30,7 +30,7 @@ type RuleFn = Arc<dyn Fn(Option<&ParseItem>, &dyn Any, CommentsRef) -> Option<Vi
 
 /// Configuration for natlint rules
 pub struct Config {
-    /// A map from TypeId to a list of rules (as closures) that apply to that type.
+    /// A map from `TypeId` to a list of rules (as closures) that apply to that type.
     rules: HashMap<TypeId, Vec<RuleFn>>,
 }
 
