@@ -1,9 +1,11 @@
 //! This module defines the rules for the natlint linter.
 
+use std::any::{Any, TypeId};
+
 use solang_parser::pt::Loc;
 use violation_error::ViolationError;
 
-use crate::parser::{CommentsRef, ParseItem};
+use crate::parser::{Comments, CommentsRef, ParseItem};
 
 pub mod macros;
 pub mod violation_error;
@@ -40,6 +42,48 @@ pub trait Rule<T> {
 
     /// Check the construct for violations of this rule.
     fn check(parent: Option<&ParseItem>, item: &T, comments: CommentsRef) -> Option<Violation>;
+}
+
+/// A dynamic dispatch version of the [Rule] trait.
+pub trait DynRule: Send + Sync {
+    /// The name of the rule.
+    fn name(&self) -> &'static str;
+    /// A description of the rule.
+    fn description(&self) -> &'static str;
+    /// The `TypeId` of the construct this rule checks.
+    fn target_type_id(&self) -> TypeId;
+    /// Check the construct for violations of this rule.
+    fn check_dyn(
+        &self,
+        parent: Option<&ParseItem>,
+        item: &dyn Any,
+        comments: CommentsRef,
+    ) -> Option<Violation>;
+}
+
+/// Implement `DynRule` for any type `R` that implements `Rule<T>`.
+impl<T: Any + Send + Sync, R: Rule<T> + Send + Sync + 'static> DynRule for R {
+    fn name(&self) -> &'static str {
+        R::NAME
+    }
+
+    fn description(&self) -> &'static str {
+        R::DESCRIPTION
+    }
+
+    fn target_type_id(&self) -> TypeId {
+        TypeId::of::<T>()
+    }
+
+    fn check_dyn(
+        &self,
+        parent: Option<&ParseItem>,
+        item: &dyn Any,
+        comments: CommentsRef,
+    ) -> Option<Violation> {
+        item.downcast_ref::<T>()
+            .and_then(|typed_item| R::check(parent, typed_item, comments))
+    }
 }
 
 impl Violation {
