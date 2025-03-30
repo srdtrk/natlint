@@ -39,10 +39,11 @@ impl Config {
     }
 
     /// Add a rule to the configuration
-    pub fn add_rule<
-        T: Any + Send + Sync,
-        R: Rule<T> + Send + Sync + Default + 'static,
-    >(&mut self) -> &mut Self {
+    pub fn add_rule<R>(&mut self) -> &mut Self
+    where
+        R: Rule + Default + 'static,
+        R::Target: Any + Send + Sync,
+    {
         self.rules.push(Box::new(R::default()));
         self
     }
@@ -71,65 +72,65 @@ pub fn load_default_config() -> Config {
     let mut config = Config::new();
 
     // Contract Rules
-    config.add_rule::<ContractDefinition, contract_rules::MissingAuthor>();
-    config.add_rule::<ContractDefinition, contract_rules::MissingNotice>();
-    config.add_rule::<ContractDefinition, contract_rules::MissingTitle>();
-    config.add_rule::<ContractDefinition, contract_rules::NoInheritdoc>();
-    config.add_rule::<ContractDefinition, contract_rules::NoParam>();
-    config.add_rule::<ContractDefinition, contract_rules::NoReturn>();
-    config.add_rule::<ContractDefinition, contract_rules::TooManyNotice>();
-    config.add_rule::<ContractDefinition, contract_rules::TooManyTitle>();
+    config.add_rule::<contract_rules::MissingAuthor>();
+    config.add_rule::<contract_rules::MissingNotice>();
+    config.add_rule::<contract_rules::MissingTitle>();
+    config.add_rule::<contract_rules::NoInheritdoc>();
+    config.add_rule::<contract_rules::NoParam>();
+    config.add_rule::<contract_rules::NoReturn>();
+    config.add_rule::<contract_rules::TooManyNotice>();
+    config.add_rule::<contract_rules::TooManyTitle>();
 
     // Enum Rules
-    config.add_rule::<EnumDefinition, enum_rules::MissingAuthor>();
-    config.add_rule::<EnumDefinition, enum_rules::MissingNotice>();
-    config.add_rule::<EnumDefinition, enum_rules::MissingTitle>();
-    config.add_rule::<EnumDefinition, enum_rules::MissingVariant>();
-    config.add_rule::<EnumDefinition, enum_rules::NoInheritdoc>();
-    config.add_rule::<EnumDefinition, enum_rules::NoParam>();
-    config.add_rule::<EnumDefinition, enum_rules::NoReturn>();
-    config.add_rule::<EnumDefinition, enum_rules::TooManyNotice>();
-    config.add_rule::<EnumDefinition, enum_rules::TooManyTitle>();
+    config.add_rule::<enum_rules::MissingAuthor>();
+    config.add_rule::<enum_rules::MissingNotice>();
+    config.add_rule::<enum_rules::MissingTitle>();
+    config.add_rule::<enum_rules::MissingVariant>();
+    config.add_rule::<enum_rules::NoInheritdoc>();
+    config.add_rule::<enum_rules::NoParam>();
+    config.add_rule::<enum_rules::NoReturn>();
+    config.add_rule::<enum_rules::TooManyNotice>();
+    config.add_rule::<enum_rules::TooManyTitle>();
 
     // Error Rules
-    config.add_rule::<ErrorDefinition, error_rules::MissingNotice>();
-    config.add_rule::<ErrorDefinition, error_rules::MissingParam>();
-    config.add_rule::<ErrorDefinition, error_rules::NoAuthor>();
-    config.add_rule::<ErrorDefinition, error_rules::NoInheritdoc>();
-    config.add_rule::<ErrorDefinition, error_rules::NoReturn>();
-    config.add_rule::<ErrorDefinition, error_rules::NoTitle>();
-    config.add_rule::<ErrorDefinition, error_rules::TooManyNotice>();
+    config.add_rule::<error_rules::MissingNotice>();
+    config.add_rule::<error_rules::MissingParam>();
+    config.add_rule::<error_rules::NoAuthor>();
+    config.add_rule::<error_rules::NoInheritdoc>();
+    config.add_rule::<error_rules::NoReturn>();
+    config.add_rule::<error_rules::NoTitle>();
+    config.add_rule::<error_rules::TooManyNotice>();
 
     // Function Rules
-    config.add_rule::<FunctionDefinition, function_rules::MissingInheritdoc>();
-    config.add_rule::<FunctionDefinition, function_rules::MissingNotice>();
-    config.add_rule::<FunctionDefinition, function_rules::MissingParams>();
-    config.add_rule::<FunctionDefinition, function_rules::MissingReturn>();
-    config.add_rule::<FunctionDefinition, function_rules::NoAuthor>();
-    config.add_rule::<FunctionDefinition, function_rules::NoTitle>();
-    config.add_rule::<FunctionDefinition, function_rules::OnlyInheritdoc>();
-    config.add_rule::<FunctionDefinition, function_rules::TooManyInheritdoc>();
-    config.add_rule::<FunctionDefinition, function_rules::TooManyNotice>();
+    config.add_rule::<function_rules::MissingInheritdoc>();
+    config.add_rule::<function_rules::MissingNotice>();
+    config.add_rule::<function_rules::MissingParams>();
+    config.add_rule::<function_rules::MissingReturn>();
+    config.add_rule::<function_rules::NoAuthor>();
+    config.add_rule::<function_rules::NoTitle>();
+    config.add_rule::<function_rules::OnlyInheritdoc>();
+    config.add_rule::<function_rules::TooManyInheritdoc>();
+    config.add_rule::<function_rules::TooManyNotice>();
 
     // Struct Rules
-    config.add_rule::<StructDefinition, struct_rules::MissingAuthor>();
-    config.add_rule::<StructDefinition, struct_rules::MissingNotice>();
-    config.add_rule::<StructDefinition, struct_rules::MissingParams>();
-    config.add_rule::<StructDefinition, struct_rules::MissingTitle>();
-    config.add_rule::<StructDefinition, struct_rules::NoInheritdoc>();
-    config.add_rule::<StructDefinition, struct_rules::NoReturn>();
-    config.add_rule::<StructDefinition, struct_rules::TooManyNotice>();
-    config.add_rule::<StructDefinition, struct_rules::TooManyTitle>();
+    config.add_rule::<struct_rules::MissingAuthor>();
+    config.add_rule::<struct_rules::MissingNotice>();
+    config.add_rule::<struct_rules::MissingParams>();
+    config.add_rule::<struct_rules::MissingTitle>();
+    config.add_rule::<struct_rules::NoInheritdoc>();
+    config.add_rule::<struct_rules::NoReturn>();
+    config.add_rule::<struct_rules::TooManyNotice>();
+    config.add_rule::<struct_rules::TooManyTitle>();
 
     // Variable Rules
-    config.add_rule::<VariableDefinition, variable_rules::MissingInheritdoc>();
-    config.add_rule::<VariableDefinition, variable_rules::MissingNotice>();
-    config.add_rule::<VariableDefinition, variable_rules::NoAuthor>();
-    config.add_rule::<VariableDefinition, variable_rules::NoParam>();
-    config.add_rule::<VariableDefinition, variable_rules::NoReturn>();
-    config.add_rule::<VariableDefinition, variable_rules::NoTitle>();
-    config.add_rule::<VariableDefinition, variable_rules::TooManyInheritdoc>();
-    config.add_rule::<VariableDefinition, variable_rules::TooManyNotice>();
+    config.add_rule::<variable_rules::MissingInheritdoc>();
+    config.add_rule::<variable_rules::MissingNotice>();
+    config.add_rule::<variable_rules::NoAuthor>();
+    config.add_rule::<variable_rules::NoParam>();
+    config.add_rule::<variable_rules::NoReturn>();
+    config.add_rule::<variable_rules::NoTitle>();
+    config.add_rule::<variable_rules::TooManyInheritdoc>();
+    config.add_rule::<variable_rules::TooManyNotice>();
 
     config
 }

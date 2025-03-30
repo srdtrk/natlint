@@ -34,14 +34,20 @@ pub struct Violation {
 
 /// A trait for defining a rule that checks a specific Solidity construct.
 /// The rule should return a diagnostic if the construct violates the rule.
-pub trait Rule<T> {
+pub trait Rule: Send + Sync {
+    /// The target AST node type this rule applies to.
+    type Target: Any + Send + Sync;
     /// The name of the rule.
     const NAME: &'static str;
     /// A description of the rule.
     const DESCRIPTION: &'static str;
 
     /// Check the construct for violations of this rule.
-    fn check(parent: Option<&ParseItem>, item: &T, comments: CommentsRef) -> Option<Violation>;
+    fn check(
+        parent: Option<&ParseItem>,
+        item: &Self::Target,
+        comments: CommentsRef,
+    ) -> Option<Violation>;
 }
 
 /// A dynamic dispatch version of the [Rule] trait.
@@ -61,8 +67,11 @@ pub trait DynRule: Send + Sync {
     ) -> Option<Violation>;
 }
 
-/// Implement `DynRule` for any type `R` that implements `Rule<T>`.
-impl<T: Any + Send + Sync, R: Rule<T> + Send + Sync + 'static> DynRule for R {
+/// Implement `DynRule` for any type `R` that implements `Rule`.
+impl<R: Rule + 'static> DynRule for R
+where
+    R::Target: Any + Send + Sync,
+{
     fn name(&self) -> &'static str {
         R::NAME
     }
@@ -72,7 +81,7 @@ impl<T: Any + Send + Sync, R: Rule<T> + Send + Sync + 'static> DynRule for R {
     }
 
     fn target_type_id(&self) -> TypeId {
-        TypeId::of::<T>()
+        TypeId::of::<R::Target>()
     }
 
     fn check_dyn(
@@ -81,7 +90,7 @@ impl<T: Any + Send + Sync, R: Rule<T> + Send + Sync + 'static> DynRule for R {
         item: &dyn Any,
         comments: CommentsRef,
     ) -> Option<Violation> {
-        item.downcast_ref::<T>()
+        item.downcast_ref::<R::Target>()
             .and_then(|typed_item| R::check(parent, typed_item, comments))
     }
 }
