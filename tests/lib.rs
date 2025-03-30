@@ -13,7 +13,7 @@ mod natspec_test {
 
         let config = load_default_config();
         let violations: Vec<_> =
-            lint(&content, &config.rule_set()).expect("Failed to process file");
+            lint(&content, &config).expect("Failed to process file");
 
         assert_eq!(violations.len(), 18);
 
@@ -103,7 +103,7 @@ mod natspec_test {
 
         let config = load_default_config();
         let violations: Vec<_> =
-            lint(&content, &config.rule_set()).expect("Failed to process file");
+            lint(&content, &config).expect("Failed to process file");
 
         assert_eq!(violations.len(), 5);
 
@@ -126,7 +126,7 @@ mod natspec_test {
 
         let config = load_default_config();
         let violations: Vec<_> =
-            lint(&content, &config.rule_set()).expect("Failed to process file");
+            lint(&content, &config).expect("Failed to process file");
 
         assert_eq!(violations.len(), 7);
 
