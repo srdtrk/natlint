@@ -42,10 +42,25 @@ fn process_item(
     line_lookup: &LineColLookup,
 ) -> Vec<(Violation, usize)> {
     let comments_ref = CommentsRef::from(&item.comments);
+
+    // Get the inner AST node and its TypeId
+    let (source_item, source_type_id): (&dyn Any, TypeId) = match &item.source {
+        ParseSource::Contract(inner) => (inner.as_ref(), TypeId::of::<solang_parser::pt::ContractDefinition>()),
+        ParseSource::Function(inner) => (inner, TypeId::of::<solang_parser::pt::FunctionDefinition>()),
+        ParseSource::Variable(inner) => (inner, TypeId::of::<solang_parser::pt::VariableDefinition>()),
+        ParseSource::Event(inner) => (inner, TypeId::of::<solang_parser::pt::EventDefinition>()),
+        ParseSource::Error(inner) => (inner, TypeId::of::<solang_parser::pt::ErrorDefinition>()),
+        ParseSource::Struct(inner) => (inner, TypeId::of::<solang_parser::pt::StructDefinition>()),
+        ParseSource::Enum(inner) => (inner, TypeId::of::<solang_parser::pt::EnumDefinition>()),
+        ParseSource::Type(inner) => (inner, TypeId::of::<solang_parser::pt::TypeDefinition>()),
+    };
+
     rule_set
         .iter()
-        .filter(|rule| rule.target_type_id() == item.type_id())
-        .filter_map(|rule| rule.check_dyn(parent, item, &comments_ref))
+        // Filter rules based on the TypeId of the inner AST node
+        .filter(|rule| rule.target_type_id() == source_type_id)
+        // Pass the inner AST node (&dyn Any) to check_dyn
+        .filter_map(|rule| rule.check_dyn(parent, source_item, &comments_ref))
         .map(|violation| {
             // Convert the line number to the original source line
             let (line, _) = line_lookup.get(violation.loc.start());
