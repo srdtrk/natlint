@@ -171,7 +171,7 @@ impl From<Vec<DocCommentTag>> for Comments {
 }
 
 /// The collection of references to natspec [Comment] items.
-#[derive(Debug, Default, PartialEq, Deref)]
+#[derive(Clone, Debug, Default, PartialEq, Deref)]
 pub struct CommentsRef<'a>(Vec<&'a Comment>);
 
 impl<'a> CommentsRef<'a> {
