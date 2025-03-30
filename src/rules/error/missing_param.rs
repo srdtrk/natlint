@@ -9,7 +9,7 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that all errors have their parameters documented.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct MissingParam;
 
 impl Rule for MissingParam {

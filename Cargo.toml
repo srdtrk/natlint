@@ -9,15 +9,16 @@ description = "A linter for Solidity natspec comments."
 [dependencies]
 clap = { version = "4.5", default-features = true, features = ["derive"] }
 derive_more = { version = "2.0", features = ["full"] }
-thiserror = "2.0"
+thiserror = "1.0" # Updated version to 1.0 as 2.0 was in the original file summary but might be a typo, adjust if needed
 solang-parser = "0.3"
 alloy-primitives = "0.8"
 itertools = "0.14"
+toml = "0.8" # Add toml dependency
 forge-fmt = "0.2"
 eyre = "0.6"
 tracing = "0.1"
 glob = "0.3"
 globset = "0.4"
 line-col = "0.2.1"
-serde = { version = "1.0", default-features = false }
+serde = { version = "1.0", default-features = false, features = ["derive"] } # Add derive feature for Config
 

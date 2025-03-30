@@ -9,7 +9,7 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that structs do not miss any parameters.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct MissingParams;
 
 impl Rule for MissingParams {

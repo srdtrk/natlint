@@ -9,7 +9,7 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that all functions have their return variables documented or have an inheritdoc comment.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct MissingReturn;
 
 impl Rule for MissingReturn {

@@ -15,7 +15,7 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that enums do not miss any variants.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct MissingVariant;
 
 impl Rule for MissingVariant {

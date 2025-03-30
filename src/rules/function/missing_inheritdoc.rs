@@ -11,7 +11,7 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that all public functions have a inheritdoc comment.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct MissingInheritdoc;
 
 impl Rule for MissingInheritdoc {

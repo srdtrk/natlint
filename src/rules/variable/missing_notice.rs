@@ -9,7 +9,7 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that all variables have a notice or an inheritdoc comment.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct MissingNotice;
 
 impl Rule for MissingNotice {

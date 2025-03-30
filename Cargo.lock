@@ -2050,7 +2050,8 @@ dependencies = [
  "line-col",
  "serde",
  "solang-parser",
- "thiserror 2.0.12",
+ "thiserror 1.0.69",
+ "toml 0.8.20",
  "tracing",
 ]
 

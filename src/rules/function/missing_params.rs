@@ -10,7 +10,7 @@ use super::super::{Rule, Violation};
 
 /// This rule requires that all functions have their parameters documented or have an inheritdoc
 /// comment.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct MissingParams;
 
 impl Rule for MissingParams {

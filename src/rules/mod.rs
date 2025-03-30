@@ -112,3 +112,12 @@ impl Violation {
         }
     }
 }
+
+/// Returns a default Some of a give Rule
+#[must_use]
+pub fn some_rule<T>() -> Option<T>
+where
+    T: Rule + Default,
+{
+    Some(T::default())
+}

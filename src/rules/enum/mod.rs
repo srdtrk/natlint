@@ -27,43 +27,34 @@ use crate::define_rules_config;
 
 define_rules_config! {
     /// Configuration that contains all the rules for enum items.
-    #[derive(Serialize, Deserialize)]
+    #[derive(Serialize, Deserialize, Debug)]
     #[allow(missing_docs)]
     pub struct EnumRulesConfig {
         #[serde(with = "crate::rules::r#enum::missing_author::serde_logic")]
-        #[serde(default)]
         pub missing_author: Option<MissingAuthor>,
 
         #[serde(with = "crate::rules::r#enum::missing_notice::serde_logic")]
-        #[serde(default)]
         pub missing_notice: Option<MissingNotice>,
 
         #[serde(with = "crate::rules::r#enum::missing_variant::serde_logic")]
-        #[serde(default)]
         pub missing_variant: Option<MissingVariant>,
 
         #[serde(with = "crate::rules::r#enum::missing_title::serde_logic")]
-        #[serde(default)]
         pub missing_title: Option<MissingTitle>,
 
         #[serde(with = "crate::rules::r#enum::no_inheritdoc::serde_logic")]
-        #[serde(default)]
         pub no_inheritdoc: Option<NoInheritdoc>,
 
         #[serde(with = "crate::rules::r#enum::no_param::serde_logic")]
-        #[serde(default)]
         pub no_param: Option<NoParam>,
 
         #[serde(with = "crate::rules::r#enum::no_return::serde_logic")]
-        #[serde(default)]
         pub no_return: Option<NoReturn>,
 
         #[serde(with = "crate::rules::r#enum::too_many_notice::serde_logic")]
-        #[serde(default)]
         pub too_many_notice: Option<TooManyNotice>,
 
         #[serde(with = "crate::rules::r#enum::too_many_title::serde_logic")]
-        #[serde(default)]
         pub too_many_title: Option<TooManyTitle>,
     }
 }

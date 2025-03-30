@@ -5,7 +5,7 @@
 macro_rules! no_comment_rule {
     ($rule_name:ident, $parse_item:ty, $comment_variant:ident, $description:expr) => {
         #[doc = $description]
-        #[derive(Default)]
+        #[derive(Default, Debug)]
         pub struct $rule_name;
 
         impl $crate::rules::Rule for $rule_name {
@@ -44,7 +44,7 @@ macro_rules! no_comment_rule {
 macro_rules! missing_comment_rule {
     ($rule_name:ident, $parse_item:ty, $comment_variant:ident, $description:expr) => {
         #[doc = $description]
-        #[derive(Default)]
+        #[derive(Default, Debug)]
         pub struct $rule_name;
 
         impl $crate::rules::Rule for $rule_name {
@@ -83,7 +83,7 @@ macro_rules! missing_comment_rule {
 macro_rules! too_many_comments_rule {
     ($rule_name:ident, $parse_item:ty, $comment_variant:ident, $description:expr) => {
         #[doc = $description]
-        #[derive(Default)]
+        #[derive(Default, Debug)]
         pub struct $rule_name;
 
         impl $crate::rules::Rule for $rule_name {
@@ -184,6 +184,7 @@ macro_rules! define_rules_config {
             // Define the rule fields (implicitly Option<T> and serde(default))
             $(
                 $(#[$rule_attr])*
+                #[serde(default = "crate::rules::some_rule")]
                 $rule_vis $rule_name : Option<$RuleType>,
             )*
         }
