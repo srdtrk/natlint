@@ -3,7 +3,7 @@ use natlint::config::Config;
 use std::path::Path;
 
 #[test]
-fn test_parse_config() {
+fn test_parse_empty_config() {
     // Test parsing an empty config file
     let empty_path = Path::new("tests/data/empty_config.toml");
     let empty_config_result = Config::from_file(empty_path);
@@ -22,8 +22,11 @@ fn test_parse_config() {
         empty_config.function_rules.missing_params.is_some(),
         "Default rule missing_params should be Some"
     );
+}
 
-    // Test parsing a sparse config file
+#[test]
+fn test_parse_sparse_config() {
+    // Test parsing a config file with a few items set (the rest would be default == on)
     let sparse_path = Path::new("tests/data/sparse_config.toml");
     let sparse_config = Config::from_file(sparse_path).unwrap();
     // Check overridden rules
@@ -44,7 +47,10 @@ fn test_parse_config() {
         sparse_config.contract_rules.missing_notice.is_some(),
         "Default rule missing_notice should be Some in sparse config"
     );
+}
 
+#[test]
+fn test_parse_full_config() {
     // Test parsing a full config file
     let full_path = Path::new("tests/data/full_config.toml");
     let full_config_result = Config::from_file(full_path);
