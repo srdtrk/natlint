@@ -47,9 +47,16 @@ fn process_item(
 
     // Get the inner AST node and its TypeId
     let (source_item, source_type_id): (&dyn Any, TypeId) = match &item.source {
-        ParseSource::Contract(inner) => (inner.as_ref(), TypeId::of::<solang_parser::pt::ContractDefinition>()),
-        ParseSource::Function(inner) => (inner, TypeId::of::<solang_parser::pt::FunctionDefinition>()),
-        ParseSource::Variable(inner) => (inner, TypeId::of::<solang_parser::pt::VariableDefinition>()),
+        ParseSource::Contract(inner) => (
+            inner.as_ref(),
+            TypeId::of::<solang_parser::pt::ContractDefinition>(),
+        ),
+        ParseSource::Function(inner) => {
+            (inner, TypeId::of::<solang_parser::pt::FunctionDefinition>())
+        }
+        ParseSource::Variable(inner) => {
+            (inner, TypeId::of::<solang_parser::pt::VariableDefinition>())
+        }
         ParseSource::Event(inner) => (inner, TypeId::of::<solang_parser::pt::EventDefinition>()),
         ParseSource::Error(inner) => (inner, TypeId::of::<solang_parser::pt::ErrorDefinition>()),
         ParseSource::Struct(inner) => (inner, TypeId::of::<solang_parser::pt::StructDefinition>()),

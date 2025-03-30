@@ -41,7 +41,10 @@ mod tests {
 
                 let expected = $expected(item);
 
-                assert_eq!(MissingAuthor::check(Some(parent), item, &comments), expected);
+                assert_eq!(
+                    MissingAuthor::check(Some(parent), item, &comments),
+                    expected
+                );
             }
         };
     }

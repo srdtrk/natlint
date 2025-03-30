@@ -38,7 +38,10 @@ mod tests {
 
                 let expected = $expected(item);
 
-                assert_eq!(MissingNotice::check(Some(parent), item, &comments), expected);
+                assert_eq!(
+                    MissingNotice::check(Some(parent), item, &comments),
+                    expected
+                );
             }
         };
     }
