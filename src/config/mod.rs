@@ -3,9 +3,6 @@
 //! This module provides configuration for natlint rules, including loading default
 //! rules and applying them to parsed Solidity items.
 
-use std::any::Any;
-use std::sync::Arc;
-
 use crate::parser::{Comments, CommentsRef, ParseItem};
 use crate::rules::{
     contract::{self as contract_rules},
@@ -15,16 +12,26 @@ use crate::rules::{
     r#struct::{self as struct_rules},
     variable::{self as variable_rules},
 };
-use crate::rules::{AnyRule, Rule, RuleSet, RuleWrapper, Violation};
+use crate::rules::{Rule, Violation};
 use solang_parser::pt::{
     ContractDefinition, EnumDefinition, ErrorDefinition, FunctionDefinition, StructDefinition,
     VariableDefinition,
 };
+use std::{
+    any::{Any, TypeId},
+    collections::HashMap,
+    sync::Arc,
+};
+
+/// Type alias for a rule checking function.
+/// The function takes the optional parent item, the item itself (as `dyn Any`),
+/// and a reference to the comments, returning an optional violation.
+type RuleFn = Arc<dyn Fn(Option<&ParseItem>, &dyn Any, CommentsRef) -> Option<Violation> + Send + Sync>;
 
 /// Configuration for natlint rules
 pub struct Config {
-    /// The collection of rules to apply
-    rules: Vec<Arc<dyn AnyRule>>,
+    /// A map from TypeId to a list of rules (as closures) that apply to that type.
+    rules: HashMap<TypeId, Vec<RuleFn>>,
 }
 
 impl Default for Config {
@@ -37,22 +44,21 @@ impl Config {
     /// Create a new empty configuration
     #[must_use]
     pub fn new() -> Self {
-        Self { rules: Vec::new() }
+        Self { rules: HashMap::new() }
     }
 
     /// Add a rule to the configuration
     pub fn add_rule<T: 'static + Send + Sync, R: Rule<T> + Send + Sync + 'static>(
         &mut self,
     ) -> &mut Self {
-        let rule = Arc::new(RuleWrapper::<T, R>::new());
-        self.rules.push(rule);
-        self
-    }
+        let type_id = TypeId::of::<T>();
+        let rule_fn: RuleFn = Arc::new(|parent, item, comments| {
+            item.downcast_ref::<T>()
+                .and_then(|typed_item| R::check(parent, typed_item, comments))
+        });
 
-    /// Get the rule set
-    #[must_use]
-    pub fn rule_set(&self) -> impl RuleSet {
-        self.rules.clone()
+        self.rules.entry(type_id).or_default().push(rule_fn);
+        self
     }
 
     /// Check an item against all applicable rules
@@ -63,11 +69,13 @@ impl Config {
         comments: &Comments,
     ) -> Vec<Violation> {
         let mut violations = Vec::new();
+        let item_type_id = item.type_id();
+        let comments_ref = CommentsRef::from(comments); // Create CommentsRef once
 
-        for rule in &self.rules {
-            if rule.applies_to(item) {
-                let comments_ref = CommentsRef::from(comments);
-                if let Some(violation) = rule.check_item(parent, item, comments_ref) {
+        if let Some(rules_for_type) = self.rules.get(&item_type_id) {
+            for rule_fn in rules_for_type {
+                // Pass the already created comments_ref
+                if let Some(violation) = rule_fn(parent, item, comments_ref.clone()) {
                     violations.push(violation);
                 }
             }
