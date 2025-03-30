@@ -13,14 +13,15 @@ use super::super::{Rule, Violation};
 #[derive(Default)]
 pub struct MissingInheritdoc;
 
-impl Rule<FunctionDefinition> for MissingInheritdoc {
+impl Rule for MissingInheritdoc {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "MissingInheritdoc";
     const DESCRIPTION: &'static str =
         "Public and override functions must have an inheritdoc comment.";
 
     fn check(
         parent: Option<&ParseItem>,
-        func: &FunctionDefinition,
+        func: &Self::Target,
         comments: CommentsRef,
     ) -> Option<Violation> {
         // Parent must be a contract, not an interface or library

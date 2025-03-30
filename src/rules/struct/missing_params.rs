@@ -11,13 +11,14 @@ use super::super::{Rule, Violation};
 #[derive(Default)]
 pub struct MissingParams;
 
-impl Rule<StructDefinition> for MissingParams {
+impl Rule for MissingParams {
+    type Target = StructDefinition;
     const NAME: &'static str = "MissingParams";
     const DESCRIPTION: &'static str = "Structs must document all parameters.";
 
     fn check(
         _: Option<&ParseItem>,
-        item: &StructDefinition,
+        item: &Self::Target,
         comments: CommentsRef,
     ) -> Option<Violation> {
         let param_comments = comments.include_tag(CommentTag::Param);

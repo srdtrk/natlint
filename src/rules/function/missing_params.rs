@@ -12,14 +12,15 @@ use super::super::{Rule, Violation};
 #[derive(Default)]
 pub struct MissingParams;
 
-impl Rule<FunctionDefinition> for MissingParams {
+impl Rule for MissingParams {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "MissingParams";
     const DESCRIPTION: &'static str =
         "Functions must have their parameters documented or have an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,
-        func: &FunctionDefinition,
+        func: &Self::Target,
         comments: CommentsRef,
     ) -> Option<Violation> {
         // Function must not be a modifier or constructor

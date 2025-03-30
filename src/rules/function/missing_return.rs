@@ -11,14 +11,15 @@ use super::super::{Rule, Violation};
 #[derive(Default)]
 pub struct MissingReturn;
 
-impl Rule<FunctionDefinition> for MissingReturn {
+impl Rule for MissingReturn {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "MissingReturn";
     const DESCRIPTION: &'static str =
         "Functions must have their return variables documented or have an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,
-        func: &FunctionDefinition,
+        func: &Self::Target,
         comments: CommentsRef,
     ) -> Option<Violation> {
         // Function type must be a user function

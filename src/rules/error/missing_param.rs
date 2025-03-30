@@ -11,13 +11,14 @@ use super::super::{Rule, Violation};
 #[derive(Default)]
 pub struct MissingParam;
 
-impl Rule<ErrorDefinition> for MissingParam {
+impl Rule for MissingParam {
+    type Target = ErrorDefinition;
     const NAME: &'static str = "MissingParam";
     const DESCRIPTION: &'static str = "Errors must document all parameters.";
 
     fn check(
         _: Option<&ParseItem>,
-        item: &ErrorDefinition,
+        item: &Self::Target,
         comments: CommentsRef,
     ) -> Option<Violation> {
         let param_comments = comments.include_tag(CommentTag::Param);

@@ -17,13 +17,14 @@ use super::super::{Rule, Violation};
 #[derive(Default)]
 pub struct MissingVariant;
 
-impl Rule<EnumDefinition> for MissingVariant {
+impl Rule for MissingVariant {
+    type Target = EnumDefinition;
     const NAME: &'static str = "MissingVariant";
     const DESCRIPTION: &'static str = "Enums must document all variants.";
 
     fn check(
         _: Option<&ParseItem>,
-        item: &EnumDefinition,
+        item: &Self::Target,
         comments: CommentsRef,
     ) -> Option<Violation> {
         let variant_comments = comments.include_tag(CommentTag::variant());

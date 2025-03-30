@@ -14,14 +14,15 @@ use super::super::{Rule, Violation};
 #[derive(Default)]
 pub struct OnlyInheritdoc;
 
-impl Rule<FunctionDefinition> for OnlyInheritdoc {
+impl Rule for OnlyInheritdoc {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "OnlyInheritdoc";
     const DESCRIPTION: &'static str =
         "If a function has an inheritdoc comment, then it must be the only comment.";
 
     fn check(
         _: Option<&ParseItem>,
-        func: &FunctionDefinition,
+        func: &Self::Target,
         comments: CommentsRef,
     ) -> Option<Violation> {
         if comments.find_inheritdoc_base().is_some() {

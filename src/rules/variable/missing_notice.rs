@@ -11,13 +11,14 @@ use super::super::{Rule, Violation};
 #[derive(Default)]
 pub struct MissingNotice;
 
-impl Rule<VariableDefinition> for MissingNotice {
+impl Rule for MissingNotice {
+    type Target = VariableDefinition;
     const NAME: &'static str = "MissingNotice";
     const DESCRIPTION: &'static str = "Variables must have a notice or an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,
-        var: &VariableDefinition,
+        var: &Self::Target,
         comments: CommentsRef,
     ) -> Option<Violation> {
         // If the variable has an inheritdoc comment, it is exempt from this rule

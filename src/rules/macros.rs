@@ -8,13 +8,14 @@ macro_rules! no_comment_rule {
         #[derive(Default)]
         pub struct $rule_name;
 
-        impl $crate::rules::Rule<$parse_item> for $rule_name {
+        impl $crate::rules::Rule for $rule_name {
+            type Target = $parse_item;
             const NAME: &'static str = stringify!($rule_name);
             const DESCRIPTION: &'static str = $description;
 
             fn check(
                 _: Option<&$crate::parser::ParseItem>,
-                item: &$parse_item,
+                item: &Self::Target,
                 comments: $crate::parser::CommentsRef,
             ) -> Option<$crate::rules::Violation> {
                 if !comments
@@ -44,13 +45,14 @@ macro_rules! missing_comment_rule {
         #[derive(Default)]
         pub struct $rule_name;
 
-        impl $crate::rules::Rule<$parse_item> for $rule_name {
+        impl $crate::rules::Rule for $rule_name {
+            type Target = $parse_item;
             const NAME: &'static str = stringify!($rule_name);
             const DESCRIPTION: &'static str = $description;
 
             fn check(
                 _: Option<&$crate::parser::ParseItem>,
-                item: &$parse_item,
+                item: &Self::Target,
                 comments: $crate::parser::CommentsRef,
             ) -> Option<$crate::rules::Violation> {
                 if comments
@@ -80,13 +82,14 @@ macro_rules! too_many_comments_rule {
         #[derive(Default)]
         pub struct $rule_name;
 
-        impl $crate::rules::Rule<$parse_item> for $rule_name {
+        impl $crate::rules::Rule for $rule_name {
+            type Target = $parse_item;
             const NAME: &'static str = stringify!($rule_name);
             const DESCRIPTION: &'static str = $description;
 
             fn check(
                 _: Option<&$crate::parser::ParseItem>,
-                item: &$parse_item,
+                item: &Self::Target,
                 comments: $crate::parser::CommentsRef,
             ) -> Option<$crate::rules::Violation> {
                 if comments

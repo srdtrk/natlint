@@ -13,10 +13,6 @@ use crate::rules::{
     variable::{self as variable_rules},
 };
 use crate::rules::{DynRule, Rule, Violation};
-use solang_parser::pt::{
-    ContractDefinition, EnumDefinition, ErrorDefinition, FunctionDefinition, StructDefinition,
-    VariableDefinition,
-};
 use std::any::Any;
 
 /// Configuration for natlint rules
