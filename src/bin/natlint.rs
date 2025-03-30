@@ -26,7 +26,7 @@ fn main() -> eyre::Result<()> {
                         let content = fs::read_to_string(file).unwrap();
                         let file_path = file.to_str().unwrap().to_owned();
 
-                        (file_path, lint(&content, &config).unwrap())
+                        (file_path, lint(&content, &config.rules).unwrap())
                     })
                     .sorted_by(|(file_a, _), (file_b, _)| file_a.cmp(file_b))
                     .collect::<Vec<_>>();

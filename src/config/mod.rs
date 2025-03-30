@@ -3,7 +3,6 @@
 //! This module provides configuration for natlint rules, including loading default
 //! rules and applying them to parsed Solidity items.
 
-use crate::parser::{Comments, CommentsRef, ParseItem};
 use crate::rules::{
     contract::{self as contract_rules},
     error::{self as error_rules},
@@ -12,13 +11,13 @@ use crate::rules::{
     r#struct::{self as struct_rules},
     variable::{self as variable_rules},
 };
-use crate::rules::{DynRule, Rule, Violation};
+use crate::rules::{DynRule, Rule};
 use std::any::Any;
 
 /// Configuration for natlint rules
 pub struct Config {
     /// A vector containing all registered rules.
-    rules: Vec<Box<dyn DynRule>>,
+    pub rules: Vec<Box<dyn DynRule>>,
 }
 
 impl Default for Config {
@@ -42,23 +41,6 @@ impl Config {
     {
         self.rules.push(Box::new(R::default()));
         self
-    }
-
-    /// Check an item against all applicable rules
-    pub fn check_item(
-        &self,
-        parent: Option<&ParseItem>,
-        item: &dyn Any,
-        comments: &Comments,
-    ) -> Vec<Violation> {
-        let item_type_id = item.type_id();
-        let comments_ref = CommentsRef::from(comments); // Create CommentsRef once
-
-        self.rules
-            .iter()
-            .filter(|rule| rule.target_type_id() == item_type_id)
-            .filter_map(|rule| rule.check_dyn(parent, item, comments_ref.clone()))
-            .collect()
     }
 }
 
