@@ -9,6 +9,7 @@ use super::super::{Rule, Violation};
 
 /// This rule requires that all functions have their parameters documented or have an inheritdoc
 /// comment.
+#[derive(Default)]
 pub struct MissingParams;
 
 impl Rule<FunctionDefinition> for MissingParams {

@@ -8,6 +8,7 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that all public variables have a inheritdoc comment.
+#[derive(Default)]
 pub struct MissingInheritdoc;
 
 impl Rule<VariableDefinition> for MissingInheritdoc {

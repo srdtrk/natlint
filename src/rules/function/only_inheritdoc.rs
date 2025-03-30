@@ -11,6 +11,7 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that if a function has an inheritdoc comment, then it must be the only comment.
+#[derive(Default)]
 pub struct OnlyInheritdoc;
 
 impl Rule<FunctionDefinition> for OnlyInheritdoc {

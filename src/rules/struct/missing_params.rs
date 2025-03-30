@@ -8,6 +8,7 @@ use crate::{
 use super::super::{Rule, Violation};
 
 /// This rule requires that structs do not miss any parameters.
+#[derive(Default)]
 pub struct MissingParams;
 
 impl Rule<StructDefinition> for MissingParams {

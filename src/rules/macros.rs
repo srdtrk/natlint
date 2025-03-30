@@ -5,6 +5,7 @@
 macro_rules! no_comment_rule {
     ($rule_name:ident, $parse_item:ty, $comment_variant:ident, $description:expr) => {
         #[doc = $description]
+        #[derive(Default)]
         pub struct $rule_name;
 
         impl $crate::rules::Rule<$parse_item> for $rule_name {
@@ -40,6 +41,7 @@ macro_rules! no_comment_rule {
 macro_rules! missing_comment_rule {
     ($rule_name:ident, $parse_item:ty, $comment_variant:ident, $description:expr) => {
         #[doc = $description]
+        #[derive(Default)]
         pub struct $rule_name;
 
         impl $crate::rules::Rule<$parse_item> for $rule_name {
@@ -75,6 +77,7 @@ macro_rules! missing_comment_rule {
 macro_rules! too_many_comments_rule {
     ($rule_name:ident, $parse_item:ty, $comment_variant:ident, $description:expr) => {
         #[doc = $description]
+        #[derive(Default)]
         pub struct $rule_name;
 
         impl $crate::rules::Rule<$parse_item> for $rule_name {
