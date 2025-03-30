@@ -17,7 +17,7 @@ use solang_parser::pt::{
     ContractDefinition, EnumDefinition, ErrorDefinition, FunctionDefinition, StructDefinition,
     VariableDefinition,
 };
-use std::any::{Any, TypeId};
+use std::any::Any;
 
 /// Configuration for natlint rules
 pub struct Config {
@@ -39,10 +39,11 @@ impl Config {
     }
 
     /// Add a rule to the configuration
-    pub fn add_rule<T: Any + Send + Sync, R: Rule<T> + Send + Sync + 'static>(
-        &mut self,
-    ) -> &mut Self {
-        self.rules.push(Box::new(R {})); // Assuming R is a ZST or has a Default impl
+    pub fn add_rule<
+        T: Any + Send + Sync,
+        R: Rule<T> + Send + Sync + Default + 'static,
+    >(&mut self) -> &mut Self {
+        self.rules.push(Box::new(R::default()));
         self
     }
 
