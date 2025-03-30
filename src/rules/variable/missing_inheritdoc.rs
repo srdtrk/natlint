@@ -2,6 +2,7 @@ use solang_parser::pt::{ContractTy, VariableAttribute, VariableDefinition, Visib
 
 use crate::{
     parser::{CommentTag, CommentsRef, ParseItem},
+    rule_serialize_deserialize_bool,
     rules::violation_error::ViolationError,
 };
 
@@ -50,6 +51,8 @@ impl Rule for MissingInheritdoc {
         None
     }
 }
+
+rule_serialize_deserialize_bool!(MissingInheritdoc);
 
 #[cfg(test)]
 mod tests {

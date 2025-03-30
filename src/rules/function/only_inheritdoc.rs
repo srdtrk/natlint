@@ -5,6 +5,7 @@ use solang_parser::pt::FunctionDefinition;
 
 use crate::{
     parser::{CommentsRef, ParseItem},
+    rule_serialize_deserialize_bool,
     rules::violation_error::ViolationError,
 };
 
@@ -40,6 +41,8 @@ impl Rule for OnlyInheritdoc {
         None
     }
 }
+
+rule_serialize_deserialize_bool!(OnlyInheritdoc);
 
 #[cfg(test)]
 mod tests {

@@ -34,6 +34,8 @@ macro_rules! no_comment_rule {
                 None
             }
         }
+
+        $crate::rule_serialize_deserialize_bool!($rule_name);
     };
 }
 
@@ -71,6 +73,8 @@ macro_rules! missing_comment_rule {
                 None
             }
         }
+
+        $crate::rule_serialize_deserialize_bool!($rule_name);
     };
 }
 
@@ -107,6 +111,111 @@ macro_rules! too_many_comments_rule {
                     ));
                 }
                 None
+            }
+        }
+
+        $crate::rule_serialize_deserialize_bool!($rule_name);
+    };
+}
+
+/// Generates a serde helper module named `serde_logic` alongside the rule struct.
+/// This module handles serializing/deserializing the rule struct
+/// between `bool` in TOML and `Option<RuleStruct>` in Rust.
+///
+/// The provided rule struct must implement `Default`.
+#[macro_export]
+macro_rules! rule_serialize_deserialize_bool {
+    ($rule_name:ident) => {
+        // Define the helper module directly here with a fixed name "serde_logic".
+        // This module will be created in the same scope as the $rule_name struct.
+        pub mod serde_logic {
+            use serde::{Deserialize, Deserializer, Serializer};
+            // Use 'super' to access the rule struct defined in the parent scope.
+            use super::$rule_name;
+
+            /// Serializes `Option<RuleType>` to a boolean (`true` if Some, `false` if None).
+            #[allow(dead_code, clippy::ref_option)]
+            pub fn serialize<S>(
+                value: &Option<$rule_name>,
+                serializer: S,
+            ) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
+                serializer.serialize_bool(value.is_some())
+            }
+
+            /// Deserializes a boolean to `Option<RuleType>`.
+            /// `true` becomes `Some(RuleType::default())`.
+            /// `false` becomes `None`.
+            /// Requires that `RuleType` implements `Default`.
+            #[allow(dead_code)]
+            pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<$rule_name>, D::Error>
+            where
+                D: Deserializer<'de>,
+                // Constraint on the specific rule type from the parent scope.
+                $rule_name: Default,
+            {
+                let is_enabled = bool::deserialize(deserializer)?;
+                if is_enabled {
+                    Ok(Some($rule_name::default()))
+                } else {
+                    Ok(None)
+                }
+            }
+        }
+    };
+}
+
+/// This macro defines a config struct
+#[macro_export]
+macro_rules! define_rules_config {
+    (
+        $(#[$struct_attr:meta])*
+        $vis:vis struct $StructName:ident {
+            $( // Rule fields repetition block
+                $(#[$rule_attr:meta])* // 0+ attributes for the rule field
+                $rule_vis:vis $rule_name:ident : Option<$RuleType:ty>,
+            )*
+        }
+    ) => {
+        $(#[$struct_attr])*
+        $vis struct $StructName {
+            // Define the rule fields (implicitly Option<T> and serde(default))
+            $(
+                $(#[$rule_attr])*
+                $rule_vis $rule_name : Option<$RuleType>,
+            )*
+        }
+
+        // 2. Implement the rule_set function
+        impl $StructName {
+            /// Creates a Vec of boxed dynamic rules based on the configuration.
+            ///
+            /// Only includes rules where the corresponding field in the macro invocation is `Some`.
+            /// Assumes `DynRule` trait is in scope.
+            #[must_use]
+            pub fn rule_set(&self) -> ::std::vec::Vec<::std::boxed::Box<dyn $crate::rules::DynRule>> {
+                let mut rules: ::std::vec::Vec<::std::boxed::Box<dyn $crate::rules::DynRule>> = ::std::vec::Vec::new();
+
+                $(
+                    if self.$rule_name.is_some() {
+                        rules.push(::std::boxed::Box::new(<$RuleType as ::std::default::Default>::default()));
+                    }
+                )*
+
+                rules
+            }
+        }
+
+        // 3. Implement Default (all rules set to true)
+        impl ::std::default::Default for $StructName {
+            fn default() -> Self {
+                Self {
+                    $(
+                        $rule_name: Some(<$RuleType as ::std::default::Default>::default()),
+                    )*
+                }
             }
         }
     };

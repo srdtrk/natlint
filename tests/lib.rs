@@ -1,7 +1,7 @@
 //! Test suite for natlint
 
 mod natspec_test {
-    use natlint::config::load_default_config;
+    use natlint::config::Config;
     use natlint::linter::lint;
     use std::fs;
     use std::path::Path;
@@ -11,8 +11,8 @@ mod natspec_test {
         let file_path = Path::new("tests/contracts/TestContract.sol");
         let content = fs::read_to_string(file_path).expect("Failed to read test file");
 
-        let config = load_default_config();
-        let violations: Vec<_> = lint(&content, &config.rules).expect("Failed to process file");
+        let config = Config::default();
+        let violations: Vec<_> = lint(&content, &config.rules()).expect("Failed to process file");
 
         assert_eq!(violations.len(), 18);
 
@@ -62,13 +62,13 @@ mod natspec_test {
         assert!(violations[8].1 == 13);
         assert!(violations[8].0.rule_description == "Enums must have a notice comment.");
 
-        assert!(violations[9].0.rule_name == "MissingTitle");
+        assert!(violations[9].0.rule_name == "MissingVariant");
         assert!(violations[9].1 == 13);
-        assert!(violations[9].0.rule_description == "Enums must have a title comment.");
+        assert!(violations[9].0.rule_description == "Enums must document all variants.");
 
-        assert!(violations[10].0.rule_name == "MissingVariant");
+        assert!(violations[10].0.rule_name == "MissingTitle");
         assert!(violations[10].1 == 13);
-        assert!(violations[10].0.rule_description == "Enums must document all variants.");
+        assert!(violations[10].0.rule_description == "Enums must have a title comment.");
 
         // Struct violations
         assert!(violations[11].0.rule_name == "MissingAuthor");
@@ -115,8 +115,8 @@ mod natspec_test {
         let file_path = Path::new("tests/contracts/TestInterface.sol");
         let content = fs::read_to_string(file_path).expect("Failed to read test file");
 
-        let config = load_default_config();
-        let violations: Vec<_> = lint(&content, &config.rules).expect("Failed to process file");
+        let config = Config::default();
+        let violations: Vec<_> = lint(&content, &config.rules()).expect("Failed to process file");
 
         assert_eq!(violations.len(), 5);
 
@@ -137,8 +137,8 @@ mod natspec_test {
         let file_path = Path::new("tests/contracts/TestMsgs.sol");
         let content = fs::read_to_string(file_path).expect("Failed to read test file");
 
-        let config = load_default_config();
-        let violations: Vec<_> = lint(&content, &config.rules).expect("Failed to process file");
+        let config = Config::default();
+        let violations: Vec<_> = lint(&content, &config.rules()).expect("Failed to process file");
 
         assert_eq!(violations.len(), 7);
 

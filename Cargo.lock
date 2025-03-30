@@ -2048,6 +2048,7 @@ dependencies = [
  "globset",
  "itertools 0.14.0",
  "line-col",
+ "serde",
  "solang-parser",
  "thiserror 2.0.12",
  "tracing",

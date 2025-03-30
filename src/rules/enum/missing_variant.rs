@@ -8,6 +8,7 @@ use solang_parser::pt::EnumDefinition;
 
 use crate::{
     parser::{CommentTag, CommentsRef, ParseItem},
+    rule_serialize_deserialize_bool,
     rules::violation_error::ViolationError,
 };
 
@@ -77,6 +78,8 @@ impl Rule for MissingVariant {
         None
     }
 }
+
+rule_serialize_deserialize_bool!(MissingVariant);
 
 #[cfg(test)]
 mod tests {

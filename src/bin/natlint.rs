@@ -7,7 +7,7 @@ use natlint::{
         cmd::{Commands, NatlintCli},
         file_finder::find_matching_files,
     },
-    config::load_default_config,
+    config::Config,
     linter::lint,
     rules::Violation,
 };
@@ -17,7 +17,7 @@ fn main() -> eyre::Result<()> {
     match cli.command {
         Commands::Run(args) => {
             // TODO: Load specified config, default config path or default config
-            let config = load_default_config();
+            let config = Config::default();
 
             let file_violations: Vec<(String, Vec<(Violation, usize)>)> =
                 find_matching_files(&args.root, args.include, args.exclude)?
@@ -26,7 +26,7 @@ fn main() -> eyre::Result<()> {
                         let content = fs::read_to_string(file).unwrap();
                         let file_path = file.to_str().unwrap().to_owned();
 
-                        (file_path, lint(&content, &config.rules).unwrap())
+                        (file_path, lint(&content, &config.rules()).unwrap())
                     })
                     .sorted_by(|(file_a, _), (file_b, _)| file_a.cmp(file_b))
                     .collect::<Vec<_>>();

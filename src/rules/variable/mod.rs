@@ -18,3 +18,44 @@ pub use no_return::NoReturn;
 pub use no_title::NoTitle;
 pub use too_many_inheritdoc::TooManyInheritdoc;
 pub use too_many_notice::TooManyNotice;
+
+use crate::define_rules_config;
+
+define_rules_config! {
+    /// Configuration that contains all the rules for variable items.
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[allow(missing_docs)]
+    pub struct VariableRulesConfig {
+        #[serde(with = "crate::rules::variable::missing_inheritdoc::serde_logic")]
+        #[serde(default)]
+        pub missing_inheritdoc: Option<MissingInheritdoc>,
+
+        #[serde(with = "crate::rules::variable::missing_notice::serde_logic")]
+        #[serde(default)]
+        pub missing_notice: Option<MissingNotice>,
+
+        #[serde(with = "crate::rules::variable::no_author::serde_logic")]
+        #[serde(default)]
+        pub no_author: Option<NoAuthor>,
+
+        #[serde(with = "crate::rules::variable::no_param::serde_logic")]
+        #[serde(default)]
+        pub no_param: Option<NoParam>,
+
+        #[serde(with = "crate::rules::variable::no_return::serde_logic")]
+        #[serde(default)]
+        pub no_return: Option<NoReturn>,
+
+        #[serde(with = "crate::rules::variable::no_title::serde_logic")]
+        #[serde(default)]
+        pub no_title: Option<NoTitle>,
+
+        #[serde(with = "crate::rules::variable::too_many_inheritdoc::serde_logic")]
+        #[serde(default)]
+        pub too_many_inheritdoc: Option<TooManyInheritdoc>,
+
+        #[serde(with = "crate::rules::variable::too_many_notice::serde_logic")]
+        #[serde(default)]
+        pub too_many_notice: Option<TooManyNotice>,
+    }
+}

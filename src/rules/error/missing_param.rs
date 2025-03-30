@@ -2,6 +2,7 @@ use solang_parser::pt::ErrorDefinition;
 
 use crate::{
     parser::{CommentTag, CommentsRef, ParseItem},
+    rule_serialize_deserialize_bool,
     rules::violation_error::ViolationError,
 };
 
@@ -71,6 +72,8 @@ impl Rule for MissingParam {
         None
     }
 }
+
+rule_serialize_deserialize_bool!(MissingParam);
 
 #[cfg(test)]
 mod tests {
