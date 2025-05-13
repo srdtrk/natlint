@@ -12,7 +12,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that all public functions have a inheritdoc comment.
 pub struct MissingInheritdoc;
 
-impl Rule<FunctionDefinition> for MissingInheritdoc {
+impl Rule for MissingInheritdoc {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "MissingInheritdoc";
     const DESCRIPTION: &'static str =
         "Public and override functions must have an inheritdoc comment.";

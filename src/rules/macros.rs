@@ -7,7 +7,8 @@ macro_rules! no_comment_rule {
         #[doc = $description]
         pub struct $rule_name;
 
-        impl $crate::rules::Rule<$parse_item> for $rule_name {
+        impl $crate::rules::Rule for $rule_name {
+            type Target = $parse_item;
             const NAME: &'static str = stringify!($rule_name);
             const DESCRIPTION: &'static str = $description;
 
@@ -41,7 +42,8 @@ macro_rules! missing_comment_rule {
         #[doc = $description]
         pub struct $rule_name;
 
-        impl $crate::rules::Rule<$parse_item> for $rule_name {
+        impl $crate::rules::Rule for $rule_name {
+            type Target = $parse_item;
             const NAME: &'static str = stringify!($rule_name);
             const DESCRIPTION: &'static str = $description;
 
@@ -75,7 +77,8 @@ macro_rules! too_many_comments_rule {
         #[doc = $description]
         pub struct $rule_name;
 
-        impl $crate::rules::Rule<$parse_item> for $rule_name {
+        impl $crate::rules::Rule for $rule_name {
+            type Target = $parse_item;
             const NAME: &'static str = stringify!($rule_name);
             const DESCRIPTION: &'static str = $description;
 

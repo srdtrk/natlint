@@ -10,7 +10,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that all functions have their return variables documented or have an inheritdoc comment.
 pub struct MissingReturn;
 
-impl Rule<FunctionDefinition> for MissingReturn {
+impl Rule for MissingReturn {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "MissingReturn";
     const DESCRIPTION: &'static str =
         "Functions must have their return variables documented or have an inheritdoc comment.";

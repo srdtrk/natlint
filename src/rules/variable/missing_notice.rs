@@ -10,7 +10,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that all variables have a notice or an inheritdoc comment.
 pub struct MissingNotice;
 
-impl Rule<VariableDefinition> for MissingNotice {
+impl Rule for MissingNotice {
+    type Target = VariableDefinition;
     const NAME: &'static str = "MissingNotice";
     const DESCRIPTION: &'static str = "Variables must have a notice or an inheritdoc comment.";
 

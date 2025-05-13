@@ -13,7 +13,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that if a function has an inheritdoc comment, then it must be the only comment.
 pub struct OnlyInheritdoc;
 
-impl Rule<FunctionDefinition> for OnlyInheritdoc {
+impl Rule for OnlyInheritdoc {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "OnlyInheritdoc";
     const DESCRIPTION: &'static str =
         "If a function has an inheritdoc comment, then it must be the only comment.";

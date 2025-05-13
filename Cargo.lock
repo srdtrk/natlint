@@ -2042,8 +2042,10 @@ dependencies = [
  "glob",
  "globset",
  "itertools 0.14.0",
+ "serde",
  "solang-parser",
  "thiserror 2.0.11",
+ "toml 0.8.20",
  "tracing",
 ]
 

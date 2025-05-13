@@ -10,7 +10,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that structs do not miss any parameters.
 pub struct MissingParams;
 
-impl Rule<StructDefinition> for MissingParams {
+impl Rule for MissingParams {
+    type Target = StructDefinition;
     const NAME: &'static str = "MissingParams";
     const DESCRIPTION: &'static str = "Structs must document all parameters.";
 

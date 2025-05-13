@@ -10,7 +10,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that all errors have their parameters documented.
 pub struct MissingParam;
 
-impl Rule<ErrorDefinition> for MissingParam {
+impl Rule for MissingParam {
+    type Target = ErrorDefinition;
     const NAME: &'static str = "MissingParam";
     const DESCRIPTION: &'static str = "Errors must document all parameters.";
 

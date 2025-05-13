@@ -16,7 +16,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that enums do not miss any variants.
 pub struct MissingVariant;
 
-impl Rule<EnumDefinition> for MissingVariant {
+impl Rule for MissingVariant {
+    type Target = EnumDefinition;
     const NAME: &'static str = "MissingVariant";
     const DESCRIPTION: &'static str = "Enums must document all variants.";
 

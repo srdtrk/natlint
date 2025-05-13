@@ -10,7 +10,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that all public variables have a inheritdoc comment.
 pub struct MissingInheritdoc;
 
-impl Rule<VariableDefinition> for MissingInheritdoc {
+impl Rule for MissingInheritdoc {
+    type Target = VariableDefinition;
     const NAME: &'static str = "MissingInheritdoc";
     const DESCRIPTION: &'static str =
         "Public and override variables must have an inheritdoc comment.";

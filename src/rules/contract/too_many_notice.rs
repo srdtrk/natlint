@@ -1,5 +1,3 @@
-//! This rule requires that all contacts have a notice comment.
-
 use solang_parser::pt::ContractDefinition;
 
 crate::too_many_comments_rule!(

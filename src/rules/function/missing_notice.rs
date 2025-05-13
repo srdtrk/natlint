@@ -10,7 +10,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that all functions have a notice or an inheritdoc comment.
 pub struct MissingNotice;
 
-impl Rule<FunctionDefinition> for MissingNotice {
+impl Rule for MissingNotice {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "MissingNotice";
     const DESCRIPTION: &'static str = "Functions must have a notice or an inheritdoc comment.";
 

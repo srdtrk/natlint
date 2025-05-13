@@ -1,5 +1,7 @@
 //! This module defines the rules for the natlint linter.
 
+use std::any::Any;
+
 use solang_parser::pt::Loc;
 use violation_error::ViolationError;
 
@@ -30,14 +32,35 @@ pub struct Violation {
 
 /// A trait for defining a rule that checks a specific Solidity construct.
 /// The rule should return a diagnostic if the construct violates the rule.
-pub trait Rule<T> {
+pub trait Rule {
+    /// The type of the construct that this rule checks.
+    type Target: Any;
     /// The name of the rule.
     const NAME: &'static str;
     /// A description of the rule.
     const DESCRIPTION: &'static str;
 
     /// Check the construct for violations of this rule.
-    fn check(parent: Option<&ParseItem>, item: &T, comments: CommentsRef) -> Option<Violation>;
+    fn check(
+        parent: Option<&ParseItem>,
+        item: &Self::Target,
+        comments: CommentsRef,
+    ) -> Option<Violation>;
+}
+
+/// A dynamic version of the [`Rule`] trait.
+pub trait DynRule {
+    /// The name of the rule.
+    fn name(&self) -> &'static str;
+    /// A description of the rule.
+    fn description(&self) -> &'static str;
+    /// Check the construct for violations of this rule.
+    fn check_dyn(
+        &self,
+        parent: Option<&ParseItem>,
+        item: &dyn Any,
+        comments: CommentsRef,
+    ) -> Option<Violation>;
 }
 
 impl Violation {
@@ -49,5 +72,30 @@ impl Violation {
             description,
             loc,
         }
+    }
+}
+
+impl<R: Rule> DynRule for R
+where
+    R::Target: Any,
+{
+    fn name(&self) -> &'static str {
+        R::NAME
+    }
+
+    fn description(&self) -> &'static str {
+        R::DESCRIPTION
+    }
+
+    fn check_dyn(
+        &self,
+        parent: Option<&ParseItem>,
+        item: &dyn Any,
+        comments: CommentsRef,
+    ) -> Option<Violation> {
+        let item = item
+            .downcast_ref::<R::Target>()
+            .expect("Item type mismatch");
+        R::check(parent, item, comments)
     }
 }

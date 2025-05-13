@@ -11,7 +11,8 @@ use super::super::{Rule, Violation};
 /// comment.
 pub struct MissingParams;
 
-impl Rule<FunctionDefinition> for MissingParams {
+impl Rule for MissingParams {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "MissingParams";
     const DESCRIPTION: &'static str =
         "Functions must have their parameters documented or have an inheritdoc comment.";
