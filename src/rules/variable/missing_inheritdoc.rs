@@ -24,7 +24,7 @@ impl Rule<VariableDefinition> for MissingInheritdoc {
         match parent?.as_contract()?.ty {
             ContractTy::Interface(_) | ContractTy::Library(_) => return None,
             ContractTy::Contract(_) | ContractTy::Abstract(_) => (),
-        };
+        }
 
         // Variable must be public, external, or an override
         var.attrs.iter().find(|attr| match attr {

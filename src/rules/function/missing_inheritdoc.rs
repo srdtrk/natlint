@@ -26,7 +26,7 @@ impl Rule<FunctionDefinition> for MissingInheritdoc {
         match parent?.as_contract()?.ty {
             ContractTy::Interface(_) | ContractTy::Library(_) => return None,
             ContractTy::Contract(_) | ContractTy::Abstract(_) => (),
-        };
+        }
 
         // Function must not be a modifier or constructor
         match func.ty {
