@@ -29,11 +29,13 @@ pub mod run {
         #[clap(long, default_value = ".")]
         pub root: String,
 
-        /// The include globs for the linter.
+        /// The include globs for the linter (e.g., "**/*.sol" to find all Solidity files).
+        /// Put multiple patterns in quotes: "**/*.sol" "**/*.sol.txt"
         #[clap(short = 'i', long)]
         pub include: Vec<String>,
 
         /// The exclude globs for the linter.
+        /// Put multiple patterns in quotes: "`node_modules/**`" "`dist/**`"
         #[clap(short = 'e', long)]
         pub exclude: Vec<String>,
 
