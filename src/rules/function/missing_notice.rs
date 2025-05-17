@@ -18,7 +18,7 @@ impl Rule for MissingNotice {
     fn check(
         _: Option<&ParseItem>,
         func: &FunctionDefinition,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         // If the function has an inheritdoc comment, it is exempt from this rule
         if comments.find_inheritdoc_base().is_some() {
@@ -67,7 +67,10 @@ mod tests {
 
                 let expected = $expected(func);
 
-                assert_eq!(MissingNotice::check(Some(parent), func, comments), expected);
+                assert_eq!(
+                    MissingNotice::check(Some(parent), func, &comments),
+                    expected
+                );
             }
         };
     }

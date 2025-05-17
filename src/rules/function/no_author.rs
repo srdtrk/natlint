@@ -40,7 +40,7 @@ mod tests {
 
                 let expected = $expected(func);
 
-                assert_eq!(NoAuthor::check(Some(parent), func, comments), expected);
+                assert_eq!(NoAuthor::check(Some(parent), func, &comments), expected);
             }
         };
     }

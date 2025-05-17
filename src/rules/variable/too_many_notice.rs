@@ -38,7 +38,7 @@ mod tests {
 
                 let expected = $expected(var);
 
-                assert_eq!(TooManyNotice::check(Some(parent), var, comments), expected);
+                assert_eq!(TooManyNotice::check(Some(parent), var, &comments), expected);
             }
         };
     }

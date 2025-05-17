@@ -40,7 +40,7 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(NoInheritdoc::check(None, contract, comments), expected);
+                assert_eq!(NoInheritdoc::check(None, contract, &comments), expected);
             }
         };
     }

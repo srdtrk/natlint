@@ -1,6 +1,6 @@
 //! This module defines the rules for the natlint linter.
 
-use std::any::Any;
+use std::any::{Any, TypeId};
 
 use solang_parser::pt::Loc;
 use violation_error::ViolationError;
@@ -44,7 +44,7 @@ pub trait Rule {
     fn check(
         parent: Option<&ParseItem>,
         item: &Self::Target,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation>;
 }
 
@@ -54,12 +54,14 @@ pub trait DynRule {
     fn name(&self) -> &'static str;
     /// A description of the rule.
     fn description(&self) -> &'static str;
+    /// The `TypeId` of the construct this rule checks.
+    fn target_type_id(&self) -> TypeId;
     /// Check the construct for violations of this rule.
     fn check_dyn(
         &self,
         parent: Option<&ParseItem>,
         item: &dyn Any,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation>;
 }
 
@@ -87,11 +89,15 @@ where
         R::DESCRIPTION
     }
 
+    fn target_type_id(&self) -> TypeId {
+        TypeId::of::<R::Target>()
+    }
+
     fn check_dyn(
         &self,
         parent: Option<&ParseItem>,
         item: &dyn Any,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         let item = item
             .downcast_ref::<R::Target>()

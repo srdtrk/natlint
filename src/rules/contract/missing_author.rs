@@ -40,7 +40,7 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(MissingAuthor::check(None, contract, comments), expected);
+                assert_eq!(MissingAuthor::check(None, contract, &comments), expected);
             }
         };
     }

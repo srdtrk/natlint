@@ -38,7 +38,7 @@ mod tests {
 
                 let expected = $expected(var);
 
-                assert_eq!(NoTitle::check(Some(parent), var, comments), expected);
+                assert_eq!(NoTitle::check(Some(parent), var, &comments), expected);
             }
         };
     }

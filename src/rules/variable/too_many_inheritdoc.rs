@@ -39,7 +39,7 @@ mod tests {
                 let expected = $expected(var);
 
                 assert_eq!(
-                    TooManyInheritdoc::check(Some(parent), var, comments),
+                    TooManyInheritdoc::check(Some(parent), var, &comments),
                     expected
                 );
             }
