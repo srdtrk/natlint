@@ -131,6 +131,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             TooManyNotice::NAME,
+            TooManyNotice::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc
         ))
@@ -148,6 +149,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             TooManyNotice::NAME,
+            TooManyNotice::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc
         ))

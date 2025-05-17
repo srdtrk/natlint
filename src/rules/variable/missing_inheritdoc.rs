@@ -39,6 +39,7 @@ impl Rule<VariableDefinition> for MissingInheritdoc {
         if comments.include_tag(CommentTag::Inheritdoc).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
+                Self::DESCRIPTION,
                 ViolationError::MissingComment(CommentTag::Inheritdoc),
                 var.loc,
             ));
@@ -180,6 +181,7 @@ mod tests {
         ",
         |func: &VariableDefinition| Some(Violation::new(
             MissingInheritdoc::NAME,
+            MissingInheritdoc::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Inheritdoc),
             func.loc
         ))

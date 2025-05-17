@@ -30,6 +30,7 @@ impl Rule<EnumDefinition> for MissingVariant {
             std::cmp::Ordering::Less => {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::TooManyComments(CommentTag::variant()),
                     item.loc,
                 ))
@@ -37,6 +38,7 @@ impl Rule<EnumDefinition> for MissingVariant {
             std::cmp::Ordering::Greater => {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::MissingComment(CommentTag::variant()),
                     item.loc,
                 ))
@@ -48,6 +50,7 @@ impl Rule<EnumDefinition> for MissingVariant {
             let Some(variant_id) = variant.as_ref() else {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::parse_error("Variant name could not be parsed"),
                     item.loc,
                 ));
@@ -62,6 +65,7 @@ impl Rule<EnumDefinition> for MissingVariant {
             }) {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::missing_comment_for(CommentTag::variant(), &variant_id.name),
                     variant_id.loc,
                 ));
@@ -176,6 +180,7 @@ mod tests {
         ",
         |item: &EnumDefinition| Some(Violation::new(
             MissingVariant::NAME,
+            MissingVariant::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::variant()),
             item.loc
         ))
@@ -196,6 +201,7 @@ mod tests {
         ",
         |item: &EnumDefinition| Some(Violation::new(
             MissingVariant::NAME,
+            MissingVariant::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::variant()),
             item.loc
         ))
@@ -212,6 +218,7 @@ mod tests {
         ",
         |item: &EnumDefinition| Some(Violation::new(
             MissingVariant::NAME,
+            MissingVariant::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::variant()),
             item.loc
         ))
@@ -231,6 +238,7 @@ mod tests {
         ",
         |item: &EnumDefinition| Some(Violation::new(
             MissingVariant::NAME,
+            MissingVariant::DESCRIPTION,
             ViolationError::missing_comment_for(CommentTag::variant(), "None"),
             item.values[1].as_ref().unwrap().loc
         ))
@@ -252,6 +260,7 @@ mod tests {
         ",
         |item: &EnumDefinition| Some(Violation::new(
             MissingVariant::NAME,
+            MissingVariant::DESCRIPTION,
             ViolationError::missing_comment_for(CommentTag::variant(), "None"),
             item.values[1].as_ref().unwrap().loc
         ))
