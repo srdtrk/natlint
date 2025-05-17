@@ -38,11 +38,18 @@ fn main() -> eyre::Result<()> {
 
             for (file, violation_with_line) in file_violations.iter() {
                 println!("\nFile: {}", file);
+                if violation_with_line.is_empty() {
+                    println!("  No violations found.");
+                    continue;
+                }
                 for (violation, line_number) in violation_with_line {
                     // Print violation details with converted line number
                     println!(
-                        "  [{}] Line {}: {}",
-                        violation.rule_name, line_number, violation.rule_description
+                        "  [{}] Line {}: {} {}",
+                        violation.rule_name,
+                        line_number,
+                        violation.rule_description,
+                        violation.error
                     );
                 }
             }
