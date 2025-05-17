@@ -22,31 +22,43 @@ pub use too_many_inheritdoc::TooManyInheritdoc;
 pub use too_many_notice::TooManyNotice;
 
 /// Configuration for function rules in the linter.
-#[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 #[allow(missing_docs, clippy::struct_excessive_bools)]
 pub struct FunctionRulesConfig {
-    #[serde(default = "default_true")]
+    #[serde(default = "FunctionRulesConfig::default_missing_inheritdoc")]
     pub missing_inheritdoc: bool,
-    #[serde(default = "default_true")]
+    #[serde(default = "FunctionRulesConfig::default_missing_notice")]
     pub missing_notice: bool,
-    #[serde(default = "default_true")]
+    #[serde(default = "FunctionRulesConfig::default_missing_params")]
     pub missing_params: bool,
-    #[serde(default = "default_true")]
+    #[serde(default = "FunctionRulesConfig::default_missing_return")]
     pub missing_return: bool,
-    #[serde(default = "default_true")]
+    #[serde(default = "FunctionRulesConfig::default_no_author")]
     pub no_author: bool,
-    #[serde(default = "default_true")]
+    #[serde(default = "FunctionRulesConfig::default_no_title")]
     pub no_title: bool,
-    #[serde(default)]
+    #[serde(default = "FunctionRulesConfig::default_only_inheritdoc")]
     pub only_inheritdoc: bool,
-    #[serde(default = "default_true")]
+    #[serde(default = "FunctionRulesConfig::default_too_many_inheritdoc")]
     pub too_many_inheritdoc: bool,
-    #[serde(default = "default_true")]
+    #[serde(default = "FunctionRulesConfig::default_too_many_notice")]
     pub too_many_notice: bool,
 }
 
-const fn default_true() -> bool {
-    true
+impl Default for FunctionRulesConfig {
+    fn default() -> Self {
+        Self {
+            missing_inheritdoc: true,
+            missing_notice: true,
+            missing_params: true,
+            missing_return: true,
+            no_author: true,
+            no_title: true,
+            only_inheritdoc: false,
+            too_many_inheritdoc: true,
+            too_many_notice: true,
+        }
+    }
 }
 
 impl FunctionRulesConfig {
@@ -84,5 +96,33 @@ impl FunctionRulesConfig {
         }
 
         rules
+    }
+
+    fn default_missing_inheritdoc() -> bool {
+        Self::default().missing_inheritdoc
+    }
+    fn default_missing_notice() -> bool {
+        Self::default().missing_notice
+    }
+    fn default_missing_params() -> bool {
+        Self::default().missing_params
+    }
+    fn default_missing_return() -> bool {
+        Self::default().missing_return
+    }
+    fn default_no_author() -> bool {
+        Self::default().no_author
+    }
+    fn default_no_title() -> bool {
+        Self::default().no_title
+    }
+    fn default_only_inheritdoc() -> bool {
+        Self::default().only_inheritdoc
+    }
+    fn default_too_many_inheritdoc() -> bool {
+        Self::default().too_many_inheritdoc
+    }
+    fn default_too_many_notice() -> bool {
+        Self::default().too_many_notice
     }
 }
