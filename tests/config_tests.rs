@@ -15,12 +15,12 @@ fn test_parse_empty_config() {
     // Empty config should deserialize to default values
     let empty_config = empty_config_result.unwrap();
     assert!(
-        empty_config.contract_rules.missing_author,
-        "Default rule missing_author should be Some"
+        !empty_config.contract_rules.missing_author,
+        "Default rule missing_author should be false"
     );
     assert!(
         empty_config.function_rules.missing_params,
-        "Default rule missing_params should be Some"
+        "Default rule missing_params should be true"
     );
 }
 
@@ -31,21 +31,21 @@ fn test_parse_sparse_config() {
     let sparse_config = Config::from_file(sparse_path).unwrap();
     // Check overridden rules
     assert!(
-        sparse_config.contract_rules.missing_author,
-        "Sparse config should override missing_author to None"
+        !sparse_config.contract_rules.missing_author,
+        "Sparse config should override missing_author to false"
     );
     assert!(
-        sparse_config.contract_rules.no_inheritdoc,
-        "Sparse config should override no_inheritdoc to None"
+        !sparse_config.contract_rules.no_inheritdoc,
+        "Sparse config should override no_inheritdoc to false"
     );
     assert!(
-        sparse_config.function_rules.missing_params,
-        "Sparse config should override missing_params to None"
+        !sparse_config.function_rules.missing_params,
+        "Sparse config should override missing_params to false"
     );
     // Check a default rule that wasn't overridden
     assert!(
         sparse_config.contract_rules.missing_notice,
-        "Default rule missing_notice should be Some in sparse config"
+        "Default rule missing_notice should be true in sparse config"
     );
 }
 
@@ -63,14 +63,14 @@ fn test_parse_full_config() {
     // Check a few rules to ensure they are all Some (since set to true)
     assert!(
         full_config.contract_rules.missing_author,
-        "Full config rule missing_author should be Some"
+        "Full config rule missing_author should be true"
     );
     assert!(
         full_config.error_rules.missing_param,
-        "Full config rule missing_param should be Some"
+        "Full config rule missing_param should be true"
     );
     assert!(
         full_config.variable_rules.no_title,
-        "Full config rule no_title should be Some"
+        "Full config rule no_title should be true"
     );
 }
