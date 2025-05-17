@@ -31,29 +31,27 @@ fn main() -> eyre::Result<()> {
                     .sorted_by(|(file_a, _), (file_b, _)| file_a.cmp(file_b))
                     .collect::<Vec<_>>();
 
-            let mut file_count = 0;
-            let mut violation_count = 0;
-
-            file_violations
+            let violation_count = file_violations
                 .iter()
-                .for_each(|(file, violation_with_line)| {
-                    file_count += 1;
+                .map(|(_, violations)| violations.len())
+                .sum::<usize>();
 
-                    println!("\nFile: {}", file);
-                    for (violation, line_number) in violation_with_line {
-                        // Print violation details with converted line number
-                        println!(
-                            "  [{}] Line {}: {}",
-                            violation.rule_name, line_number, violation.rule_description
-                        );
-                        violation_count += 1;
-                    }
-                });
+            for (file, violation_with_line) in file_violations.iter() {
+                println!("\nFile: {}", file);
+                for (violation, line_number) in violation_with_line {
+                    // Print violation details with converted line number
+                    println!(
+                        "  [{}] Line {}: {}",
+                        violation.rule_name, line_number, violation.rule_description
+                    );
+                }
+            }
 
             if violation_count != 0 {
                 println!(
                     "\nFound {} natspec violations in {} files.",
-                    violation_count, file_count
+                    violation_count,
+                    file_violations.len()
                 );
                 // Return non-zero exit code if violations were found
                 std::process::exit(1);
