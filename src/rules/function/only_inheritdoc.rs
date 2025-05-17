@@ -30,6 +30,7 @@ impl Rule for OnlyInheritdoc {
                 1 => None,
                 _ => Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::OnlyInheritdoc,
                     func.loc,
                 )),
@@ -117,6 +118,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
+            OnlyInheritdoc::DESCRIPTION,
             ViolationError::OnlyInheritdoc,
             func.loc
         ))
@@ -135,6 +137,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
+            OnlyInheritdoc::DESCRIPTION,
             ViolationError::OnlyInheritdoc,
             func.loc
         ))
@@ -151,6 +154,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
+            OnlyInheritdoc::DESCRIPTION,
             ViolationError::OnlyInheritdoc,
             func.loc
         ))
@@ -167,6 +171,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             OnlyInheritdoc::NAME,
+            OnlyInheritdoc::DESCRIPTION,
             ViolationError::OnlyInheritdoc,
             func.loc
         ))

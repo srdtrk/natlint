@@ -109,6 +109,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
+            NoInheritdoc::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))
@@ -124,6 +125,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
+            NoInheritdoc::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))
@@ -140,6 +142,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
+            NoInheritdoc::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))
@@ -157,6 +160,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoInheritdoc::NAME,
+            NoInheritdoc::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Inheritdoc),
             sct.loc
         ))

@@ -39,6 +39,7 @@ impl Rule for MissingParams {
             std::cmp::Ordering::Less => {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::TooManyComments(CommentTag::Param),
                     func.loc,
                 ));
@@ -46,6 +47,7 @@ impl Rule for MissingParams {
             std::cmp::Ordering::Greater => {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::MissingComment(CommentTag::Param),
                     func.loc,
                 ));
@@ -70,6 +72,7 @@ impl Rule for MissingParams {
             }) {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::missing_comment_for(CommentTag::Param, &param_name),
                     *loc,
                 ));
@@ -242,6 +245,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Param),
             func.loc
         ))
@@ -258,6 +262,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Param),
             func.loc
         ))
@@ -273,6 +278,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Param),
             func.loc
         ))
@@ -291,6 +297,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Param),
             func.loc
         ))
@@ -307,6 +314,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::missing_comment_for(CommentTag::Param, "b"),
             func.params[1].0
         ))
@@ -325,6 +333,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::missing_comment_for(CommentTag::Param, "b"),
             func.params[1].0
         ))

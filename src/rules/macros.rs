@@ -23,6 +23,7 @@ macro_rules! no_comment_rule {
                 {
                     return Some($crate::rules::Violation::new(
                         Self::NAME,
+                        Self::DESCRIPTION,
                         $crate::rules::violation_error::ViolationError::CommentNotAllowed(
                             $crate::parser::CommentTag::$comment_variant,
                         ),
@@ -58,6 +59,7 @@ macro_rules! missing_comment_rule {
                 {
                     return Some($crate::rules::Violation::new(
                         Self::NAME,
+                        Self::DESCRIPTION,
                         $crate::rules::violation_error::ViolationError::MissingComment(
                             $crate::parser::CommentTag::$comment_variant,
                         ),
@@ -94,6 +96,7 @@ macro_rules! too_many_comments_rule {
                 {
                     return Some($crate::rules::Violation::new(
                         Self::NAME,
+                        Self::DESCRIPTION,
                         $crate::rules::violation_error::ViolationError::TooManyComments(
                             $crate::parser::CommentTag::$comment_variant,
                         ),
@@ -201,6 +204,7 @@ macro_rules! generate_missing_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::MissingComment(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -218,6 +222,7 @@ macro_rules! generate_missing_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::MissingComment(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -237,6 +242,7 @@ macro_rules! generate_missing_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::MissingComment(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -311,6 +317,7 @@ macro_rules! generate_no_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -330,6 +337,7 @@ macro_rules! generate_no_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -349,6 +357,7 @@ macro_rules! generate_no_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -369,6 +378,7 @@ macro_rules! generate_no_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -390,6 +400,7 @@ macro_rules! generate_no_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -411,6 +422,7 @@ macro_rules! generate_no_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::CommentNotAllowed(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -532,6 +544,7 @@ macro_rules! generate_too_many_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::TooManyComments(CommentTag::$comment_variant),
                 item.loc
             ))
@@ -553,6 +566,7 @@ macro_rules! generate_too_many_comment_test_cases {
             ),
             |item: &$parse_item| Some(Violation::new(
                 $rule_name::NAME,
+                $rule_name::DESCRIPTION,
                 ViolationError::TooManyComments(CommentTag::$comment_variant),
                 item.loc
             ))

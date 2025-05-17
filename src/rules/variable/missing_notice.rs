@@ -29,6 +29,7 @@ impl Rule for MissingNotice {
         if comments.include_tag(CommentTag::Notice).is_empty() {
             return Some(Violation::new(
                 Self::NAME,
+                Self::DESCRIPTION,
                 ViolationError::MissingComment(CommentTag::Notice),
                 var.loc,
             ));

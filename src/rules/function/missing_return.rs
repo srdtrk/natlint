@@ -41,6 +41,7 @@ impl Rule for MissingReturn {
             std::cmp::Ordering::Less => {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::TooManyComments(CommentTag::Return),
                     func.loc,
                 ));
@@ -48,6 +49,7 @@ impl Rule for MissingReturn {
             std::cmp::Ordering::Greater => {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::MissingComment(CommentTag::Return),
                     func.loc,
                 ));
@@ -72,6 +74,7 @@ impl Rule for MissingReturn {
             }) {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::missing_comment_for(CommentTag::Return, &var_name),
                     *loc,
                 ));
@@ -258,6 +261,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
+            MissingReturn::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Return),
             func.loc
         ))
@@ -273,6 +277,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
+            MissingReturn::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Return),
             func.loc
         ))
@@ -289,6 +294,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
+            MissingReturn::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Return),
             func.loc
         ))
@@ -307,6 +313,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
+            MissingReturn::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Return),
             func.loc
         ))
@@ -323,6 +330,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
+            MissingReturn::DESCRIPTION,
             ViolationError::missing_comment_for(CommentTag::Return, "b"),
             func.returns[1].0
         ))
@@ -341,6 +349,7 @@ mod tests {
         ",
         |func: &FunctionDefinition| Some(Violation::new(
             MissingReturn::NAME,
+            MissingReturn::DESCRIPTION,
             ViolationError::missing_comment_for(CommentTag::Return, "b"),
             func.returns[1].0
         ))

@@ -123,6 +123,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingAuthor::NAME,
+            MissingAuthor::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Author),
             sct.loc
         ))
@@ -137,6 +138,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingAuthor::NAME,
+            MissingAuthor::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Author),
             sct.loc
         ))
@@ -153,6 +155,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             MissingAuthor::NAME,
+            MissingAuthor::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Author),
             sct.loc
         ))

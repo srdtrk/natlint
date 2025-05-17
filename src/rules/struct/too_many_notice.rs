@@ -72,6 +72,7 @@ mod tests {
         ",
         |sct: &StructDefinition| Some(Violation::new(
             TooManyNotice::NAME,
+            TooManyNotice::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Notice),
             sct.loc
         )) // WARNING: solang parser and the natspec docs interpret no tags as a notice

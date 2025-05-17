@@ -25,6 +25,7 @@ impl Rule for MissingParams {
             std::cmp::Ordering::Less => {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::TooManyComments(CommentTag::Param),
                     item.loc,
                 ))
@@ -32,6 +33,7 @@ impl Rule for MissingParams {
             std::cmp::Ordering::Greater => {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::MissingComment(CommentTag::Param),
                     item.loc,
                 ))
@@ -43,6 +45,7 @@ impl Rule for MissingParams {
             let Some(field_id) = field.name.as_ref() else {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::parse_error("Field name could not be parsed"),
                     field.loc,
                 ));
@@ -57,6 +60,7 @@ impl Rule for MissingParams {
             }) {
                 return Some(Violation::new(
                     Self::NAME,
+                    Self::DESCRIPTION,
                     ViolationError::missing_comment_for(CommentTag::Param, &field_id.name),
                     field_id.loc,
                 ));
@@ -171,6 +175,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Param),
             item.loc
         ))
@@ -191,6 +196,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::TooManyComments(CommentTag::Param),
             item.loc
         ))
@@ -207,6 +213,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::MissingComment(CommentTag::Param),
             item.loc
         ))
@@ -226,6 +233,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::missing_comment_for(CommentTag::Param, "b"),
             item.fields[1].name.as_ref().unwrap().loc
         ))
@@ -247,6 +255,7 @@ mod tests {
         ",
         |item: &StructDefinition| Some(Violation::new(
             MissingParams::NAME,
+            MissingParams::DESCRIPTION,
             ViolationError::missing_comment_for(CommentTag::Param, "b"),
             item.fields[1].name.as_ref().unwrap().loc
         ))
