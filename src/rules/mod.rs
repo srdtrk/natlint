@@ -21,9 +21,11 @@ pub mod variable;
 #[derive(Debug, PartialEq, Eq)]
 pub struct Violation {
     /// The rule that was violated.
-    pub rule: &'static str,
+    pub rule_name: &'static str,
+    /// The description of the rule that was violated.
+    pub rule_description: &'static str,
     /// A message describing the violation.
-    pub description: ViolationError,
+    pub error: ViolationError,
     /// The location of the violation.
     pub loc: Loc,
 }
@@ -43,10 +45,16 @@ pub trait Rule<T> {
 impl Violation {
     /// Create a new violation.
     #[must_use]
-    pub const fn new(rule: &'static str, description: ViolationError, loc: Loc) -> Self {
+    pub const fn new(
+        rule_name: &'static str,
+        rule_description: &'static str,
+        error: ViolationError,
+        loc: Loc,
+    ) -> Self {
         Self {
-            rule,
-            description,
+            rule_name,
+            rule_description,
+            error,
             loc,
         }
     }

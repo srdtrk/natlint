@@ -106,6 +106,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoParam::NAME,
+            NoParam::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
@@ -121,6 +122,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoParam::NAME,
+            NoParam::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
@@ -137,6 +139,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoParam::NAME,
+            NoParam::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
@@ -154,6 +157,7 @@ mod tests {
         ",
         |sct: &ContractDefinition| Some(Violation::new(
             NoParam::NAME,
+            NoParam::DESCRIPTION,
             ViolationError::CommentNotAllowed(CommentTag::Param),
             sct.loc
         ))
