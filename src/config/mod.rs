@@ -8,7 +8,10 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use toml;
 
-use crate::rules::{contract::ContractRulesConfig, DynRule}; // Add this line
+use crate::rules::{
+    contract::ContractRulesConfig, error::ErrorRulesConfig, function::FunctionRulesConfig,
+    r#enum::EnumRulesConfig, r#struct::StructRulesConfig, variable::VariableRulesConfig, DynRule,
+};
 
 /// Errors that can occur during configuration processing.
 #[derive(Error, Debug)]

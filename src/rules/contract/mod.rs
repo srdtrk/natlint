@@ -19,34 +19,29 @@ pub use no_return::NoReturn;
 pub use too_many_notice::TooManyNotice;
 pub use too_many_title::TooManyTitle;
 
+/// Configuration for contract rules in the linter.
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
+#[allow(missing_docs, clippy::struct_excessive_bools)]
 pub struct ContractRulesConfig {
     #[serde(default)]
     pub missing_author: bool,
-
     #[serde(default = "default_true")]
     pub missing_notice: bool,
-
     #[serde(default = "default_true")]
     pub missing_title: bool,
-
     #[serde(default)]
     pub no_inheritdoc: bool,
-
     #[serde(default = "default_true")]
     pub no_param: bool,
-
     #[serde(default = "default_true")]
     pub no_return: bool,
-
     #[serde(default = "default_true")]
     pub too_many_notice: bool,
-
     #[serde(default = "default_true")]
     pub too_many_title: bool,
 }
 
-fn default_true() -> bool {
+const fn default_true() -> bool {
     true
 }
 
