@@ -38,7 +38,10 @@ mod tests {
 
                 let expected = $expected(event);
 
-                assert_eq!(NoInheritdoc::check(Some(parent), event, comments), expected);
+                assert_eq!(
+                    NoInheritdoc::check(Some(parent), event, &comments),
+                    expected
+                );
             }
         };
     }

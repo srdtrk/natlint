@@ -39,7 +39,7 @@ mod tests {
                 let expected = $expected(event);
 
                 assert_eq!(
-                    TooManyNotice::check(Some(parent), event, comments),
+                    TooManyNotice::check(Some(parent), event, &comments),
                     expected
                 );
             }
