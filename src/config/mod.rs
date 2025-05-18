@@ -61,9 +61,7 @@ impl Config {
     }
 
     /// Load configuration from a TOML file.
-    ///
     /// # Errors
-    ///
     /// Returns `ConfigError` if the file cannot be read or parsed.
     pub fn from_file(path: &Path) -> Result<Self, ConfigError> {
         let content = fs::read_to_string(path)?;
