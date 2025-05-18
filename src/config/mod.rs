@@ -9,8 +9,9 @@ use thiserror::Error;
 use toml;
 
 use crate::rules::{
-    contract::ContractRulesConfig, error::ErrorRulesConfig, function::FunctionRulesConfig,
-    r#enum::EnumRulesConfig, r#struct::StructRulesConfig, variable::VariableRulesConfig, DynRule,
+    contract::ContractRulesConfig, error::ErrorRulesConfig, event::EventRulesConfig,
+    function::FunctionRulesConfig, r#enum::EnumRulesConfig, r#struct::StructRulesConfig,
+    variable::VariableRulesConfig, DynRule,
 };
 
 /// Errors that can occur during configuration processing.
@@ -40,6 +41,8 @@ pub struct Config {
     pub struct_rules: StructRulesConfig,
     #[serde(default)]
     pub variable_rules: VariableRulesConfig,
+    #[serde(default)]
+    pub event_rules: EventRulesConfig,
 }
 
 impl Config {
@@ -53,6 +56,7 @@ impl Config {
             .chain(self.enum_rules.rule_set())
             .chain(self.struct_rules.rule_set())
             .chain(self.variable_rules.rule_set())
+            .chain(self.event_rules.rule_set())
             .collect()
     }
 
