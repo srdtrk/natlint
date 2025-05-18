@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::Path};
 
 use clap::Parser;
 use itertools::Itertools;
@@ -16,8 +16,14 @@ fn main() -> eyre::Result<()> {
     let cli = NatlintCli::parse();
     match cli.command {
         Commands::Run(args) => {
-            // TODO: Load specified config, default config path or default config
-            let config = Config::default();
+            let config = match Config::from_file(Path::new(&args.config)) {
+                Ok(config) => config,
+                Err(e) => {
+                    println!("Error reading config file: {}.", e);
+                    println!("Using default config.");
+                    Config::default()
+                }
+            };
 
             let file_violations: Vec<(String, Vec<(Violation, usize)>)> =
                 find_matching_files(&args.root, args.include, args.exclude)?

@@ -40,7 +40,7 @@ pub mod run {
         pub exclude: Vec<String>,
 
         /// The configuration file for linter.
-        #[clap(short = 'c', long)]
+        #[clap(short = 'c', long, default_value = "natlint.toml")]
         pub config: String,
     }
 }
