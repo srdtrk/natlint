@@ -4,7 +4,7 @@ crate::missing_comment_rule!(
     MissingNotice,
     EventDefinition,
     Notice,
-    "Errors must have a notice comment."
+    "Events must have a notice comment."
 );
 
 #[cfg(test)]
