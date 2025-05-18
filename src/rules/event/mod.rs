@@ -1,3 +1,6 @@
 //! This module defines the rules for event items in the natlint linter.
 
-//use solang_parser::pt::EventDefinition;
+mod missing_notice;
+
+// The rules are exported here:
+pub use missing_notice::MissingNotice;
