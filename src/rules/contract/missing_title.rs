@@ -39,7 +39,7 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(MissingTitle::check(None, contract, comments), expected);
+                assert_eq!(MissingTitle::check(None, contract, &comments), expected);
             }
         };
     }

@@ -11,7 +11,8 @@ use super::super::{Rule, Violation};
 /// comment.
 pub struct MissingParams;
 
-impl Rule<FunctionDefinition> for MissingParams {
+impl Rule for MissingParams {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "MissingParams";
     const DESCRIPTION: &'static str =
         "Functions must have their parameters documented or have an inheritdoc comment.";
@@ -19,7 +20,7 @@ impl Rule<FunctionDefinition> for MissingParams {
     fn check(
         _: Option<&ParseItem>,
         func: &FunctionDefinition,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         // Function must not be a modifier or constructor
         match func.ty {
@@ -111,7 +112,10 @@ mod tests {
 
                 let expected = $expected(func);
 
-                assert_eq!(MissingParams::check(Some(parent), func, comments), expected);
+                assert_eq!(
+                    MissingParams::check(Some(parent), func, &comments),
+                    expected
+                );
             }
         };
     }

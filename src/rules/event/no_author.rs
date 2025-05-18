@@ -38,7 +38,7 @@ mod tests {
 
                 let expected = $expected(event);
 
-                assert_eq!(NoAuthor::check(Some(parent), event, comments), expected);
+                assert_eq!(NoAuthor::check(Some(parent), event, &comments), expected);
             }
         };
     }

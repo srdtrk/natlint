@@ -10,14 +10,15 @@ use super::super::{Rule, Violation};
 /// This rule requires that all events have their parameters documented.
 pub struct MissingParam;
 
-impl Rule<EventDefinition> for MissingParam {
+impl Rule for MissingParam {
+    type Target = EventDefinition;
     const NAME: &'static str = "MissingParam";
     const DESCRIPTION: &'static str = "Events must document all parameters.";
 
     fn check(
         _: Option<&ParseItem>,
         item: &EventDefinition,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         let param_comments = comments.include_tag(CommentTag::Param);
         match item.fields.len().cmp(&param_comments.len()) {
@@ -98,7 +99,7 @@ mod tests {
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(item);
-                let result = MissingParam::check(None, item, comments);
+                let result = MissingParam::check(None, item, &comments);
 
                 assert_eq!(expected, result);
             }

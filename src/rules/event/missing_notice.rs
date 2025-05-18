@@ -39,7 +39,7 @@ mod tests {
                 let expected = $expected(event);
 
                 assert_eq!(
-                    MissingNotice::check(Some(parent), event, comments),
+                    MissingNotice::check(Some(parent), event, &comments),
                     expected
                 );
             }

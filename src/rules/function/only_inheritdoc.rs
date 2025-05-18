@@ -13,7 +13,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that if a function has an inheritdoc comment, then it must be the only comment.
 pub struct OnlyInheritdoc;
 
-impl Rule<FunctionDefinition> for OnlyInheritdoc {
+impl Rule for OnlyInheritdoc {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "OnlyInheritdoc";
     const DESCRIPTION: &'static str =
         "If a function has an inheritdoc comment, then it must be the only comment.";
@@ -21,7 +22,7 @@ impl Rule<FunctionDefinition> for OnlyInheritdoc {
     fn check(
         _: Option<&ParseItem>,
         func: &FunctionDefinition,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         if comments.find_inheritdoc_base().is_some() {
             return match comments.len() {
@@ -67,7 +68,7 @@ mod tests {
                 let expected = $expected(func);
 
                 assert_eq!(
-                    OnlyInheritdoc::check(Some(parent), func, comments),
+                    OnlyInheritdoc::check(Some(parent), func, &comments),
                     expected
                 );
             }

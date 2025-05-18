@@ -10,14 +10,15 @@ use super::super::{Rule, Violation};
 /// This rule requires that all variables have a notice or an inheritdoc comment.
 pub struct MissingNotice;
 
-impl Rule<VariableDefinition> for MissingNotice {
+impl Rule for MissingNotice {
+    type Target = VariableDefinition;
     const NAME: &'static str = "MissingNotice";
     const DESCRIPTION: &'static str = "Variables must have a notice or an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,
         var: &VariableDefinition,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         // If the variable has an inheritdoc comment, it is exempt from this rule
         if comments.find_inheritdoc_base().is_some() {
@@ -67,7 +68,7 @@ mod tests {
 
                 let expected = $expected(var);
 
-                assert_eq!(MissingNotice::check(Some(parent), var, comments), expected);
+                assert_eq!(MissingNotice::check(Some(parent), var, &comments), expected);
             }
         };
     }

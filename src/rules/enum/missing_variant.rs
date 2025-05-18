@@ -16,14 +16,15 @@ use super::super::{Rule, Violation};
 /// This rule requires that enums do not miss any variants.
 pub struct MissingVariant;
 
-impl Rule<EnumDefinition> for MissingVariant {
+impl Rule for MissingVariant {
+    type Target = EnumDefinition;
     const NAME: &'static str = "MissingVariant";
     const DESCRIPTION: &'static str = "Enums must document all variants.";
 
     fn check(
         _: Option<&ParseItem>,
         item: &EnumDefinition,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         let variant_comments = comments.include_tag(CommentTag::variant());
         match item.values.len().cmp(&variant_comments.len()) {
@@ -104,7 +105,7 @@ mod tests {
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(item);
-                let result = MissingVariant::check(None, item, comments);
+                let result = MissingVariant::check(None, item, &comments);
 
                 assert_eq!(expected, result);
             }

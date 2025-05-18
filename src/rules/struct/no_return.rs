@@ -38,7 +38,7 @@ mod tests {
 
                 let expected = $expected(item);
 
-                assert_eq!(NoReturn::check(Some(parent), item, comments), expected);
+                assert_eq!(NoReturn::check(Some(parent), item, &comments), expected);
             }
         };
     }

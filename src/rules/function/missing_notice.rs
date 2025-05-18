@@ -10,14 +10,15 @@ use super::super::{Rule, Violation};
 /// This rule requires that all functions have a notice or an inheritdoc comment.
 pub struct MissingNotice;
 
-impl Rule<FunctionDefinition> for MissingNotice {
+impl Rule for MissingNotice {
+    type Target = FunctionDefinition;
     const NAME: &'static str = "MissingNotice";
     const DESCRIPTION: &'static str = "Functions must have a notice or an inheritdoc comment.";
 
     fn check(
         _: Option<&ParseItem>,
         func: &FunctionDefinition,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         // If the function has an inheritdoc comment, it is exempt from this rule
         if comments.find_inheritdoc_base().is_some() {
@@ -67,7 +68,10 @@ mod tests {
 
                 let expected = $expected(func);
 
-                assert_eq!(MissingNotice::check(Some(parent), func, comments), expected);
+                assert_eq!(
+                    MissingNotice::check(Some(parent), func, &comments),
+                    expected
+                );
             }
         };
     }

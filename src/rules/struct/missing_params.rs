@@ -10,14 +10,15 @@ use super::super::{Rule, Violation};
 /// This rule requires that structs do not miss any parameters.
 pub struct MissingParams;
 
-impl Rule<StructDefinition> for MissingParams {
+impl Rule for MissingParams {
+    type Target = StructDefinition;
     const NAME: &'static str = "MissingParams";
     const DESCRIPTION: &'static str = "Structs must document all parameters.";
 
     fn check(
         _: Option<&ParseItem>,
         item: &StructDefinition,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         let param_comments = comments.include_tag(CommentTag::Param);
         match item.fields.len().cmp(&param_comments.len()) {
@@ -98,7 +99,7 @@ mod tests {
                 let comments = CommentsRef::from(&child.comments);
 
                 let expected = $expected(item);
-                let result = MissingParams::check(None, item, comments);
+                let result = MissingParams::check(None, item, &comments);
 
                 assert_eq!(expected, result);
             }

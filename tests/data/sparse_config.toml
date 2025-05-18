@@ -1,0 +1,10 @@
+# Example sparse configuration with only a few rules set
+
+[contract_rules]
+missing_author = false # Override default
+no_inheritdoc = false  # Override default
+
+[function_rules]
+missing_params = false # Override default
+
+# Other rules will use their default values

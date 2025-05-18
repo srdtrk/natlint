@@ -10,7 +10,8 @@ use super::super::{Rule, Violation};
 /// This rule requires that all public variables have a inheritdoc comment.
 pub struct MissingInheritdoc;
 
-impl Rule<VariableDefinition> for MissingInheritdoc {
+impl Rule for MissingInheritdoc {
+    type Target = VariableDefinition;
     const NAME: &'static str = "MissingInheritdoc";
     const DESCRIPTION: &'static str =
         "Public and override variables must have an inheritdoc comment.";
@@ -18,7 +19,7 @@ impl Rule<VariableDefinition> for MissingInheritdoc {
     fn check(
         parent: Option<&ParseItem>,
         var: &VariableDefinition,
-        comments: CommentsRef,
+        comments: &CommentsRef,
     ) -> Option<Violation> {
         // Parent must be a contract, not an interface or library
         match parent?.as_contract()?.ty {
@@ -80,7 +81,7 @@ mod tests {
                 let expected = $expected(var);
 
                 assert_eq!(
-                    MissingInheritdoc::check(Some(parent), var, comments),
+                    MissingInheritdoc::check(Some(parent), var, &comments),
                     expected
                 );
             }

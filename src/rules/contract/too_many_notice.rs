@@ -1,5 +1,3 @@
-//! This rule requires that all contacts have a notice comment.
-
 use solang_parser::pt::ContractDefinition;
 
 crate::too_many_comments_rule!(
@@ -39,7 +37,7 @@ mod tests {
 
                 let expected = $expected(contract);
 
-                assert_eq!(TooManyNotice::check(None, contract, comments), expected);
+                assert_eq!(TooManyNotice::check(None, contract, &comments), expected);
             }
         };
     }
