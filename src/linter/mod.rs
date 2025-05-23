@@ -1,5 +1,7 @@
 //! The linter implementation
 
+mod disable;
+
 use std::any::{Any, TypeId};
 
 use line_col::LineColLookup;
