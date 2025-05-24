@@ -37,16 +37,7 @@ pub fn lint(
         .items()
         .into_iter()
         .flat_map(|item| process_item(&item, None, rule_set, &line_lookup))
-        .filter(|(violation, line)| {
-            // Check if the violation is disabled for the current line
-            let Some(disable) = disable_directives.get(line) else {
-                return true; // No directive for this line, so keep the violation
-            };
-
-            disable
-                .as_ref()
-                .is_some_and(|rules| !rules.contains(&violation.rule_name.to_owned()))
-        })
+        .filter(|(violation, line)| !disable_directives.is_disabled(*line, violation.rule_name))
         .collect::<Vec<_>>())
 }
 

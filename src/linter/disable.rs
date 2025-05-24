@@ -5,6 +5,26 @@ use std::{collections::HashMap, sync::LazyLock};
 static NEXT_LINE_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"//\s*natlint-disable-next-line(?:\s+([\w\s,]+))?").unwrap());
 
+/// Inline directives to disable rules on a given file
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DisableDirectives {
+    rules_by_line: HashMap<usize, Option<Vec<String>>>,
+}
+
+impl DisableDirectives {
+    const fn new(rules_by_line: HashMap<usize, Option<Vec<String>>>) -> Self {
+        Self { rules_by_line }
+    }
+
+    pub fn is_disabled(&self, line: usize, rule_name: &str) -> bool {
+        self.rules_by_line.get(&line).is_some_and(|rules| {
+            rules
+                .as_ref()
+                .is_none_or(|disabled_rules| disabled_rules.contains(&rule_name.to_owned()))
+        })
+    }
+}
+
 /// Collect all `// natlint-disable-next-line …` directives.
 ///
 /// * `key`   – line number **of the line that will be skipped** (1-based)
@@ -20,20 +40,22 @@ static NEXT_LINE_RE: LazyLock<Regex> =
 ///  8 │ // natlint-disable-next-line MissingNotice,MissingParam
 ///  9 │ function foo() {}  // only those two rules disabled
 /// ```
-pub fn disable_next_line_directives(content: &str) -> HashMap<usize, Option<Vec<String>>> {
-    content
-        .lines()
-        .enumerate()
-        .filter_map(|(idx, line)| {
-            // Check if the line matches the regex
-            NEXT_LINE_RE.captures(line).map(|caps| {
-                (
-                    idx + 2, // The directive affects **next** line, so add 1 (and convert to 1-based)
-                    rules_from_captures(&caps),
-                )
+pub fn disable_next_line_directives(content: &str) -> DisableDirectives {
+    DisableDirectives::new(
+        content
+            .lines()
+            .enumerate()
+            .filter_map(|(idx, line)| {
+                // Check if the line matches the regex
+                NEXT_LINE_RE.captures(line).map(|caps| {
+                    (
+                        idx + 2, // The directive affects **next** line, so add 1 (and convert to 1-based)
+                        rules_from_captures(&caps),
+                    )
+                })
             })
-        })
-        .collect()
+            .collect(),
+    )
 }
 
 /// Extracts the rules from the regex captures.
@@ -59,7 +81,10 @@ mod tests {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
-                assert_eq!(disable_next_line_directives($source), $expected);
+                assert_eq!(
+                    disable_next_line_directives($source),
+                    DisableDirectives::new($expected)
+                );
             }
         };
     }
