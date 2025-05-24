@@ -59,8 +59,7 @@ mod tests {
         ($name:ident, $source:expr, $expected:expr) => {
             #[test]
             fn $name() {
-                let src = $source;
-                assert_eq!(disable_next_line_directives(src), $expected);
+                assert_eq!(disable_next_line_directives($source), $expected);
             }
         };
     }
