@@ -1,4 +1,4 @@
-use regex::Regex;
+use regex::{Captures, Regex};
 use std::{collections::HashMap, sync::LazyLock};
 
 /// `(?:\s+([\w\s,]+))?`
@@ -29,24 +29,27 @@ pub fn disable_next_line_directives(content: &str) -> HashMap<usize, Option<Vec<
         .filter_map(|(idx, line)| {
             // Check if the line matches the regex
             NEXT_LINE_RE.captures(line).map(|caps| {
-                let entry = caps.get(1).map(|m| {
-                    m.as_str()
-                        .split(',')
-                        .map(|s| s.trim().to_owned())
-                        .filter(|s| !s.is_empty())
-                        .collect::<Vec<_>>()
-                });
-
                 (
                     idx + 2, // The directive affects **next** line, so add 1 (and convert to 1-based)
-                    match entry {
-                        Some(v) if v.is_empty() => None,
-                        other => other,
-                    },
+                    rules_from_captures(&caps),
                 )
             })
         })
         .collect()
+}
+
+/// Extracts the rules from the regex captures.
+/// If no rules are specified, returns `None`, which indicates that all rules should be disabled.
+fn rules_from_captures(captures: &Captures) -> Option<Vec<String>> {
+    let rules: Vec<String> = captures
+        .get(1)?
+        .as_str()
+        .split(',')
+        .map(|s| s.trim().to_owned())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    (!rules.is_empty()).then_some(rules)
 }
 
 #[cfg(test)]
