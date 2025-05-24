@@ -20,7 +20,7 @@ fn main() -> eyre::Result<()> {
                 Ok(config) => config,
                 Err(e) => {
                     println!("Error reading config file: {}.", e);
-                    println!("Using default config.");
+                    println!("Using default settings.");
                     Config::default()
                 }
             };
@@ -70,6 +70,12 @@ fn main() -> eyre::Result<()> {
                 std::process::exit(1);
             }
 
+            Ok(())
+        }
+        Commands::Init(args) => {
+            let config = Config::default();
+            fs::write(&args.config, toml::to_string(&config)?)?;
+            println!("Default configuration file created at {}", args.config);
             Ok(())
         }
     }
