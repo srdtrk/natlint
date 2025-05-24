@@ -4,7 +4,7 @@ use std::{collections::HashMap, sync::LazyLock};
 /// `(?:\s+([\w\s,]+))?`
 ///   └──────┬───────── optional rule list, captured as group(1)
 ///          └───────── words / commas / (optional) whitespace
-static RE: LazyLock<Regex> =
+static NEXT_LINE_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"//\s*natlint-disable-next-line(?:\s+([\w\s,]+))?").unwrap());
 
 /// Collect all `// natlint-disable-next-line …` directives.
@@ -29,7 +29,7 @@ pub fn disable_next_line_directives(content: &str) -> HashMap<usize, Option<Vec<
         .enumerate()
         .filter_map(|(idx, line)| {
             // Check if the line matches the regex
-            RE.captures(line).map(|caps| {
+            NEXT_LINE_RE.captures(line).map(|caps| {
                 let entry = caps.get(1).map(|m| {
                     m.as_str()
                         .split(',')
