@@ -1,9 +1,27 @@
-# Example full configuration with all rules explicitly set
+# This is an example configuration file for natlint, to be used as reference.
+# All rules are explicitly set to their default values.
+
+# 'missing_*' rules check for missing elements in the documentation.
+# 'no_*' rules check for the absence of certain elements. (e.g., 'no_inheritdoc' ensures that inheritdoc is not used)
+# 'too_many_*' rules check for excessive elements in the documentation.
+# (e.g., 'too_many_notice' ensures that there are not too many notice comments)
+# 'only_inheritdoc' checks if the documentation only contains inheritdoc without additional comments.
 
 [contract_rules]
-missing_author = true
+missing_author = false
 missing_notice = true
 missing_title = true
+no_inheritdoc = false
+no_param = true
+no_return = true
+too_many_notice = true
+too_many_title = true
+
+[enum_rules]
+missing_author = false
+missing_notice = true
+missing_title = false
+missing_variant = false
 no_inheritdoc = true
 no_param = true
 no_return = true
@@ -35,26 +53,15 @@ missing_params = true
 missing_return = true
 no_author = true
 no_title = true
-only_inheritdoc = true
+only_inheritdoc = false
 too_many_inheritdoc = true
 too_many_notice = true
 
-[enum_rules]
-missing_author = true
-missing_notice = true
-missing_variant = true
-missing_title = true
-no_inheritdoc = true
-no_param = true
-no_return = true
-too_many_notice = true
-too_many_title = true
-
 [struct_rules]
-missing_author = true
+missing_author = false
 missing_notice = true
 missing_params = true
-missing_title = true
+missing_title = false
 no_inheritdoc = true
 no_return = true
 too_many_notice = true
