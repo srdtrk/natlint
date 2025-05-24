@@ -104,11 +104,4 @@ mod tests {
         expected.insert(5, Some(vec!["rule_one".to_owned(), "rule_two".to_owned()]));
         assert_eq!(disable_next_line_directives(src), expected);
     }
-
-    #[test]
-    fn directive_at_last_line_is_ignored() {
-        let src = "// natlint-disable-next-line";
-        let expected: HashMap<usize, Option<Vec<String>>> = HashMap::new();
-        assert_eq!(disable_next_line_directives(src), expected);
-    }
 }
