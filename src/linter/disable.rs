@@ -53,7 +53,6 @@ pub fn disable_next_line_directives(content: &str) -> HashMap<usize, Option<Vec<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
 
     /// Macro to define a test case for `MissingParams` rule
     macro_rules! test_disable_next_line {
