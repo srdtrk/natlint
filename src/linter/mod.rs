@@ -28,7 +28,7 @@ pub fn lint(
     let (mut source_unit, comments) =
         parse(content, 0).map_err(|e| eyre::eyre!("Failed to parse content: {:?}", e))?;
 
-    let mut parser = Parser::new(comments, content.to_string());
+    let mut parser = Parser::new(comments, content.to_owned());
     source_unit
         .visit(&mut parser)
         .map_err(|e| eyre::eyre!("Failed to visit: {:?}", e))?;
@@ -45,7 +45,7 @@ pub fn lint(
 
             disable
                 .as_ref()
-                .is_some_and(|rules| !rules.contains(&violation.rule_name.to_string()))
+                .is_some_and(|rules| !rules.contains(&violation.rule_name.to_owned()))
         })
         .collect::<Vec<_>>())
 }

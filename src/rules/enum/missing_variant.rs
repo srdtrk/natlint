@@ -61,7 +61,7 @@ impl Rule for MissingVariant {
                 comment
                     .split_first_word()
                     .iter()
-                    .map(|&(name, _)| name.to_string())
+                    .map(|&(name, _)| name.to_owned())
                     .any(|content| content == variant_id.name)
             }) {
                 return Some(Violation::new(

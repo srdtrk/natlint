@@ -55,7 +55,7 @@ impl Rule for MissingParam {
                 comment
                     .split_first_word()
                     .iter()
-                    .map(|&(name, _)| name.to_string())
+                    .map(|&(name, _)| name.to_owned())
                     .any(|content| content == field_id.name)
             }) {
                 return Some(Violation::new(
