@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { TestInterface } from "TestInterface.sol";
+import { TestInterface } from "./TestInterface.sol";
 
 contract TestContract is TestInterface {
     uint256 public value;
