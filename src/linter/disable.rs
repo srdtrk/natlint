@@ -22,7 +22,6 @@ static NEXT_LINE_RE: LazyLock<Regex> =
 ///  8 │ // natlint-disable-next-line MissingNotice,MissingParam
 ///  9 │ function foo() {}  // only those two rules disabled
 /// ```
-#[allow(dead_code)]
 pub fn disable_next_line_directives(content: &str) -> HashMap<usize, Option<Vec<String>>> {
     content
         .lines()
