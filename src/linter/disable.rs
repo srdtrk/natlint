@@ -19,7 +19,7 @@ static RE: LazyLock<Regex> =
 ///  3 │ // natlint-disable-next-line
 ///  4 │ uint x;            // all rules disabled
 ///
-///  8 │ // natlint-disable-next-line missing_notice,missing_params
+///  8 │ // natlint-disable-next-line MissingNotice,MissingParam
 ///  9 │ function foo() {}  // only those two rules disabled
 /// ```
 #[allow(dead_code)]
@@ -55,53 +55,91 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
 
-    /// Helper that builds a small HashMap in one line
-    fn map(entry: (usize, Option<Vec<&str>>)) -> HashMap<usize, Option<Vec<String>>> {
-        let (k, v) = entry;
-        HashMap::from([(k, v.map(|vv| vv.into_iter().map(str::to_owned).collect()))])
+    /// Macro to define a test case for `MissingParams` rule
+    macro_rules! test_disable_next_line {
+        ($name:ident, $source:expr, $expected:expr) => {
+            #[test]
+            fn $name() {
+                let src = $source;
+                assert_eq!(disable_next_line_directives(src), $expected);
+            }
+        };
     }
 
-    #[test]
-    fn disables_all_rules_on_next_line() {
-        let src = "\
-            // natlint-disable-next-line\n\
-            uint a;\n";
-        let expected = map((2, None));
-        assert_eq!(disable_next_line_directives(src), expected);
-    }
+    test_disable_next_line!(
+        no_directives,
+        r"
+            uint a;
+            function foo() {}
+        ",
+        HashMap::new()
+    );
 
-    #[test]
-    fn disables_single_rule() {
-        let src = "\
-            // natlint-disable-next-line missing_notice\n\
-            uint a;\n";
-        let expected = map((2, Some(vec!["missing_notice"])));
-        assert_eq!(disable_next_line_directives(src), expected);
-    }
+    test_disable_next_line!(
+        disables_all_rules_on_next_line,
+        r"
+            // natlint-disable-next-line
+            uint a;
+        ",
+        HashMap::from([(3, None)])
+    );
 
-    #[test]
-    fn disables_multiple_rules_with_spaces() {
-        let src = "\
-            // natlint-disable-next-line  missing_notice , missing_params ,another_rule\n\
-            uint a;\n";
-        let expected = map((
-            2,
-            Some(vec!["missing_notice", "missing_params", "another_rule"]),
-        ));
-        assert_eq!(disable_next_line_directives(src), expected);
-    }
+    test_disable_next_line!(
+        disables_single_rule,
+        r"
+            // natlint-disable-next-line MissingNotice
+            uint a;
+        ",
+        HashMap::from([(3, Some(vec!["MissingNotice".to_owned()]))])
+    );
 
-    #[test]
-    fn multiple_directives_in_one_file() {
-        let src = "\
-            // natlint-disable-next-line\n\
-            uint a;\n\
-            \n\
-            // natlint-disable-next-line rule_one,rule_two\n\
-            function foo() {}\n";
-        let mut expected = HashMap::new();
-        expected.insert(2, None);
-        expected.insert(5, Some(vec!["rule_one".to_owned(), "rule_two".to_owned()]));
-        assert_eq!(disable_next_line_directives(src), expected);
-    }
+    test_disable_next_line!(
+        disables_multiple_rules_with_commas,
+        r"
+            // natlint-disable-next-line MissingNotice,MissingParam,AnotherRule
+            uint a;
+        ",
+        HashMap::from([(
+            3,
+            Some(vec![
+                "MissingNotice".to_owned(),
+                "MissingParam".to_owned(),
+                "AnotherRule".to_owned()
+            ])
+        )])
+    );
+
+    test_disable_next_line!(
+        disables_multiple_rules_with_spaces,
+        r"
+            // natlint-disable-next-line MissingNotice, MissingParam, AnotherRule
+            uint a;
+        ",
+        HashMap::from([(
+            3,
+            Some(vec![
+                "MissingNotice".to_owned(),
+                "MissingParam".to_owned(),
+                "AnotherRule".to_owned()
+            ])
+        )])
+    );
+
+    test_disable_next_line!(
+        multiple_directives_in_one_file,
+        r"
+            // natlint-disable-next-line
+            uint a;
+
+            // natlint-disable-next-line MissingNotice,MissingParam
+            function foo() {}
+        ",
+        HashMap::from([
+            (3, None),
+            (
+                6,
+                Some(vec!["MissingNotice".to_owned(), "MissingParam".to_owned()])
+            )
+        ])
+    );
 }
