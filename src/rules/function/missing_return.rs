@@ -59,7 +59,7 @@ impl Rule for MissingReturn {
         for (loc, return_var) in &func.returns {
             let Some(var_name) = return_var
                 .as_ref()
-                .and_then(|p| p.name.as_ref().map(|id| id.name.to_owned()))
+                .and_then(|p| p.name.as_ref().map(|id| id.name.clone()))
             else {
                 // Skip unnamed parameters
                 continue;

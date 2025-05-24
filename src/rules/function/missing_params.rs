@@ -57,7 +57,7 @@ impl Rule for MissingParams {
         for (loc, param) in &func.params {
             let Some(param_name) = param
                 .as_ref()
-                .and_then(|p| p.name.as_ref().map(|id| id.name.to_owned()))
+                .and_then(|p| p.name.as_ref().map(|id| id.name.clone()))
             else {
                 // Skip unnamed parameters
                 continue;
