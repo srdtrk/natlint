@@ -1,9 +1,7 @@
 use regex::{Captures, Regex};
 use std::{collections::HashMap, sync::LazyLock};
 
-/// `(?:\s+([\w\s,]+))?`
-///   └──────┬───────── optional rule list, captured as group(1)
-///          └───────── words / commas / (optional) whitespace
+/// Regex to match `// natlint-disable-next-line` directives
 static NEXT_LINE_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"//\s*natlint-disable-next-line(?:\s+([\w\s,]+))?").unwrap());
 
