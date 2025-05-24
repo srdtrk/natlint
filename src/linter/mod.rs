@@ -1,5 +1,7 @@
 //! The linter implementation
 
+mod disable;
+
 use std::any::{Any, TypeId};
 
 use line_col::LineColLookup;
@@ -20,12 +22,13 @@ pub fn lint(
     content: &str,
     rule_set: &Vec<Box<dyn DynRule>>,
 ) -> eyre::Result<Vec<(Violation, usize)>> {
-    let line_lookup = LineColLookup::new(content);
+    let disable_directives = disable::disable_next_line_directives(content);
 
+    let line_lookup = LineColLookup::new(content);
     let (mut source_unit, comments) =
         parse(content, 0).map_err(|e| eyre::eyre!("Failed to parse content: {:?}", e))?;
 
-    let mut parser = Parser::new(comments, content.to_string());
+    let mut parser = Parser::new(comments, content.to_owned());
     source_unit
         .visit(&mut parser)
         .map_err(|e| eyre::eyre!("Failed to visit: {:?}", e))?;
@@ -34,6 +37,7 @@ pub fn lint(
         .items()
         .into_iter()
         .flat_map(|item| process_item(&item, None, rule_set, &line_lookup))
+        .filter(|(violation, line)| !disable_directives.is_disabled(*line, violation.rule_name))
         .collect::<Vec<_>>())
 }
 

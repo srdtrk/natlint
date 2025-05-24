@@ -2049,6 +2049,7 @@ dependencies = [
  "globset",
  "itertools 0.14.0",
  "line-col",
+ "regex",
  "serde",
  "solang-parser",
  "thiserror 2.0.11",

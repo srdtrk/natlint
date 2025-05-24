@@ -159,3 +159,78 @@ fn test_msgs() {
     assert_eq!(violations[3].0.rule_name, "MissingParams");
     assert_eq!(violations[3].1, 5);
 }
+
+#[test]
+fn test_contract_with_disable() {
+    let file_path = Path::new("tests/data/TestContractWithDisable.sol");
+    let content = fs::read_to_string(file_path).expect("Failed to read test file");
+
+    let config = Config::default();
+    let violations: Vec<_> = lint(&content, &config.rules()).expect("Failed to process file");
+
+    assert_eq!(violations.len(), 8);
+
+    assert_eq!(violations[0].0.rule_name, "MissingNotice");
+    assert_eq!(violations[0].1, 6);
+    assert_eq!(
+        violations[0].0.rule_description,
+        "Contracts must have a notice comment."
+    );
+
+    assert_eq!(violations[1].0.rule_name, "MissingTitle");
+    assert_eq!(violations[1].1, 6);
+    assert_eq!(
+        violations[1].0.rule_description,
+        "Contracts must have a title comment."
+    );
+
+    // Variable vioations
+    assert_eq!(violations[2].0.rule_name, "MissingInheritdoc");
+    assert_eq!(violations[2].1, 7);
+    assert_eq!(
+        violations[2].0.rule_description,
+        "Public and override variables must have an inheritdoc comment."
+    );
+
+    assert_eq!(violations[3].0.rule_name, "MissingNotice");
+    assert_eq!(violations[3].1, 7);
+    assert_eq!(
+        violations[3].0.rule_description,
+        "Variables must have a notice or an inheritdoc comment."
+    );
+
+    // Event violations
+    assert_eq!(violations[4].0.rule_name, "MissingNotice");
+    assert_eq!(violations[4].1, 9);
+    assert_eq!(
+        violations[4].0.rule_description,
+        "Events must have a notice comment."
+    );
+
+    assert_eq!(violations[5].0.rule_name, "MissingParam");
+    assert_eq!(violations[5].1, 9);
+    assert_eq!(
+        violations[5].0.rule_description,
+        "Events must document all parameters."
+    );
+
+    // No Error violations
+
+    // Enum violations
+    assert_eq!(violations[6].0.rule_name, "MissingNotice");
+    assert_eq!(violations[6].1, 14);
+    assert_eq!(
+        violations[6].0.rule_description,
+        "Enums must have a notice comment."
+    );
+
+    // Struct violations
+    assert_eq!(violations[7].0.rule_name, "MissingNotice");
+    assert_eq!(violations[7].1, 17);
+    assert_eq!(
+        violations[7].0.rule_description,
+        "Structs must have a notice comment."
+    );
+
+    // No Function violations
+}

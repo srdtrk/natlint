@@ -54,7 +54,7 @@ impl CommentTag {
 
     /// Create a new instance of [CommentTag::Custom] with the `variant` tag.
     pub fn variant() -> Self {
-        Self::Custom("variant".to_string())
+        Self::Custom("variant".to_owned())
     }
 }
 
@@ -291,7 +291,7 @@ mod tests {
             CommentTag::Inheritdoc,
         ];
         for tag in non_custom_tags {
-            let comment = Comment::new(tag.clone(), "Non-custom comment".to_string());
+            let comment = Comment::new(tag.clone(), "Non-custom comment".to_owned());
             assert!(
                 !comment.is_custom(),
                 "Non-custom tag {tag:?} should return false for is_custom"
