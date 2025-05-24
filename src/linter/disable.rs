@@ -23,7 +23,7 @@ static RE: LazyLock<Regex> =
 ///  9 │ function foo() {}  // only those two rules disabled
 /// ```
 #[allow(dead_code)]
-fn disable_next_line_directives(content: &str) -> HashMap<usize, Option<Vec<String>>> {
+pub fn disable_next_line_directives(content: &str) -> HashMap<usize, Option<Vec<String>>> {
     content
         .lines()
         .enumerate()

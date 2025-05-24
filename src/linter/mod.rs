@@ -22,8 +22,9 @@ pub fn lint(
     content: &str,
     rule_set: &Vec<Box<dyn DynRule>>,
 ) -> eyre::Result<Vec<(Violation, usize)>> {
-    let line_lookup = LineColLookup::new(content);
+    let disable_directives = disable::disable_next_line_directives(content);
 
+    let line_lookup = LineColLookup::new(content);
     let (mut source_unit, comments) =
         parse(content, 0).map_err(|e| eyre::eyre!("Failed to parse content: {:?}", e))?;
 
@@ -36,6 +37,16 @@ pub fn lint(
         .items()
         .into_iter()
         .flat_map(|item| process_item(&item, None, rule_set, &line_lookup))
+        .filter(|(violation, line)| {
+            // Check if the violation is disabled for the current line
+            let Some(disable) = disable_directives.get(line) else {
+                return true; // No directive for this line, so keep the violation
+            };
+
+            disable
+                .as_ref()
+                .is_some_and(|rules| !rules.contains(&violation.rule_name.to_string()))
+        })
         .collect::<Vec<_>>())
 }
 
