@@ -14,8 +14,10 @@ pub struct NatlintCli {
 /// The subcommands for natlint.
 #[derive(Clone, Debug, Parser)]
 pub enum Commands {
-    /// The subcommand to run natlint.
+    /// Run natlint.
     Run(run::Args),
+    /// Create a default configuration file.
+    Init(init::Args),
 }
 
 /// The arguments for the run subcommand.
@@ -40,6 +42,19 @@ pub mod run {
         pub exclude: Vec<String>,
 
         /// The configuration file for linter.
+        #[clap(short = 'c', long, default_value = "natlint.toml")]
+        pub config: String,
+    }
+}
+
+/// The arguments for the init subcommand.
+pub mod init {
+    use super::Parser;
+
+    /// The arguments for the init subcommand.
+    #[derive(Clone, Debug, Parser)]
+    pub struct Args {
+        /// The path to the configuration file to create.
         #[clap(short = 'c', long, default_value = "natlint.toml")]
         pub config: String,
     }
