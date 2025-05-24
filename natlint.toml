@@ -1,5 +1,6 @@
 # This is an example configuration file for natlint, to be used as reference.
 # All rules are explicitly set to their default values.
+# The same configuration, without comments, can be achieved by using `natlint init` command.
 
 # 'missing_*' rules check for missing elements in the documentation.
 # 'no_*' rules check for the absence of certain elements. (e.g., 'no_inheritdoc' ensures that inheritdoc is not used)
