@@ -22,3 +22,8 @@ toml = "0.8"
 serde = "1.0"
 line-col = "0.2"
 regex = "1.11"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
