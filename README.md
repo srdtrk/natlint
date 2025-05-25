@@ -2,6 +2,14 @@
 
 Natlint is an open-source tool for linting [Solidity natspec comments](https://docs.soliditylang.org/en/develop/natspec-format.html).
 
+## Installation
+
+You can install Natlint using [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html):
+
+```bash
+cargo install natlint
+```
+
 ## Usage
 
 First initialize a configuration file, if you don't have one:
