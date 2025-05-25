@@ -43,11 +43,15 @@ fn main() -> eyre::Result<()> {
                 .sum::<usize>();
 
             for (file, violation_with_line) in file_violations.iter() {
-                println!("\nFile: {}", file);
                 if violation_with_line.is_empty() {
-                    println!("  No violations found.");
+                    if args.verbose {
+                        println!("\nFile: {}", file);
+                        println!("  No violations found.");
+                    }
                     continue;
                 }
+
+                println!("\nFile: {}", file);
                 for (violation, line_number) in violation_with_line {
                     // Print violation details with converted line number
                     println!(
@@ -60,7 +64,9 @@ fn main() -> eyre::Result<()> {
                 }
             }
 
-            if violation_count != 0 {
+            if violation_count == 0 {
+                println!("No natspec violations found.");
+            } else {
                 println!(
                     "\nFound {} natspec violations in {} files.",
                     violation_count,
