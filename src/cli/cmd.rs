@@ -44,6 +44,10 @@ pub mod run {
         /// The configuration file for linter.
         #[clap(short = 'c', long, default_value = "natlint.toml")]
         pub config: String,
+
+        /// The verbosity of the linter.
+        #[clap(short = 'v', long)]
+        pub verbose: bool,
     }
 }
 
