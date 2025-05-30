@@ -31,4 +31,5 @@ runs:
       with:
         tool: natlint
     - name: natlint
+      shell: bash
       run: natlint run -i '${{ inputs.include }}' -e '${{ inputs.exclude }}' -c '${{ inputs.config }}' --root '${{ inputs.root }}'
