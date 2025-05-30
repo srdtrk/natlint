@@ -30,5 +30,5 @@ runs:
       uses: taiki-e/install-action@v2
       with:
         tool: natlint
-    - name: Run natlint
+    - name: natlint
       run: natlint run -i '${{ inputs.include }}' -e '${{ inputs.exclude }}' -c '${{ inputs.config }}' --root '${{ inputs.root }}'
