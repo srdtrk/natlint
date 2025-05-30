@@ -1,0 +1,34 @@
+name: 'natlint'
+description: 'Run Natlint to lint Natspec solidity comments.'
+author: srdtrk
+
+branding:
+  icon: 'check-circle'
+  color: 'purple'
+
+inputs:
+  include:
+    description: 'Glob of files to lint'
+    required: false
+    default: '**/*.sol'
+  exclude:
+    description: 'Glob of files to exclude from linting'
+    required: false
+    default: ''
+  config:
+    description: 'Path to the natlint configuration file'
+    required: false
+    default: 'natlint.toml'
+  root:
+    description: 'Root directory of the project'
+    required: false
+    default: '.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install natlint
+      uses: taiki-e/install-action@v2
+      with:
+        tool: natlint
+    - name: natlint
+      run: natlint run -i '${{ inputs.include }}' -e '${{ inputs.exclude }}' -c '${{ inputs.config }}' --root '${{ inputs.root }}'
