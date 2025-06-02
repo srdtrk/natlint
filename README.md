@@ -70,3 +70,33 @@ function bar() public {
     // ...
 }
 ```
+
+## Usage in GitHub Actions
+
+You can use Natlint in your GitHub Actions workflow by adding a step to run it. Here's an example of how to do that:
+
+```yaml
+name: natlint
+
+on:
+  pull_request:
+
+jobs:
+  natlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: srdtrk/natlint@main
+        with:
+          include: 'contracts/**/*.sol'
+```
+
+### Inputs
+
+You can pass inputs to the Natlint action using the `with` keyword. The available inputs are:
+
+- `include`: A glob pattern to include files for linting. Defaults to `'**/*.sol'`.
+- `exclude`: A glob pattern to exclude files from linting. Defaults to `''`.
+- `config`: The path to the configuration file. Defaults to `'natlint.toml'`.
+- `root`: The root directory to use for the glob patterns and configuration file. Defaults to `'.'`.
