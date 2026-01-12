@@ -1,10 +1,9 @@
 //! The parser module.
-//! This code is copied from foundry-rs.
+//! This code is adapted from foundry-rs.
 //! <https://github.com/foundry-rs/foundry/blob/c609884bdb13b9846fe9ddc5f08d99cf30c53695/crates/doc/src/parser/mod.rs#L1>
 
 #![allow(clippy::nursery, clippy::pedantic)]
 
-use forge_fmt::{FormatterConfig, Visitable, Visitor};
 use itertools::Itertools;
 use solang_parser::{
     doccomment::{parse_doccomments, DocComment},
@@ -18,6 +17,10 @@ use solang_parser::{
 /// Parser error.
 pub mod error;
 use error::{ParserError, ParserResult};
+
+/// Visitor pattern for AST traversal.
+pub mod visitor;
+use visitor::{Visitable, Visitor};
 
 /// Parser item.
 mod item;
@@ -39,10 +42,6 @@ pub struct Parser {
     context: ParserContext,
     /// Parsed results.
     items: Vec<ParseItem>,
-    /// Source file.
-    source: String,
-    /// The formatter config.
-    fmt: FormatterConfig,
 }
 
 /// [Parser] context.
@@ -56,18 +55,11 @@ struct ParserContext {
 
 impl Parser {
     /// Create a new instance of [Parser].
-    pub fn new(comments: Vec<SolangComment>, source: String) -> Self {
+    pub fn new(comments: Vec<SolangComment>) -> Self {
         Self {
             comments,
-            source,
             ..Default::default()
         }
-    }
-
-    /// Set formatter config on the [Parser]
-    pub fn with_fmt(mut self, fmt: FormatterConfig) -> Self {
-        self.fmt = fmt;
-        self
     }
 
     /// Return the parsed items. Consumes the parser.
@@ -111,12 +103,10 @@ impl Parser {
         Ok(())
     }
 
-    /// Create new [ParseItem] with comments and formatted code.
+    /// Create new [ParseItem] with comments.
     fn new_item(&mut self, source: ParseSource, loc_start: usize) -> ParserResult<ParseItem> {
         let docs = self.parse_docs(loc_start)?;
-        ParseItem::new(source)
-            .with_comments(docs)
-            .with_code(&self.source, self.fmt.clone())
+        Ok(ParseItem::new(source).with_comments(docs))
     }
 
     /// Parse the doc comments from the current start location.
@@ -247,7 +237,7 @@ mod tests {
     #[inline]
     fn parse_source(src: &str) -> Vec<ParseItem> {
         let (mut source, comments) = parse(src, 0).expect("failed to parse source");
-        let mut doc = Parser::new(comments, src.to_owned());
+        let mut doc = Parser::new(comments);
         source.visit(&mut doc).expect("failed to visit source");
         doc.items()
     }

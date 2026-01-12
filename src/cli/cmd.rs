@@ -1,6 +1,6 @@
 //! Defines the client interface for natlint.
 
-use clap::{command, Parser};
+use clap::Parser;
 
 /// The command line interface for natlint.
 #[derive(Clone, Debug, Parser)]

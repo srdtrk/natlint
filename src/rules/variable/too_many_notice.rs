@@ -10,17 +10,17 @@ crate::too_many_comments_rule!(
 #[cfg(test)]
 mod tests {
     use super::{TooManyNotice, VariableDefinition};
+    use crate::parser::visitor::Visitable;
     use crate::{
         generate_too_many_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{Rule, Violation, ViolationError},
     };
-    use forge_fmt::Visitable;
     use solang_parser::parse;
 
     fn parse_source(src: &str) -> Parser {
         let (mut source, comments) = parse(src, 0).expect("failed to parse source");
-        let mut doc = Parser::new(comments, src.to_owned());
+        let mut doc = Parser::new(comments);
         source.visit(&mut doc).expect("failed to visit source");
         doc
     }

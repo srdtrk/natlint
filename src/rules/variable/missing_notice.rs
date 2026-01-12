@@ -44,13 +44,13 @@ mod tests {
     use super::{
         CommentTag, CommentsRef, MissingNotice, Rule, VariableDefinition, Violation, ViolationError,
     };
+    use crate::parser::visitor::Visitable;
     use crate::{generate_missing_comment_test_cases, parser::Parser};
-    use forge_fmt::Visitable;
     use solang_parser::parse;
 
     fn parse_source(src: &str) -> Parser {
         let (mut source, comments) = parse(src, 0).expect("failed to parse source");
-        let mut doc = Parser::new(comments, src.to_owned());
+        let mut doc = Parser::new(comments);
         source.visit(&mut doc).expect("failed to visit source");
         doc
     }

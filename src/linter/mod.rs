@@ -12,8 +12,9 @@ use crate::{
     parser::{CommentsRef, ParseItem, Parser},
     rules::{DynRule, Violation},
 };
-use forge_fmt::Visitable;
 use solang_parser::parse;
+
+use super::parser::visitor::Visitable;
 
 /// Lints a string (e.g. a file) against a set of rules
 /// # Errors
@@ -28,7 +29,7 @@ pub fn lint(
     let (mut source_unit, comments) =
         parse(content, 0).map_err(|e| eyre::eyre!("Failed to parse content: {:?}", e))?;
 
-    let mut parser = Parser::new(comments, content.to_owned());
+    let mut parser = Parser::new(comments);
     source_unit
         .visit(&mut parser)
         .map_err(|e| eyre::eyre!("Failed to visit: {:?}", e))?;

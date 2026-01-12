@@ -1,8 +1,4 @@
-use super::{error::ParserResult, Comments};
-use forge_fmt::{
-    solang_ext::SafeUnwrap, Comments as FmtComments, Formatter, FormatterConfig, InlineConfig,
-    Visitor,
-};
+use super::Comments;
 use solang_parser::pt::{
     ContractDefinition, ContractTy, EnumDefinition, ErrorDefinition, EventDefinition,
     FunctionDefinition, StructDefinition, TypeDefinition, VariableDefinition,
@@ -17,8 +13,6 @@ pub struct ParseItem {
     pub comments: Comments,
     /// Children items.
     pub children: Vec<ParseItem>,
-    /// Formatted code string.
-    pub code: String,
 }
 
 /// Defines a method that filters [ParseItem]'s children and returns the source pt token of the
@@ -27,9 +21,9 @@ pub struct ParseItem {
 macro_rules! filter_children_fn {
     ($vis:vis fn $name:ident(&self, $variant:ident) -> $ret:ty) => {
         /// Filter children items for [ParseSource::$variant] variants.
-        $vis fn $name(&self) -> Option<Vec<(&$ret, &Comments, &String)>> {
+        $vis fn $name(&self) -> Option<Vec<(&$ret, &Comments)>> {
             let items = self.children.iter().filter_map(|item| match item.source {
-                ParseSource::$variant(ref inner) => Some((inner, &item.comments, &item.code)),
+                ParseSource::$variant(ref inner) => Some((inner, &item.comments)),
                 _ => None,
             });
             let items = items.collect::<Vec<_>>();
@@ -64,7 +58,6 @@ impl ParseItem {
             source,
             comments: Default::default(),
             children: Default::default(),
-            code: Default::default(),
         }
     }
 
@@ -78,39 +71,6 @@ impl ParseItem {
     pub fn with_children(mut self, children: Vec<Self>) -> Self {
         self.children = children;
         self
-    }
-
-    /// Set formatted code on the [ParseItem].
-    pub fn with_code(mut self, source: &str, config: FormatterConfig) -> ParserResult<Self> {
-        let mut code = String::new();
-        let mut fmt = Formatter::new(
-            &mut code,
-            source,
-            FmtComments::default(),
-            InlineConfig::default(),
-            config,
-        );
-
-        match self.source.clone() {
-            ParseSource::Contract(mut contract) => {
-                contract.parts = vec![];
-                fmt.visit_contract(&mut contract)?
-            }
-            ParseSource::Function(mut func) => {
-                func.body = None;
-                fmt.visit_function(&mut func)?
-            }
-            ParseSource::Variable(mut var) => fmt.visit_var_definition(&mut var)?,
-            ParseSource::Event(mut event) => fmt.visit_event(&mut event)?,
-            ParseSource::Error(mut error) => fmt.visit_error(&mut error)?,
-            ParseSource::Struct(mut structure) => fmt.visit_struct(&mut structure)?,
-            ParseSource::Enum(mut enumeration) => fmt.visit_enum(&mut enumeration)?,
-            ParseSource::Type(mut ty) => fmt.visit_type_definition(&mut ty)?,
-        };
-
-        self.code = code;
-
-        Ok(self)
     }
 
     /// Format the item's filename.
@@ -170,6 +130,17 @@ pub enum ParseSource {
     Enum(EnumDefinition),
     /// Source type definition.
     Type(TypeDefinition),
+}
+
+/// Helper trait for safely unwrapping Option<Identifier> fields.
+trait SafeUnwrap<T> {
+    fn safe_unwrap(&self) -> &T;
+}
+
+impl<T> SafeUnwrap<T> for Option<T> {
+    fn safe_unwrap(&self) -> &T {
+        self.as_ref().expect("expected identifier to be present")
+    }
 }
 
 impl ParseSource {

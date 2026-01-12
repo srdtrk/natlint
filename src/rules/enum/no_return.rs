@@ -10,17 +10,17 @@ crate::no_comment_rule!(
 #[cfg(test)]
 mod tests {
     use super::{EnumDefinition, NoReturn};
+    use crate::parser::visitor::Visitable;
     use crate::{
         generate_no_comment_test_cases,
         parser::{CommentTag, CommentsRef, Parser},
         rules::{violation_error::ViolationError, Rule, Violation},
     };
-    use forge_fmt::Visitable;
     use solang_parser::parse;
 
     fn parse_source(src: &str) -> Parser {
         let (mut source, comments) = parse(src, 0).expect("failed to parse source");
-        let mut doc = Parser::new(comments, src.to_owned());
+        let mut doc = Parser::new(comments);
         source.visit(&mut doc).expect("failed to visit source");
         doc
     }
