@@ -18,11 +18,11 @@
           listJsons = {
             "x86_64-linux" = pkgs.fetchurl {
               url = "${solcBinBaseUrl}/linux-amd64/list.json";
-              hash = "sha256-0a8i5v0wf5fmwsfhmvw7ws5ydc0lwjrn7f8znpx9lpzbd0k1hrql";
+              hash = "sha256-FGcYJmjrX5r6tR+5Y7PkFLDmi+aH7wqd5tUVx8EuESk=";
             };
             "aarch64-darwin" = pkgs.fetchurl {
               url = "${solcBinBaseUrl}/macosx-amd64/list.json";
-              hash = "sha256-120ycgkq2wbljjiypkcr6jv58qikcyg2fcvadwr3y6gv5xq44pqd";
+              hash = "sha256-DV9CcC/7GT8yb2ozJ55nM2JUtjSZzeujlHRxgedjHog=";
             };
           };
         in listJsons.${system} or null;
